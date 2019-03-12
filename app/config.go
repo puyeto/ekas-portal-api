@@ -3,8 +3,9 @@ package app
 import (
 	"fmt"
 
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/sony/sonyflake"
 	"github.com/spf13/viper"
-	"github.com/go-ozzo/ozzo-validation"
 )
 
 // Config stores the application-wide configurations
@@ -12,17 +13,19 @@ var Config appConfig
 
 type appConfig struct {
 	// the path to the error message file. Defaults to "config/errors.yaml"
-	ErrorFile          string `mapstructure:"error_file"`
+	ErrorFile string `mapstructure:"error_file"`
 	// the server port. Defaults to 8080
-	ServerPort         int    `mapstructure:"server_port"`
+	ServerPort int `mapstructure:"server_port"`
 	// the data source name (DSN) for connecting to the database. required.
-	DSN                string `mapstructure:"dsn"`
+	DSN string `mapstructure:"dsn"`
 	// the signing method for JWT. Defaults to "HS256"
-	JWTSigningMethod   string `mapstructure:"jwt_signing_method"`
+	JWTSigningMethod string `mapstructure:"jwt_signing_method"`
 	// JWT signing key. required.
-	JWTSigningKey      string `mapstructure:"jwt_signing_key"`
+	JWTSigningKey string `mapstructure:"jwt_signing_key"`
 	// JWT verification key. required.
 	JWTVerificationKey string `mapstructure:"jwt_verification_key"`
+	// url to tracking server
+	TrackingServerURL string `mapstructure:"tracking_server_url"`
 }
 
 func (config appConfig) Validate() error {
@@ -55,4 +58,13 @@ func LoadConfig(configPaths ...string) error {
 		return err
 	}
 	return Config.Validate()
+}
+
+// GenerateNewID Generate new id using
+// Note: this is base16, could shorten by encoding as base62 string
+// fmt.Printf("github.com/sony/sonyflake:   %x\n", id)
+func GenerateNewID() uint64 {
+	flake := sonyflake.NewSonyflake(sonyflake.Settings{})
+	id, _ := flake.NextID()
+	return id
 }

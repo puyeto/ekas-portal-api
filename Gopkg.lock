@@ -87,7 +87,7 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/qiangxue/golang-restful-starter-kit"
+  name = "github.com/ekas-portal-api"
   packages = ["apis","app","daos","errors","models","services","testdata","util"]
   revision = "6633781713379acbdbe433c41f48e110c7e7b0fe"
 

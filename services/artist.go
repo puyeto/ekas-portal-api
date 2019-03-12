@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/qiangxue/golang-restful-starter-kit/app"
-	"github.com/qiangxue/golang-restful-starter-kit/models"
+	"github.com/ekas-portal-api/app"
+	"github.com/ekas-portal-api/models"
 )
 
 // artistDAO specifies the interface of the artist DAO needed by ArtistService.

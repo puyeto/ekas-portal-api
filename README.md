@@ -26,7 +26,7 @@ since their usages are mostly localized and abstracted.
 
 
 Now you can build and run the application by running the following command under the
-`$GOPATH/qiangxue/golang-restful-starter-kit` directory:
+`$GOPATH/ekas-portal-api` directory:
 
 ```shell
 go run server.go

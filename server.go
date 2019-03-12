@@ -5,16 +5,16 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/ekas-portal-api/apis"
+	"github.com/ekas-portal-api/app"
+	"github.com/ekas-portal-api/daos"
+	"github.com/ekas-portal-api/errors"
+	"github.com/ekas-portal-api/services"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/go-ozzo/ozzo-routing/content"
 	"github.com/go-ozzo/ozzo-routing/cors"
-	_ "github.com/lib/pq"
-	"github.com/qiangxue/golang-restful-starter-kit/apis"
-	"github.com/qiangxue/golang-restful-starter-kit/app"
-	"github.com/qiangxue/golang-restful-starter-kit/daos"
-	"github.com/qiangxue/golang-restful-starter-kit/errors"
-	"github.com/qiangxue/golang-restful-starter-kit/services"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
@@ -74,10 +74,15 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	// 	TokenHandler:  apis.JWTHandler,
 	// }))
 
+	// artistDAO := daos.NewArtistDAO()
+	// apis.ServeArtistResource(rg, services.NewArtistService(artistDAO))
+
 	artistDAO := daos.NewArtistDAO()
 	apis.ServeArtistResource(rg, services.NewArtistService(artistDAO))
 
-	// wire up more resource APIs here
+	trackingServerDAO := daos.NewTrackingServerDAO()
+	apis.ServeTrackingServerResource(rg, services.NewTrackingServerService(trackingServerDAO))
+
 
 	return router
 }
