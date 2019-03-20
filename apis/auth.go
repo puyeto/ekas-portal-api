@@ -11,11 +11,13 @@ import (
 	"github.com/ekas-portal-api/models"
 )
 
+// Credential ...
 type Credential struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
+// Auth ...
 func Auth(signingKey string) routing.Handler {
 	return func(c *routing.Context) error {
 		var credential Credential
@@ -43,6 +45,7 @@ func Auth(signingKey string) routing.Handler {
 	}
 }
 
+// authenticate ...
 func authenticate(c Credential) models.Identity {
 	if c.Username == "demo" && c.Password == "pass" {
 		return &models.User{ID: "100", Name: "demo"}
@@ -50,6 +53,7 @@ func authenticate(c Credential) models.Identity {
 	return nil
 }
 
+// JWTHandler ...
 func JWTHandler(c *routing.Context, j *jwt.Token) error {
 	userID := j.Claims.(jwt.MapClaims)["id"].(string)
 	app.GetRequestScope(c).SetUserID(userID)

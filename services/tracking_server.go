@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -81,6 +82,46 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 // TrackingServerUserDevices - Get user devices from  the tracking server
 func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, model *models.UserData) (interface{}, error) {
 	URL := app.Config.TrackingServerURL + "get_devices/?lang=" + model.Lang + "&user_api_hash=" + model.UserHash
+	res, err := http.Get(URL)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var data interface{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("Results: %v\n", data)
+
+	return data, nil
+}
+
+// TrackingServerAddDevices - add user devices from  the tracking server
+func (s *TrackingServerService) TrackingServerAddDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error) {
+
+	p := url.Values{
+		"user_api_hash":       {userhash},
+		"lang":                {lang},
+		"name":                {model.Name},
+		"imei":                {model.Imei},
+		"icon_id":             {model.IconID},
+		"fuel_measurement_id": {model.FuelMeasurementID},
+		"tail_length":         {model.TailLength},
+		"min_fuel_thefts":     {model.MinFuelThefts},
+		"min_moving_speed":    {model.MinFuelThefts},
+		"min_fuel_fillings":   {model.MinFuelFillings},
+		"plate_number":        {model.PlateNumber},
+	}
+	URL := app.Config.TrackingServerURL + "add_device?" + p.Encode()
+
+	fmt.Println(URL)
+
 	res, err := http.Get(URL)
 	if err != nil {
 		return nil, err
