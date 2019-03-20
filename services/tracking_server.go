@@ -117,10 +117,54 @@ func (s *TrackingServerService) TrackingServerAddDevices(rs app.RequestScope, mo
 		"min_moving_speed":    {model.MinFuelThefts},
 		"min_fuel_fillings":   {model.MinFuelFillings},
 		"plate_number":        {model.PlateNumber},
+		"vin":                 {model.Vin},
+		"device_model":        {model.DeviceModel},
+		"registration_number": {model.RegistrationNumber},
+		"object_owner":        {model.ObjectOwner},
 	}
 	URL := app.Config.TrackingServerURL + "add_device?" + p.Encode()
 
-	fmt.Println(URL)
+	res, err := http.Get(URL)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var data interface{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("Results: %v\n", data)
+
+	return data, nil
+}
+
+// TrackingServerEditDevices - Edit user devices from the tracking server
+func (s *TrackingServerService) TrackingServerEditDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error) {
+
+	p := url.Values{
+		"user_api_hash":       {userhash},
+		"lang":                {lang},
+		"name":                {model.Name},
+		"imei":                {model.Imei},
+		"icon_id":             {model.IconID},
+		"fuel_measurement_id": {model.FuelMeasurementID},
+		"tail_length":         {model.TailLength},
+		"min_fuel_thefts":     {model.MinFuelThefts},
+		"min_moving_speed":    {model.MinFuelThefts},
+		"min_fuel_fillings":   {model.MinFuelFillings},
+		"plate_number":        {model.PlateNumber},
+		"vin":                 {model.Vin},
+		"device_model":        {model.DeviceModel},
+		"registration_number": {model.RegistrationNumber},
+		"object_owner":        {model.ObjectOwner},
+	}
+	URL := app.Config.TrackingServerURL + "edit_device?" + p.Encode()
 
 	res, err := http.Get(URL)
 	if err != nil {

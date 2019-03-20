@@ -14,6 +14,7 @@ type (
 		TrackingServerLogin(rs app.RequestScope, model *models.TrackingServerAuth) (interface{}, error)
 		TrackingServerUserDevices(rs app.RequestScope, model *models.UserData) (interface{}, error)
 		TrackingServerAddDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error)
+		TrackingServerEditDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error)
 	}
 
 	// trackingServerResource defines the handlers for the CRUD APIs.
@@ -28,6 +29,7 @@ func ServeTrackingServerResource(rg *routing.RouteGroup, service trackingServerS
 	rg.Post("/trackingserverlogin", r.trackingServerLogin)
 	rg.Post("/trackingservergetdevices", r.trackingservergetuserdevices)
 	rg.Post("/trackingserveradddevices", r.trackingserveradduserdevices)
+	rg.Put("/trackingservereditdevices", r.trackingserveredituserdevices)
 }
 
 func (r *trackingServerResource) trackingServerLogin(c *routing.Context) error {
@@ -79,6 +81,35 @@ func (r *trackingServerResource) trackingserveradduserdevices(c *routing.Context
 	}
 
 	response, err := r.service.TrackingServerAddDevices(app.GetRequestScope(c), &model.DeviceData, u.Lang, u.UserHash)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(response)
+}
+
+// trackingserveredituserdevices ...
+func (r *trackingServerResource) trackingserveredituserdevices(c *routing.Context) error {
+	var model models.AddDevice
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	fmt.Println(model)
+
+	// valid device structurs
+	var u = model.UserData
+	if err := u.ValidateUserData(); err != nil {
+		return err
+	}
+
+	// valid device structurs
+	var v = model.DeviceData
+	if err := v.ValidateAddDevices(); err != nil {
+		return err
+	}
+
+	response, err := r.service.TrackingServerEditDevices(app.GetRequestScope(c), &model.DeviceData, u.Lang, u.UserHash)
 	if err != nil {
 		return err
 	}

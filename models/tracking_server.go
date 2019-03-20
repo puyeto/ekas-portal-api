@@ -24,15 +24,19 @@ type AddDevice struct {
 
 // AddDeviceDetails ...
 type AddDeviceDetails struct {
-	Name              string `json:"name"`
-	Imei              string `json:"imei"`
-	IconID            string `json:"icon_id"`
-	FuelMeasurementID string `json:"fuel_measurement_id"`
-	TailLength        string `json:"tail_length"`
-	MinMovingSpeed    string `json:"min_moving_speed"`
-	MinFuelFillings   string `json:"min_fuel_fillings"`
-	MinFuelThefts     string `json:"min_fuel_thefts"`
-	PlateNumber       string `json:"plate_number"`
+	Name               string `json:"name"`
+	Imei               string `json:"imei"`
+	IconID             string `json:"icon_id"`
+	FuelMeasurementID  string `json:"fuel_measurement_id"`
+	TailLength         string `json:"tail_length"`
+	MinMovingSpeed     string `json:"min_moving_speed"`
+	MinFuelFillings    string `json:"min_fuel_fillings"`
+	MinFuelThefts      string `json:"min_fuel_thefts"`
+	PlateNumber        string `json:"plate_number"`
+	Vin                string `json:"vin"`
+	DeviceModel        string `json:"device_model"`
+	RegistrationNumber string `json:"registration_number"`
+	ObjectOwner        string `json:"object_owner"`
 }
 
 // ValidateAddDevices validates addition of devices fields.
