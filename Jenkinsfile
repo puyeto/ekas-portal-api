@@ -4,18 +4,12 @@ pipeline {
     }
     agent any
         stages {
-            stage('Initialize') {
-                steps {
-                    def dockerHome = tool 'myDocker'
-                    env.PATH = "${dockerHome}/bin:${env.PATH}"
-                }
-            }
             stage('Build') {
                 parallel {
                     stage('Express Image') {
                         steps {
                             sh 'docker build -f Dockerfile \
-                            -t ekas-portal-api-dev:trunk .'
+                            -t ekas-portal-api-dev:latest .'
                         }
                     }                    
                 }
