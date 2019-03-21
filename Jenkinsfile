@@ -31,9 +31,9 @@ pipeline {
                 steps {
                     retry(3) {
                         timeout(time:10, unit: 'MINUTES') {
-                            sh 'docker tag ekas-portal-api-dev:latest <DockerHub Username>/ekas-portal-api-prod:latest'
-                            sh 'docker push <DockerHub Username>/ekas-portal-api-prod:latest'
-                            sh 'docker save <DockerHub Username>/ekas-portal-api-prod:latest | gzip > ekas-portal-api-prod-golden.tar.gz'
+                            sh 'docker tag ekas-portal-api-dev:latest omollo/ekas-portal-api-prod:latest'
+                            sh 'docker push omollo/ekas-portal-api-prod:latest'
+                            sh 'docker save omollo/ekas-portal-api-prod:latest | gzip > ekas-portal-api-prod-golden.tar.gz'
                         }
                     }
                     post {
