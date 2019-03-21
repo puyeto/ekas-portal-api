@@ -32,6 +32,7 @@ pipeline {
                     retry(3) {
                         timeout(time:10, unit: 'MINUTES') {
                             sh 'docker tag ekas-portal-api-dev:latest omollo/ekas-portal-api-prod:latest'
+                            sh docker login -u "omollo" -p "safcom2012" docker.io
                             sh 'docker push omollo/ekas-portal-api-prod:latest'
                             sh 'docker save omollo/ekas-portal-api-prod:latest | gzip > ekas-portal-api-prod-golden.tar.gz'
                         }
