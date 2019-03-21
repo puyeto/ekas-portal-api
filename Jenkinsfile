@@ -1,5 +1,7 @@
 pipeline {
-    agent { dockerfile true }
+    agent { 
+        label "docker"
+     }
     environment {
       DOCKER = credentials('docker_hub')
     }
