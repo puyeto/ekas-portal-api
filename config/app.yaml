@@ -3,6 +3,7 @@
 # dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
 dsn: "root:@/ekas_portal?parseTime=true"
 tracking_server_url: "http://tracking.ekastech.com/api/"
+server_port: "8081"
 
 # These are secret keys used for JWT signing and verification.
 # Make sure you override these keys in production by the following environment variables:
