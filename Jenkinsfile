@@ -25,8 +25,40 @@ pipeline {
                 }
             }
             stage('Deploy') {
+                when {
+                    branch 'master'  //only run these steps on the master branch
+                }
                 steps {
-                    echo 'This is the Deploy Stage'
+                    retry(3) {
+                        timeout(time:10, unit: 'MINUTES') {
+                            sh 'docker tag ekas-portal-api-dev:latest <DockerHub Username>/ekas-portal-api-prod:latest'
+                            sh 'docker push <DockerHub Username>/ekas-portal-api-prod:latest'
+                            sh 'docker save <DockerHub Username>/ekas-portal-api-prod:latest | gzip > ekas-portal-api-prod-golden.tar.gz'
+                        }
+                    }
+                    post {
+                        failure {
+                            sh 'docker stop ekas-portal-api-dev'
+                            sh 'docker system prune -f'
+                            deleteDir()
+                        }
+                    }
+                }
+            }
+
+            stage('REPORTS') {
+                steps {
+                    junit 'reports.xml'
+                    archiveArtifacts(artifacts: 'reports.xml', allowEmptyArchive: true)
+                    archiveArtifacts(artifacts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
+                }
+            }
+
+            stage('CLEAN-UP') {
+                steps {
+                    sh 'docker stop ekas-portal-api-dev'
+                    sh 'docker system prune -f'
+                    deleteDir()
                 }
             }
         }
