@@ -8,16 +8,10 @@ pipeline {
                 parallel {
                     stage('Express Image') {
                         steps {
-                            sh 'docker build -f express-image/Dockerfile \
-                            -t ekas-portal-apiapp-dev:trunk .'
+                            sh 'docker build -f Dockerfile \
+                            -t ekas-portal-api-dev:trunk .'
                         }
-                    }
-                    stage('Test-Unit Image') {
-                        steps {
-                            sh 'docker build -f test-image/Dockerfile \
-                            -t test-image:latest .'
-                        }
-                    }
+                    }                    
                 }
                 post {
                     failure {
