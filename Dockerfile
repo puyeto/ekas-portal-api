@@ -1,5 +1,5 @@
 # FROM golang:latest
-FROM golang:1.10.3
+FROM golang:1.10.3 as builder
 
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
@@ -12,6 +12,8 @@ RUN go get github.com/ekas-portal-api
 
 # Go install the project
 RUN go install github.com/ekas-portal-api
+
+FROM alpine:latest
 
 RUN mkdir -p /go/config
 ADD ./config/app.yaml /go/config
