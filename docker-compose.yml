@@ -1,7 +1,7 @@
 version: "3"
 services:
   api:
-    image: ekas-portal-api-dev
+    image: omollo/ekas-portal-api-prod
     deploy:
       replicas: 3
       resources:

@@ -9,7 +9,7 @@ pipeline {
                     stage('Express Image') {
                         steps {
                             sh 'docker build -f Dockerfile \
-                            -t ekas-portal-api-dev:latest .'
+                            -t omollo/ekas-portal-api-prod:latest .'
                         }
                     }                    
                 }
@@ -29,7 +29,7 @@ pipeline {
                     branch 'master'  //only run these steps on the master branch
                 }
                 steps {
-                    sh 'docker tag ekas-portal-api-dev:latest omollo/ekas-portal-api-prod:latest'
+                    // sh 'docker tag ekas-portal-api-dev:latest omollo/ekas-portal-api-prod:latest'
                     sh 'docker login -u "omollo" -p "safcom2012" docker.io'
                     sh 'docker push omollo/ekas-portal-api-prod:latest'
                 }
@@ -42,7 +42,7 @@ pipeline {
                 steps {
                     // sh 'docker run -d -p 8081:8081 --rm --name ekas-portal ekas-portal-api-dev'
                     sh 'docker swarm init --advertise-addr 159.89.134.228'
-                    sh 'docker stack deploy -c docker-compose.yml ekas-portal-api-dev'
+                    sh 'docker stack deploy -c docker-compose.yml ekas-portal-api-prod'
                 }
 
             }
