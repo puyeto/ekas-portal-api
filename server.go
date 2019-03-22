@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/ekas-portal-api/apis"
@@ -32,7 +33,9 @@ func main() {
 	logger := logrus.New()
 
 	// connect to the database
-	db, err := dbx.MustOpen("mysql", app.Config.DSN)
+	dns := getDNS()
+
+	db, err := dbx.MustOpen("mysql", dns)
 	if err != nil {
 		panic(err)
 	}
@@ -45,6 +48,14 @@ func main() {
 	address := fmt.Sprintf(":%v", app.Config.ServerPort)
 	logger.Infof("server %v is started at %v\n", app.Version, address)
 	panic(http.ListenAndServe(address, nil))
+}
+
+func getDNS() string {
+	if os.Getenv("GO_ENV") == "production" {
+		return app.Config.ServerDSN
+	}
+
+	return app.Config.LocalDSN
 }
 
 func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
