@@ -13,6 +13,10 @@ RUN go get github.com/ekas-portal-api
 # Go install the project
 RUN go install github.com/ekas-portal-api
 
+RUN mkdir -p /go/config
+ADD ./config/app.yaml /go/config
+ADD ./config/errors.yaml /go/config
+
 # Set the working environment.
 ENV GO_ENV production
 
