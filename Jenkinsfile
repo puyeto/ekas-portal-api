@@ -62,7 +62,7 @@ pipeline {
             stage('CLEAN-UP') {
                 steps {
                     // sh 'docker stop ekas-portal-api-dev'
-                    // sh 'docker system prune -f'
+                    sh 'docker system prune -f'
                     deleteDir()
                 }
             }
