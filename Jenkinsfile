@@ -39,11 +39,14 @@ pipeline {
                 when {
                     branch 'master'  //only run these steps on the master branch
                 }
+                environment {
+                    JENKINS_LOGIN = credentials('docker_hub')
+                }
                 steps {
-                    print(env.DOCKER)
+                    echo "LOGIN=${JENKINS_LOGIN}"
                     sh 'docker login -u "omollo" -p "safcom2012" docker.io'
                     sh 'docker pull omollo/ekas-portal-api-prod:latest'
-                    sh 'docker run -d -p 8081:8081 ekas-portal-api-prod'
+                    sh 'docker run -d -p 8081:8081 omollo/ekas-portal-api-prod'
                 }
 
             }
