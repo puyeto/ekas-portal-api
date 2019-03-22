@@ -44,9 +44,7 @@ pipeline {
                 }
                 steps {
                     echo "LOGIN=${JENKINS_LOGIN}"
-                    sh 'docker login -u "omollo" -p "safcom2012" docker.io'
-                    sh 'docker pull omollo/ekas-portal-api-prod:latest'
-                    sh 'docker run -d -p 8081:8081 omollo/ekas-portal-api-prod'
+                    sh 'docker run -d -p 8081:8081 -rm -name ekas-portal ekas-portal-api-dev'
                 }
 
             }
@@ -55,7 +53,7 @@ pipeline {
             //     steps {
             //         junit 'reports.xml'
             //         archiveArtifacts(artifacts: 'reports.xml', allowEmptyArchive: true)
-            //         // archiveArtifacts(artifacts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
+            //         // archiveArtifacts(artifactopts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
             //     }
             // }
 
