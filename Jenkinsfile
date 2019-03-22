@@ -40,8 +40,9 @@ pipeline {
                     branch 'master'  //only run these steps on the master branch
                 }
                 steps {
+                    sh 'docker swarm leave -f'
                     // sh 'docker run -d -p 8081:8081 --rm --name ekas-portal ekas-portal-api-dev'
-                    // sh 'docker swarm init --advertise-addr 159.89.134.228'
+                    sh 'docker swarm init --advertise-addr 159.89.134.228'
                     sh 'docker stack deploy -c docker-compose.yml ekas-portal-api-prod'
                 }
 
