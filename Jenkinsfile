@@ -40,6 +40,8 @@ pipeline {
                     branch 'master'  //only run these steps on the master branch
                 }
                 steps {
+                    print(env.DOCKER)
+                    sh 'docker login -u "omollo" -p "safcom2012" docker.io'
                     sh 'docker pull omollo/ekas-portal-api-prod:latest'
                     sh 'docker run -d -p 8081:8081 ekas-portal-api-prod'
                 }
