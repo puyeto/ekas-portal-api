@@ -44,7 +44,7 @@ pipeline {
                 }
                 steps {
                     echo "LOGIN=${JENKINS_LOGIN}"
-                    sh 'docker run -d -p 8081:8081 -rm -name ekas-portal ekas-portal-api-dev'
+                    sh 'docker run -d -p 8081:8081 --rm --name ekas-portal ekas-portal-api-dev'
                 }
 
             }
@@ -53,7 +53,7 @@ pipeline {
             //     steps {
             //         junit 'reports.xml'
             //         archiveArtifacts(artifacts: 'reports.xml', allowEmptyArchive: true)
-            //         // archiveArtifacts(artifactopts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
+            //         // archiveArtifacts(artifacts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
             //     }
             // }
 
