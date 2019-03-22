@@ -29,29 +29,28 @@ pipeline {
                     branch 'master'  //only run these steps on the master branch
                 }
                 steps {
-                    retry(3) {
-                        timeout(time:10, unit: 'MINUTES') {
-                            sh 'docker tag ekas-portal-api-dev:latest omollo/ekas-portal-api-prod:latest'
-                            sh 'docker login -u "omollo" -p "safcom2012" docker.io'
-                            sh 'docker push omollo/ekas-portal-api-prod:latest'
-                            // sh 'docker save omollo/ekas-portal-api-prod:latest | gzip > ekas-portal-api-prod-golden.tar.gz'
-                        }
-                    }
-                    post {
-                        failure {
-                            sh 'docker stop ekas-portal-api-dev'
-                            sh 'docker system prune -f'
-                            deleteDir()
-                        }
-                    }
+                    sh 'docker tag ekas-portal-api-dev:latest omollo/ekas-portal-api-prod:latest'
+                    sh 'docker login -u "omollo" -p "safcom2012" docker.io'
+                    sh 'docker push omollo/ekas-portal-api-prod:latest'
                 }
+            }
+
+            stage('Execute') {
+                when {
+                    branch 'master'  //only run these steps on the master branch
+                }
+                steps {
+                    sh 'docker pull omollo/ekas-portal-api-prod:latest'
+                    sh 'docker run -d -p 8081:8081 ekas-portal-api-prod'
+                }
+
             }
 
             stage('REPORTS') {
                 steps {
                     junit 'reports.xml'
                     archiveArtifacts(artifacts: 'reports.xml', allowEmptyArchive: true)
-                    archiveArtifacts(artifacts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
+                    // archiveArtifacts(artifacts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
                 }
             }
 
