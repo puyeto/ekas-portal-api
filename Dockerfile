@@ -12,7 +12,7 @@ RUN go get github.com/ekas-portal-api
 
 # Go install the project
 # RUN go install github.com/ekas-portal-api
-RUN go build -a -installsuffix .
+RUN go build github.com/ekas-portal-api
 
 FROM alpine:latest
 WORKDIR /app/
