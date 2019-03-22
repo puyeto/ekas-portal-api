@@ -51,13 +51,13 @@ pipeline {
 
             }
 
-            stage('REPORTS') {
-                steps {
-                    junit 'reports.xml'
-                    archiveArtifacts(artifacts: 'reports.xml', allowEmptyArchive: true)
-                    // archiveArtifacts(artifacts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
-                }
-            }
+            // stage('REPORTS') {
+            //     steps {
+            //         junit 'reports.xml'
+            //         archiveArtifacts(artifacts: 'reports.xml', allowEmptyArchive: true)
+            //         // archiveArtifacts(artifacts: 'ekas-portal-api-prod-golden.tar.gz', allowEmptyArchive: true)
+            //     }
+            // }
 
             stage('CLEAN-UP') {
                 steps {
