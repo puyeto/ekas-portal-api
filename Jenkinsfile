@@ -24,7 +24,7 @@ pipeline {
                     echo 'This is the Testing Stage'
                 }
             }
-            stage('Deploy') {
+            stage('DEPLOY') {
                 when {
                     branch 'master'  //only run these steps on the master branch
                 }
@@ -35,16 +35,14 @@ pipeline {
                 }
             }
 
-            stage('Execute') {
+            stage('PUBLISH') {
                 when {
                     branch 'master'  //only run these steps on the master branch
                 }
-                environment {
-                    JENKINS_LOGIN = credentials('docker_hub')
-                }
                 steps {
-                    echo "LOGIN=${JENKINS_LOGIN}"
-                    sh 'docker run -d -p 8081:8081 --rm --name ekas-portal ekas-portal-api-dev'
+                    // sh 'docker run -d -p 8081:8081 --rm --name ekas-portal ekas-portal-api-dev'
+                    sh 'docker swarm init'
+                    sh 'docker stack deploy -c docker-compose.yml ekas-portal-api-dev'
                 }
 
             }
@@ -60,7 +58,7 @@ pipeline {
             stage('CLEAN-UP') {
                 steps {
                     // sh 'docker stop ekas-portal-api-dev'
-                    // sh 'docker system prune -f'
+                    sh 'docker system prune -f'
                     deleteDir()
                 }
             }

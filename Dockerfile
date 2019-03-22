@@ -16,7 +16,7 @@ RUN go install github.com/ekas-portal-api
 FROM alpine:latest
 
 RUN mkdir -p /go/app
-WORKDIR /go/app/
+# WORKDIR /go/app/
 COPY --from=builder /go/bin/ekas-portal-api /go/app/ekas-portal-api
 
 RUN mkdir -p /go/config
@@ -27,7 +27,7 @@ COPY --from=builder /go/src/github.com/ekas-portal-api/config/errors.yaml /go/co
 ENV GO_ENV production
 
 # Run the ekas-portal-api command by default when the container starts.
-ENTRYPOINT ./ekas-portal-api
+ENTRYPOINT /go/app/ekas-portal-api
 
 #Expose the port specific to the ekas API Application.
 EXPOSE 8081
