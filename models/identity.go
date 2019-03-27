@@ -12,6 +12,7 @@ type Identity interface {
 type UserData struct {
 	Lang     string `json:"lang"`
 	UserHash string `json:"user_api_hash"`
+	DeviceID string `json:"device_id,omitempty"`
 }
 
 // ValidateUserData validates user data fields.

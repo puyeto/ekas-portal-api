@@ -95,8 +95,6 @@ func (r *trackingServerResource) trackingserveredituserdevices(c *routing.Contex
 		return err
 	}
 
-	fmt.Println(model)
-
 	// valid device structurs
 	var u = model.UserData
 	if err := u.ValidateUserData(); err != nil {
