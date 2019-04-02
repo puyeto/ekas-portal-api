@@ -5,9 +5,10 @@ type Vehicle struct {
 	VehicleDetails  TrackingVehicleDetails `json:"dehicle_details,omitempty"`
 	DeviceDetails   DeviceDetails          `json:"device_detail"`
 	GovernorDetails GovernorDetails        `json:"governor_details"`
-	UserID          string                 `json:"user_id,omitempty"`
+	UserID          uint64                 `json:"user_id,omitempty"`
 	UserHash        string                 `json:"user_hash,omitempty"`
 	SimNO           string                 `json:"sim_no,omitempty"`
+	SimIMEI         string                 `json:"sim_imei,omitempty"`
 	VehicleID       uint64                 `json:"vehicle_id,omitempty"`
 	OwnerID         uint64                 `json:"owner_id,omitempty"`
 	FitterID        uint64                 `json:"fitter_id,omitempty"`
@@ -16,13 +17,13 @@ type Vehicle struct {
 // TrackingVehicleDetails ...
 type TrackingVehicleDetails struct{}
 
-// VehicleConfDetails ...
+// VehicleConfigDetails ...
 type VehicleConfigDetails struct {
 	ConfigID  uint64 `json:"conf_id"`
 	VehicleID uint64 `json:"vehicle_id,omitempty"`
 	OwnerID   uint64 `json:"owner_id,omitempty"`
 	FitterID  uint64 `json:"fitter_id,omitempty"`
-	Data      string `json:"sim_no,omitempty"`
+	Data      string `json:"vehicle_data,omitempty"`
 	CreatedOn string `json:"created_on,omitempty"`
 }
 
