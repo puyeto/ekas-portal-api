@@ -7,6 +7,7 @@ import (
 
 // vehicleDAO specifies the interface of the vehicle DAO needed by VehicleService.
 type vehicleDAO interface {
+	GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
 	// Create saves a new vehicle in the storage.
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) error
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
@@ -22,6 +23,11 @@ type VehicleService struct {
 // NewVehicleService creates a new VehicleService with the given vehicle DAO.
 func NewVehicleService(dao vehicleDAO) *VehicleService {
 	return &VehicleService{dao}
+}
+
+// GetVehicleByStrID ...
+func (s *VehicleService) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
+	return s.dao.GetVehicleByStrID(rs, strid)
 }
 
 // Create creates a new vehicle.

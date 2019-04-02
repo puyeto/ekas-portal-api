@@ -41,7 +41,7 @@ func NewFitter(m models.DeviceDetails) *models.FitterDetails {
 func NewVehicle(m models.DeviceDetails) *models.VehicleDetails {
 	vd := &models.VehicleDetails{
 		VehicleID:       app.GenerateNewID(),
-		VehicleStringID: strings.Replace(m.RegistrationNO, " ", "", -1),
+		VehicleStringID: strings.ToLower(strings.Replace(m.RegistrationNO, " ", "", -1)),
 		VehicleRegNo:    m.RegistrationNO,
 		ChassisNo:       m.ChasisNO,
 		MakeType:        m.MakeType,

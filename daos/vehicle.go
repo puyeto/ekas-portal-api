@@ -3,6 +3,7 @@ package daos
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -15,6 +16,15 @@ type VehicleDAO struct{}
 // NewVehicleDAO creates a new VehicleDAO
 func NewVehicleDAO() *VehicleDAO {
 	return &VehicleDAO{}
+}
+
+// GetVehicleByStrID ...
+func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
+	var vdetails models.VehicleConfigDetails
+	q := rs.Tx().NewQuery("SELECT conf_id, vehicle_id, owner_id, fitter_id, data FROM vehicle_configuration WHERE vehicle_string_id='" + strid + "' LIMIT 1")
+	err := q.Row(&vdetails.ConfigID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.Data)
+
+	return &vdetails, err
 }
 
 // CreateVehicle saves a new vehicle record in the database.
@@ -106,10 +116,11 @@ func (dao *VehicleDAO) FitterExists(rs app.RequestScope, id uint64) (int, error)
 func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint64, fitterid uint64, vehicleid uint64) error {
 	a, _ := json.Marshal(cd)
 	_, err := rs.Tx().Insert("vehicle_configuration", dbx.Params{
-		"conf_id":    app.GenerateNewID(),
-		"vehicle_id": vehicleid,
-		"owner_id":   ownerid,
-		"fitter_id":  fitterid,
-		"data":       string(a)}).Execute()
+		"conf_id":           app.GenerateNewID(),
+		"vehicle_id":        vehicleid,
+		"owner_id":          ownerid,
+		"fitter_id":         fitterid,
+		"vehicle_string_id": strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1)),
+		"data":              string(a)}).Execute()
 	return err
 }
