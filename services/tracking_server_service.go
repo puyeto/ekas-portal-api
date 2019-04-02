@@ -64,6 +64,7 @@ func (s *TrackingServerServiceService) TrackingServerAddServices(rs app.RequestS
 	p := url.Values{
 		"user_api_hash":          {userhash},
 		"lang":                   {lang},
+		"id":                     {"1"},
 		"device_id":              {deviceid},
 		"name":                   {model.Name},
 		"expiration_by":          {model.ExpirationBy},
@@ -75,14 +76,19 @@ func (s *TrackingServerServiceService) TrackingServerAddServices(rs app.RequestS
 		"mobile_phone":           {model.MobilePhone},
 	}
 
-	URL := app.Config.TrackingServerURL + "add_service?" + p.Encode()
+	URL := app.Config.TrackingServerURL + "edit_service?" + p.Encode()
 
-	res, err := http.Get(URL)
+	resp, err := http.Get(URL)
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	// if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+	// 	b, _ := ioutil.ReadAll(resp.Body)
+	// 	return nil, fmt.Errorf("[%d %s]%s", resp.StatusCode, resp.Status, string(b))
+	// }
+
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

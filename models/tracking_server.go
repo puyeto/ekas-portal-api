@@ -61,12 +61,12 @@ type AddServices struct {
 // AddTrackingServiceDetails ...
 type AddTrackingServiceDetails struct {
 	Name                 string `json:"name"`
-	DeviceID             int32  `json:"device_id"`
+	DeviceID             string `json:"device_id"`
 	ExpirationBy         string `json:"expiration_by"`
 	Interval             string `json:"interval"`
 	LastService          string `json:"last_service"`
 	TriggerEventLeft     string `json:"trigger_event_left"`
-	RenewAfterExpiration int8   `json:"renew_after_expiration"`
+	RenewAfterExpiration string `json:"renew_after_expiration"`
 	Email                string `json:"email"`
 	MobilePhone          string `json:"mobile_phone"`
 }
@@ -79,7 +79,7 @@ func (m AddTrackingServiceDetails) ValidateAddTrackingServiceDetails() error {
 		validation.Field(&m.ExpirationBy, validation.Required),
 		validation.Field(&m.LastService, validation.Required),
 		validation.Field(&m.TriggerEventLeft, validation.Required),
-		validation.Field(&m.RenewAfterExpiration, validation.NotNil),
+		validation.Field(&m.RenewAfterExpiration, validation.Required),
 		validation.Field(&m.Email, validation.Required),
 		validation.Field(&m.MobilePhone, validation.Required),
 	)

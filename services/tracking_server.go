@@ -104,7 +104,10 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 
 // TrackingServerAddDevices - add user devices from  the tracking server
 func (s *TrackingServerService) TrackingServerAddDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error) {
+	return AddDevicesTrackingServer(rs, model, lang, userhash)
+}
 
+func AddDevicesTrackingServer(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error) {
 	p := url.Values{
 		"user_api_hash":       {userhash},
 		"lang":                {lang},
@@ -142,6 +145,7 @@ func (s *TrackingServerService) TrackingServerAddDevices(rs app.RequestScope, mo
 	fmt.Printf("Results: %v\n", data)
 
 	return data, nil
+
 }
 
 // TrackingServerEditDevices - Edit user devices from the tracking server
