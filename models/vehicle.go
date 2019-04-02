@@ -9,6 +9,9 @@ type Vehicle struct {
 	UserHash        string                 `json:"user_hash,omitempty"`
 	SimNO           string                 `json:"sim_no,omitempty"`
 	SimIMEI         string                 `json:"sim_imei,omitempty"`
+	VehicleID       uint64                 `json:"vehicle_id,omitempty"`
+	OwnerID         uint64                 `json:"owner_id,omitempty"`
+	FitterID        uint64                 `json:"fitter_id,omitempty"`
 }
 
 // TrackingVehicleDetails ...

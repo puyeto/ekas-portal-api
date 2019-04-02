@@ -40,7 +40,7 @@ func (dao *VehicleDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetai
 // VehicleExists ...
 func (dao *VehicleDAO) VehicleExists(rs app.RequestScope, id uint64) (int, error) {
 	var exists int
-	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_string_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
 	return exists, err
 }
