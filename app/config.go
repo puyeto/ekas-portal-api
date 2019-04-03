@@ -65,8 +65,8 @@ func LoadConfig(configPaths ...string) error {
 // GenerateNewID Generate new id using
 // Note: this is base16, could shorten by encoding as base62 string
 // fmt.Printf("github.com/sony/sonyflake:   %x\n", id)
-func GenerateNewID() uint64 {
+func GenerateNewID() int32 {
 	flake := sonyflake.NewSonyflake(sonyflake.Settings{})
 	id, _ := flake.NextID()
-	return id
+	return int32(id)
 }

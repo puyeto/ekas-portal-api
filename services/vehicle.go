@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 )
@@ -13,6 +15,7 @@ type vehicleDAO interface {
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
 	CreateFitter(rs app.RequestScope, fd *models.FitterDetails) error
 	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint64, fitterid uint64, vehicleid uint64) error
+	UpdateConfigurationStatus(rs app.RequestScope, configid uint64, status int8) error
 }
 
 // VehicleService provides services related with vehicles.
@@ -37,24 +40,45 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	// }
 
 	// Add vehicle owner
-	vm := NewOwner(model.DeviceDetails)
+	var ownerid = app.GenerateNewID()
+	if model.OwnerID > 0 {
+		ownerid = model.OwnerID
+	}
+	vm := NewOwner(model.DeviceDetails, ownerid)
 	if err := s.dao.CreateVehicleOwner(rs, vm); err != nil {
 		return 0, err
 	}
 
 	// Add Fitter Center / Fitter
-	fd := NewFitter(model.DeviceDetails)
+	var fid = app.GenerateNewID()
+	if model.FitterID > 0 {
+		fid = model.FitterID
+	}
+	fd := NewFitter(model.DeviceDetails, fid)
 	if err := s.dao.CreateFitter(rs, fd); err != nil {
 		return 0, err
 	}
 
 	// Add Vehicle
-	vd := NewVehicle(model.DeviceDetails)
+	fmt.Println(model.VehicleID)
+	var vid = app.GenerateNewID()
+	if model.VehicleID > 0 {
+		vid = model.VehicleID
+	}
+	fmt.Println(vid)
+	vd := NewVehicle(model.DeviceDetails, vid)
 	if err := s.dao.CreateVehicle(rs, vd); err != nil {
 		return 0, err
 	}
 
 	// Add Configuartion Details
+	fmt.Println(model.ConfigID)
+	if model.ConfigID > 0 {
+		// update configuration status
+		if err := s.dao.UpdateConfigurationStatus(rs, model.ConfigID, 0); err != nil {
+			return 0, err
+		}
+	}
 	if err := s.dao.CreateConfiguration(rs, model, vm.OwnerID, fd.FitterID, vd.VehicleID); err != nil {
 		return 0, err
 	}

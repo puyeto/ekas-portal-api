@@ -2,6 +2,7 @@ package daos
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -21,11 +22,15 @@ func NewVehicleDAO() *VehicleDAO {
 // GetVehicleByStrID ...
 func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	q := rs.Tx().NewQuery("SELECT conf_id, vehicle_id, owner_id, fitter_id, data FROM vehicle_configuration WHERE vehicle_string_id='" + strid + "' LIMIT 1")
+	query := "SELECT conf_id, vehicle_id, owner_id, fitter_id, data FROM vehicle_configuration "
+	query += " WHERE status=1 AND vehicle_string_id='" + strid + "' LIMIT 1"
+	q := rs.Tx().NewQuery(query)
 	err := q.Row(&vdetails.ConfigID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.Data)
-
+	fmt.Println(vdetails)
 	return &vdetails, err
 }
+
+// ----------------------------Add / Update Vehicle------------------------------------
 
 // CreateVehicle saves a new vehicle record in the database.
 func (dao *VehicleDAO) CreateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
@@ -43,7 +48,7 @@ func (dao *VehicleDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetai
 		"vehicle_reg_no":    v.VehicleRegNo,
 		"chassis_no":        v.ChassisNo,
 		"make_type":         v.MakeType},
-		dbx.HashExp{"vehicle_string_id": v.VehicleID}).Execute()
+		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute()
 	return err
 }
 
@@ -55,13 +60,14 @@ func (dao *VehicleDAO) VehicleExists(rs app.RequestScope, id uint64) (int, error
 	return exists, err
 }
 
+// ------------------------Add / Update Owner-----------------------------------
+
 // CreateVehicleOwner Add vehicle owner
 func (dao *VehicleDAO) CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error {
 	if exists, _ := dao.VehicleOwnerExists(rs, vo.OwnerID); exists == 1 {
 		return dao.UpdateVehicleOwners(rs, vo)
 	}
 	return rs.Tx().Model(vo).Insert("OwnerID", "OwnerIDNo", "OwnerName", "OwnerEmail", "OwnerPhone")
-
 }
 
 // UpdateVehicleOwners ....
@@ -74,13 +80,15 @@ func (dao *VehicleDAO) UpdateVehicleOwners(rs app.RequestScope, vo *models.Vehic
 	return err
 }
 
-// VehicleOwnerExists check if a driver owner exists
+// VehicleOwnerExists ...
 func (dao *VehicleDAO) VehicleOwnerExists(rs app.RequestScope, id uint64) (int, error) {
 	var exists int
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_owner WHERE owner_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
 	return exists, err
 }
+
+// ---------------------Add / Update Fitter--------------------------------------
 
 // CreateFitter Add Fitter
 func (dao *VehicleDAO) CreateFitter(rs app.RequestScope, fd *models.FitterDetails) error {
@@ -112,6 +120,8 @@ func (dao *VehicleDAO) FitterExists(rs app.RequestScope, id uint64) (int, error)
 	return exists, err
 }
 
+// ----------------------Add / update config data----------------------
+
 //CreateConfiguration Add configuartion details to db
 func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint64, fitterid uint64, vehicleid uint64) error {
 	a, _ := json.Marshal(cd)
@@ -122,5 +132,12 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 		"fitter_id":         fitterid,
 		"vehicle_string_id": strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1)),
 		"data":              string(a)}).Execute()
+	return err
+}
+
+func (dao *VehicleDAO) UpdateConfigurationStatus(rs app.RequestScope, configid uint64, status int8) error {
+	_, err := rs.Tx().Update("vehicle_configuration", dbx.Params{
+		"status": status},
+		dbx.HashExp{"conf_id": configid}).Execute()
 	return err
 }

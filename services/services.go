@@ -3,14 +3,13 @@ package services
 import (
 	"strings"
 
-	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 )
 
 // NewOwner ...
-func NewOwner(m models.DeviceDetails) *models.VehicleOwner {
+func NewOwner(m models.DeviceDetails, id uint64) *models.VehicleOwner {
 	vm := &models.VehicleOwner{
-		OwnerID:    app.GenerateNewID(),
+		OwnerID:    id,
 		OwnerIDNo:  m.OwnerID,
 		OwnerName:  m.OwnerName,
 		OwnerEmail: m.OwnerEmail,
@@ -21,9 +20,9 @@ func NewOwner(m models.DeviceDetails) *models.VehicleOwner {
 }
 
 // NewFitter
-func NewFitter(m models.DeviceDetails) *models.FitterDetails {
+func NewFitter(m models.DeviceDetails, id uint64) *models.FitterDetails {
 	fd := &models.FitterDetails{
-		FitterID:          app.GenerateNewID(),
+		FitterID:          id,
 		FitterIDNo:        m.AgentID,
 		FittingCenterName: m.FittingCenter,
 		FitterLocation:    m.AgentLocation,
@@ -38,9 +37,9 @@ func NewFitter(m models.DeviceDetails) *models.FitterDetails {
 }
 
 // NewVehicle
-func NewVehicle(m models.DeviceDetails) *models.VehicleDetails {
+func NewVehicle(m models.DeviceDetails, id uint64) *models.VehicleDetails {
 	vd := &models.VehicleDetails{
-		VehicleID:       app.GenerateNewID(),
+		VehicleID:       id,
 		VehicleStringID: strings.ToLower(strings.Replace(m.RegistrationNO, " ", "", -1)),
 		VehicleRegNo:    m.RegistrationNO,
 		ChassisNo:       m.ChasisNO,

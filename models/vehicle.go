@@ -12,6 +12,7 @@ type Vehicle struct {
 	VehicleID       uint64                 `json:"vehicle_id,omitempty"`
 	OwnerID         uint64                 `json:"owner_id,omitempty"`
 	FitterID        uint64                 `json:"fitter_id,omitempty"`
+	ConfigID        uint64                 `json:"conf_id,omitempty"`
 }
 
 // TrackingVehicleDetails ...
