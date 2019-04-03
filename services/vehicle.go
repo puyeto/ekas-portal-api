@@ -14,8 +14,8 @@ type vehicleDAO interface {
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) error
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
 	CreateFitter(rs app.RequestScope, fd *models.FitterDetails) error
-	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint64, fitterid uint64, vehicleid uint64) error
-	UpdateConfigurationStatus(rs app.RequestScope, configid uint64, status int8) error
+	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error
+	UpdateConfigurationStatus(rs app.RequestScope, configid uint32, status int8) error
 }
 
 // VehicleService provides services related with vehicles.

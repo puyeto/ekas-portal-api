@@ -5,14 +5,14 @@ type Vehicle struct {
 	VehicleDetails  TrackingVehicleDetails `json:"dehicle_details,omitempty"`
 	DeviceDetails   DeviceDetails          `json:"device_detail"`
 	GovernorDetails GovernorDetails        `json:"governor_details"`
-	UserID          uint64                 `json:"user_id,omitempty"`
+	UserID          uint32                 `json:"user_id,omitempty"`
 	UserHash        string                 `json:"user_hash,omitempty"`
 	SimNO           string                 `json:"sim_no,omitempty"`
 	SimIMEI         string                 `json:"sim_imei,omitempty"`
-	VehicleID       uint64                 `json:"vehicle_id,omitempty"`
-	OwnerID         uint64                 `json:"owner_id,omitempty"`
-	FitterID        uint64                 `json:"fitter_id,omitempty"`
-	ConfigID        uint64                 `json:"conf_id,omitempty"`
+	VehicleID       uint32                 `json:"vehicle_id,omitempty"`
+	OwnerID         uint32                 `json:"owner_id,omitempty"`
+	FitterID        uint32                 `json:"fitter_id,omitempty"`
+	ConfigID        uint32                 `json:"conf_id,omitempty"`
 }
 
 // TrackingVehicleDetails ...
@@ -20,10 +20,10 @@ type TrackingVehicleDetails struct{}
 
 // VehicleConfigDetails ...
 type VehicleConfigDetails struct {
-	ConfigID  uint64 `json:"conf_id"`
-	VehicleID uint64 `json:"vehicle_id,omitempty"`
-	OwnerID   uint64 `json:"owner_id,omitempty"`
-	FitterID  uint64 `json:"fitter_id,omitempty"`
+	ConfigID  uint32 `json:"conf_id"`
+	VehicleID uint32 `json:"vehicle_id,omitempty"`
+	OwnerID   uint32 `json:"owner_id,omitempty"`
+	FitterID  uint32 `json:"fitter_id,omitempty"`
 	Data      string `json:"vehicle_data,omitempty"`
 	CreatedOn string `json:"created_on,omitempty"`
 }
@@ -76,7 +76,7 @@ type GovernorDetails struct {
 
 // VehicleDetails ...
 type VehicleDetails struct {
-	VehicleID       uint64 `json:"vehicle_id" db:"pk,vehicle_id"`
+	VehicleID       uint32 `json:"vehicle_id" db:"pk,vehicle_id"`
 	VehicleStringID string `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
 	VehicleRegNo    string `json:"vehicle_reg_no" db:"vehicle_reg_no"`
 	ChassisNo       string `json:"chassis_no" db:"chassis_no"`
@@ -85,7 +85,7 @@ type VehicleDetails struct {
 
 // VehicleOwner ...
 type VehicleOwner struct {
-	OwnerID    uint64 `json:"owner_id" db:"pk,owner_id"`
+	OwnerID    uint32 `json:"owner_id" db:"pk,owner_id"`
 	OwnerIDNo  string `json:"owner_id_no" db:"owner_id_no"`
 	OwnerName  string `json:"owner_name" db:"owner_name"`
 	OwnerEmail string `json:"owner_email" db:"owner_email"`
@@ -94,7 +94,7 @@ type VehicleOwner struct {
 
 // FitterDetails ...
 type FitterDetails struct {
-	FitterID          uint64 `json:"fitting_id" db:"pk,fitting_id"`
+	FitterID          uint32 `json:"fitting_id" db:"pk,fitting_id"`
 	FitterIDNo        string `json:"fitting_id_no" db:"fitting_id_no"`
 	FittingCenterName string `json:"fitting_center_name" db:"fitting_center_name"`
 	FitterLocation    string `json:"fitter_location" db:"fitter_location"`

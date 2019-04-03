@@ -53,7 +53,7 @@ func (dao *VehicleDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetai
 }
 
 // VehicleExists ...
-func (dao *VehicleDAO) VehicleExists(rs app.RequestScope, id uint64) (int, error) {
+func (dao *VehicleDAO) VehicleExists(rs app.RequestScope, id uint32) (int, error) {
 	var exists int
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
@@ -81,7 +81,7 @@ func (dao *VehicleDAO) UpdateVehicleOwners(rs app.RequestScope, vo *models.Vehic
 }
 
 // VehicleOwnerExists ...
-func (dao *VehicleDAO) VehicleOwnerExists(rs app.RequestScope, id uint64) (int, error) {
+func (dao *VehicleDAO) VehicleOwnerExists(rs app.RequestScope, id uint32) (int, error) {
 	var exists int
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_owner WHERE owner_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
@@ -113,7 +113,7 @@ func (dao *VehicleDAO) UpdateFitter(rs app.RequestScope, fd *models.FitterDetail
 }
 
 // FitterExists check if fitter exists
-func (dao *VehicleDAO) FitterExists(rs app.RequestScope, id uint64) (int, error) {
+func (dao *VehicleDAO) FitterExists(rs app.RequestScope, id uint32) (int, error) {
 	var exists int
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM fitter_details WHERE fitting_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
@@ -123,7 +123,7 @@ func (dao *VehicleDAO) FitterExists(rs app.RequestScope, id uint64) (int, error)
 // ----------------------Add / update config data----------------------
 
 //CreateConfiguration Add configuartion details to db
-func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint64, fitterid uint64, vehicleid uint64) error {
+func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error {
 	a, _ := json.Marshal(cd)
 	_, err := rs.Tx().Insert("vehicle_configuration", dbx.Params{
 		"conf_id":           app.GenerateNewID(),
@@ -135,7 +135,7 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 	return err
 }
 
-func (dao *VehicleDAO) UpdateConfigurationStatus(rs app.RequestScope, configid uint64, status int8) error {
+func (dao *VehicleDAO) UpdateConfigurationStatus(rs app.RequestScope, configid uint32, status int8) error {
 	_, err := rs.Tx().Update("vehicle_configuration", dbx.Params{
 		"status": status},
 		dbx.HashExp{"conf_id": configid}).Execute()

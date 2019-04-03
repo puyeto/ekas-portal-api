@@ -14,9 +14,9 @@ import (
 // trackingServerDAO specifies the interface of the trackingServer DAO needed by TrackingServerService.
 type trackingServerDAO interface {
 	// Login to tracking server.
-	SaveTrackingServerLoginDetails(rs app.RequestScope, id uint64, email string, hash string, status int8, data interface{}) error
+	SaveTrackingServerLoginDetails(rs app.RequestScope, id uint32, email string, hash string, status int8, data interface{}) error
 	TrackingServerUserEmailExists(rs app.RequestScope, email string) (int, error)
-	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint64, error)
+	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, error)
 }
 
 // TrackingServerService ---
