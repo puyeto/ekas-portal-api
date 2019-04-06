@@ -2,6 +2,8 @@ package app
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/sony/sonyflake"
@@ -62,11 +64,17 @@ func LoadConfig(configPaths ...string) error {
 	return Config.Validate()
 }
 
-// GenerateNewID Generate new id using
+// GenerateNewID1 Generate new id using
 // Note: this is base16, could shorten by encoding as base62 string
 // fmt.Printf("github.com/sony/sonyflake:   %x\n", id)
-func GenerateNewID() uint64 {
+func GenerateNewID1() uint64 {
 	flake := sonyflake.NewSonyflake(sonyflake.Settings{})
 	id, _ := flake.NextID()
 	return id
+}
+
+// GenerateNewID ...
+func GenerateNewID() uint32 {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return r.Uint32()
 }

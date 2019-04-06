@@ -88,8 +88,11 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	// artistDAO := daos.NewArtistDAO()
 	// apis.ServeArtistResource(rg, services.NewArtistService(artistDAO))
 
-	artistDAO := daos.NewArtistDAO()
-	apis.ServeArtistResource(rg, services.NewArtistService(artistDAO))
+	vehicleDAO := daos.NewVehicleDAO()
+	apis.ServeVehicleResource(rg, services.NewVehicleService(vehicleDAO))
+
+	trackingServerServiceDAO := daos.NewTrackingServerServiceDAO()
+	apis.ServeTrackingServerServiceResource(rg, services.NewTrackingServerServiceService(trackingServerServiceDAO))
 
 	trackingServerDAO := daos.NewTrackingServerDAO()
 	apis.ServeTrackingServerResource(rg, services.NewTrackingServerService(trackingServerDAO))

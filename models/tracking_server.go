@@ -52,3 +52,63 @@ func (m AddDeviceDetails) ValidateAddDevices() error {
 		validation.Field(&m.MinFuelThefts, validation.Required),
 	)
 }
+
+type AddServices struct {
+	UserData                  UserData                  `json:"device_user_data"`
+	AddTrackingServiceDetails AddTrackingServiceDetails `json:"add_service"`
+}
+
+// AddTrackingServiceDetails ...
+type AddTrackingServiceDetails struct {
+	Name                 string `json:"name"`
+	DeviceID             string `json:"device_id"`
+	ExpirationBy         string `json:"expiration_by"`
+	Interval             string `json:"interval"`
+	LastService          string `json:"last_service"`
+	TriggerEventLeft     string `json:"trigger_event_left"`
+	RenewAfterExpiration string `json:"renew_after_expiration"`
+	Email                string `json:"email"`
+	MobilePhone          string `json:"mobile_phone"`
+}
+
+// ValidateAddTrackingServiceDetails validates addition of service fields.
+func (m AddTrackingServiceDetails) ValidateAddTrackingServiceDetails() error {
+	return validation.ValidateStruct(&m,
+		validation.Field(&m.Name, validation.Required, validation.Length(0, 120)),
+		validation.Field(&m.DeviceID, validation.Required),
+		validation.Field(&m.ExpirationBy, validation.Required),
+		validation.Field(&m.LastService, validation.Required),
+		validation.Field(&m.TriggerEventLeft, validation.Required),
+		validation.Field(&m.RenewAfterExpiration, validation.Required),
+		validation.Field(&m.Email, validation.Required),
+		validation.Field(&m.MobilePhone, validation.Required),
+	)
+}
+
+// TrackingServiceTypes ...
+type TrackingServiceTypes struct {
+	Odometer    string `json:"odometer"`     // Odometer
+	EngineHours string `json:"engine_hours"` // Engine hours
+	Days        string `json:"days"`         // Days
+}
+
+// TrackingServerService ...
+type TrackingServerService struct {
+	ID                   string      `json:"id"`
+	DeviceID             string      `json:"device_id"`
+	Name                 string      `json:"name"`
+	ExpirationBy         string      `json:"expiration_by"`
+	Interval             string      `json:"interval"`
+	LastService          string      `json:"last_service"`
+	TriggerEventLeft     string      `json:"trigger_event_left"`
+	RenewAfterExpiration string      `json:"renew_after_expiration"`
+	Expires              string      `json:"expires"`
+	ExpiresDate          string      `json:"expires_date,omitempty"`
+	Remind               string      `json:"remind"`
+	RemindDate           string      `json:"remind_date,omitempty"`
+	EventSent            string      `json:"event_sent"`
+	Expired              string      `json:"expired"`
+	Email                string      `json:"email,omitempty"`
+	MobilePhone          string      `json:"mobile_phone,omitempty"`
+	Device               interface{} `json:"devices"`
+}

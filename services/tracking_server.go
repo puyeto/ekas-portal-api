@@ -14,9 +14,9 @@ import (
 // trackingServerDAO specifies the interface of the trackingServer DAO needed by TrackingServerService.
 type trackingServerDAO interface {
 	// Login to tracking server.
-	SaveTrackingServerLoginDetails(rs app.RequestScope, id uint64, email string, hash string, status int8, data interface{}) error
+	SaveTrackingServerLoginDetails(rs app.RequestScope, id uint32, email string, hash string, status int8, data interface{}) error
 	TrackingServerUserEmailExists(rs app.RequestScope, email string) (int, error)
-	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint64, error)
+	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, error)
 }
 
 // TrackingServerService ---
@@ -104,7 +104,10 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 
 // TrackingServerAddDevices - add user devices from  the tracking server
 func (s *TrackingServerService) TrackingServerAddDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error) {
+	return AddDevicesTrackingServer(rs, model, lang, userhash)
+}
 
+func AddDevicesTrackingServer(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error) {
 	p := url.Values{
 		"user_api_hash":       {userhash},
 		"lang":                {lang},
@@ -142,6 +145,7 @@ func (s *TrackingServerService) TrackingServerAddDevices(rs app.RequestScope, mo
 	fmt.Printf("Results: %v\n", data)
 
 	return data, nil
+
 }
 
 // TrackingServerEditDevices - Edit user devices from the tracking server

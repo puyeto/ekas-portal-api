@@ -16,15 +16,15 @@ func NewTrackingServerDAO() *TrackingServerDAO {
 }
 
 // GetTrackingServerUserLoginIDByEmail ...
-func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint64, error) {
-	var uid uint64
+func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, error) {
+	var uid uint32
 	q := rs.Tx().NewQuery("SELECT auth_user_id FROM auth_users WHERE auth_user_email='" + email + "' LIMIT 1")
 	err := q.Row(&uid)
 	return uid, err
 }
 
 // SaveTrackingServerLoginDetails saves a new user record in the database.
-func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope, id uint64, email string, hash string, status int8, data interface{}) error {
+func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope, id uint32, email string, hash string, status int8, data interface{}) error {
 	//return rs.Tx().Model(artist).Insert()
 	a, _ := json.Marshal(data)
 
