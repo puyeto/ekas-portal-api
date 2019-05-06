@@ -30,6 +30,22 @@ func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*mo
 	return &vdetails, err
 }
 
+// GetTripDataByDeviceID ...
+func (dao *VehicleDAO) GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
+	tdetails := []models.TripData{}
+	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed", "longitude", "latitude").
+		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
+		Where(dbx.HashExp{"device_id": deviceid}).All(&tdetails)
+	return tdetails, err
+}
+
+// CountTripRecords returns the number of trip records in the database.
+func (dao *VehicleDAO) CountTripRecords(rs app.RequestScope, deviceid string) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(*)").From("trip_data").Where(dbx.HashExp{"device_id": deviceid}).Row(&count)
+	return count, err
+}
+
 // ----------------------------Add / Update Vehicle------------------------------------
 
 // CreateVehicle saves a new vehicle record in the database.

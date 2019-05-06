@@ -10,6 +10,8 @@ import (
 // vehicleDAO specifies the interface of the vehicle DAO needed by VehicleService.
 type vehicleDAO interface {
 	GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
+	GetTripDataByDeviceID(rs app.RequestScope, strid string, offset, limit int) ([]models.TripData, error)
+	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	// Create saves a new vehicle in the storage.
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) error
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
@@ -31,6 +33,16 @@ func NewVehicleService(dao vehicleDAO) *VehicleService {
 // GetVehicleByStrID ...
 func (s *VehicleService) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	return s.dao.GetVehicleByStrID(rs, strid)
+}
+
+// GetTripDataByDeviceID ...
+func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
+	return s.dao.GetTripDataByDeviceID(rs, deviceid, offset, limit)
+}
+
+// CountTripRecords Count returns the number of trip records.
+func (s *VehicleService) CountTripRecords(rs app.RequestScope, deviceid string) (int, error) {
+	return s.dao.CountTripRecords(rs, deviceid)
 }
 
 // Create creates a new vehicle.

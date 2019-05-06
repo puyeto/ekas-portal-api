@@ -12,7 +12,9 @@ type (
 	// vehicleService specifies the interface for the vehicle service needed by vehicleResource.
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
+		GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
+		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	}
 
 	// vehicleResource defines the handlers for the CRUD APIs.
@@ -26,6 +28,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	r := &vehicleResource{service}
 	rg.Post("/addvehicle", r.create)
 	rg.Get("/getconfigdetailsbystrid/<id>", r.getConfigurationByStringID)
+	rg.Get("/gettripdata/<id>", r.getTripDataByDeviceID)
 }
 
 func (r *vehicleResource) getConfigurationByStringID(c *routing.Context) error {
@@ -50,4 +53,22 @@ func (r *vehicleResource) create(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+// getTripDataByDeviceID ...
+func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
+	deviceid := c.Param("id")
+
+	rs := app.GetRequestScope(c)
+	count, err := r.service.CountTripRecords(rs, deviceid)
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	response, err := r.service.GetTripDataByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
 }

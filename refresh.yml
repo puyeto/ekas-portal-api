@@ -10,7 +10,7 @@ ignored_folders:
 included_extensions:
 - .go
 build_target_path: ""
-build_path: C:\Users\festu\AppData\Local\Temp
+build_path: C:\Users\user\AppData\Local\Temp
 build_flags: []
 build_delay: 200ns
 binary_name: ekas-portal-build
