@@ -1,7 +1,7 @@
 package models
 
 import (
-	"time"
+
 )
 
 // Vehicle ...
@@ -114,7 +114,7 @@ type FitterDetails struct {
 type TripData struct {
 	TripID          int32 `json:"trip_id" db:"pk,trip_id"`
 	DeviceID          int32 `json:"device_id" db:"device_id"`
-	DateTime time.Time `json:"date_time" db:"date_time"`
+	DateTime string `json:"date_time" db:"data_date"`
 	Speed float32 `json:"speed" db:"speed"`
 	Longitude float32 `json:"longitude" db:"longitude"`
 	Latitude float32 `json:"latitude" db:"latitude"`
