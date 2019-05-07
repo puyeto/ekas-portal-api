@@ -1,5 +1,5 @@
 # FROM golang:latest
-FROM golang:1.10.3
+FROM golang:1.12.4
 
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
