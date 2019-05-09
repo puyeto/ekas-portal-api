@@ -41,11 +41,31 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(rs app.RequestScope, deviceid strin
 	return tdetails, err
 }
 
+// GetOverspeedByDeviceID ...
+func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
+	tdetails := []models.TripData{}
+	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed", "longitude", "latitude").
+		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
+		// Where(dbx.HashExp{"device_id": deviceid, "speed>": 80}).
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>80"))).
+		All(&tdetails)
+	return tdetails, err
+}
+
 // CountTripRecords returns the number of trip records in the database.
 func (dao *VehicleDAO) CountTripRecords(rs app.RequestScope, deviceid string) (int, error) {
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("trip_data").
 		Where(dbx.HashExp{"device_id": deviceid}).
+		Row(&count)
+	return count, err
+}
+
+// CountOverspeed returns the number of overspeed records in the database.
+func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(*)").From("trip_data").
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>80"))).
 		Row(&count)
 	return count, err
 }
