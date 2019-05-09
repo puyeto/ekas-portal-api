@@ -19,7 +19,7 @@ func NewOwner(m models.DeviceDetails, id uint32) *models.VehicleOwner {
 	return vm
 }
 
-// NewFitter
+// NewFitter ...
 func NewFitter(m models.DeviceDetails, id uint32) *models.FitterDetails {
 	fd := &models.FitterDetails{
 		FitterID:          id,
@@ -36,7 +36,7 @@ func NewFitter(m models.DeviceDetails, id uint32) *models.FitterDetails {
 	return fd
 }
 
-// NewVehicle
+// NewVehicle ...
 func NewVehicle(m models.DeviceDetails, id uint32) *models.VehicleDetails {
 	vd := &models.VehicleDetails{
 		VehicleID:       id,
@@ -48,6 +48,7 @@ func NewVehicle(m models.DeviceDetails, id uint32) *models.VehicleDetails {
 	return vd
 }
 
+// NewTrackingServerVehicle ...
 func NewTrackingServerVehicle(m *models.Vehicle) *models.AddDeviceDetails {
 	vd := &models.AddDeviceDetails{
 		Name:               m.DeviceDetails.RegistrationNO,

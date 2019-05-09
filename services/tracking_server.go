@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -97,7 +96,7 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Results: %v\n", data)
+	// fmt.Printf("Results: %v\n", data)
 
 	return data, nil
 }
@@ -107,6 +106,7 @@ func (s *TrackingServerService) TrackingServerAddDevices(rs app.RequestScope, mo
 	return AddDevicesTrackingServer(rs, model, lang, userhash)
 }
 
+// AddDevicesTrackingServer ...
 func AddDevicesTrackingServer(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error) {
 	p := url.Values{
 		"user_api_hash":       {userhash},
@@ -142,7 +142,7 @@ func AddDevicesTrackingServer(rs app.RequestScope, model *models.AddDeviceDetail
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Results: %v\n", data)
+	// fmt.Printf("Results: %v\n", data)
 
 	return data, nil
 
@@ -185,7 +185,7 @@ func (s *TrackingServerService) TrackingServerEditDevices(rs app.RequestScope, m
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("Results: %v\n", data)
+	// t.Printf("Results: %v\n", data)
 
 	return data, nil
 }

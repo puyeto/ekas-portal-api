@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	//"time"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -10,8 +11,10 @@ import (
 // vehicleDAO specifies the interface of the vehicle DAO needed by VehicleService.
 type vehicleDAO interface {
 	GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-	GetTripDataByDeviceID(rs app.RequestScope, strid string, offset, limit int) ([]models.TripData, error)
+	GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+	CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error)
 	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
+	FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
 	// Create saves a new vehicle in the storage.
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) error
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
@@ -40,9 +43,19 @@ func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid str
 	return s.dao.GetTripDataByDeviceID(rs, deviceid, offset, limit)
 }
 
+// FetchAllTripsBetweenDates ...
+func (s *VehicleService) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error) {
+	return s.dao.FetchAllTripsBetweenDates(rs, deviceid, offset, limit, from, to)
+}
+
 // CountTripRecords Count returns the number of trip records.
 func (s *VehicleService) CountTripRecords(rs app.RequestScope, deviceid string) (int, error) {
 	return s.dao.CountTripRecords(rs, deviceid)
+}
+
+// CountTripRecordsBtwDates Count returns the number of trip records.
+func (s *VehicleService) CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error) {
+	return s.dao.CountTripRecordsBtwDates(rs, deviceid, from, to)
 }
 
 // Create creates a new vehicle.
@@ -84,7 +97,6 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	}
 
 	// Add Configuartion Details
-	fmt.Println(model.ConfigID)
 	if model.ConfigID > 0 {
 		// update configuration status
 		if err := s.dao.UpdateConfigurationStatus(rs, model.ConfigID, 0); err != nil {

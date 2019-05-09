@@ -1,7 +1,9 @@
 package apis
 
 import (
+	"fmt"
 	"strings"
+	// "time"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -13,7 +15,9 @@ type (
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
 		GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
+		CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	}
 
@@ -29,6 +33,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Post("/addvehicle", r.create)
 	rg.Get("/getconfigdetailsbystrid/<id>", r.getConfigurationByStringID)
 	rg.Get("/gettripdata/<id>", r.getTripDataByDeviceID)
+	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
 }
 
 func (r *vehicleResource) getConfigurationByStringID(c *routing.Context) error {
@@ -66,6 +71,41 @@ func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
 	response, err := r.service.GetTripDataByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
+}
+
+// getTripDataByDeviceID ...
+func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) error {
+	var model models.TripBetweenDates
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	// layout := "2006-01-02 11:45:26"	
+	// formatedFrom, _ := time.Parse("Y-m-d H:i:s", model.From)
+	// formatedTo, _ := time.Parse("Y-m-d H:i:s", model.To)
+
+	fmt.Println(model)
+	fmt.Println(model.From)
+
+	rs := app.GetRequestScope(c)
+	count, err := r.service.CountTripRecordsBtwDates(rs, model.DeviceID, model.From, model.To)
+	if err != nil {
+		return err
+	}
+
+	paginatedList := getPaginatedListFromRequest(c, count)
+	if model.Offset == 0 {
+		model.Offset = paginatedList.Offset()
+	}
+	if model.Limit == 0 {
+		model.Limit = paginatedList.Limit()
+	}
+	response, err := r.service.FetchAllTripsBetweenDates(rs, model.DeviceID, model.Offset, model.Limit, model.From, model.To)
 	if err != nil {
 		return err
 	}
