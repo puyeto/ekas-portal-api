@@ -1,9 +1,7 @@
 package apis
 
 import (
-	"fmt"
 	"strings"
-	// "time"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -85,13 +83,6 @@ func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) erro
 		return err
 	}
 
-	// layout := "2006-01-02 11:45:26"	
-	// formatedFrom, _ := time.Parse("Y-m-d H:i:s", model.From)
-	// formatedTo, _ := time.Parse("Y-m-d H:i:s", model.To)
-
-	fmt.Println(model)
-	fmt.Println(model.From)
-
 	rs := app.GetRequestScope(c)
 	count, err := r.service.CountTripRecordsBtwDates(rs, model.DeviceID, model.From, model.To)
 	if err != nil {
@@ -99,13 +90,8 @@ func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) erro
 	}
 
 	paginatedList := getPaginatedListFromRequest(c, count)
-	if model.Offset == 0 {
-		model.Offset = paginatedList.Offset()
-	}
-	if model.Limit == 0 {
-		model.Limit = paginatedList.Limit()
-	}
-	response, err := r.service.FetchAllTripsBetweenDates(rs, model.DeviceID, model.Offset, model.Limit, model.From, model.To)
+
+	response, err := r.service.FetchAllTripsBetweenDates(rs, model.DeviceID, paginatedList.Offset(), paginatedList.Limit(), model.From, model.To)
 	if err != nil {
 		return err
 	}

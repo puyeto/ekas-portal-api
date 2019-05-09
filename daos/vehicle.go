@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+
 	// "time"
 	"strings"
 
@@ -44,8 +45,8 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(rs app.RequestScope, deviceid strin
 func (dao *VehicleDAO) CountTripRecords(rs app.RequestScope, deviceid string) (int, error) {
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("trip_data").
-	Where(dbx.HashExp{"device_id": deviceid}).
-	Row(&count)
+		Where(dbx.HashExp{"device_id": deviceid}).
+		Row(&count)
 	return count, err
 }
 
@@ -55,17 +56,13 @@ func (dao *VehicleDAO) CountTripRecordsBtwDates(rs app.RequestScope, deviceid st
 	// formatedTo := to.Format("2006-01-02 15:04:05")
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("trip_data").
-	Where(dbx.And(dbx.Between("data_date", from, to), dbx.HashExp{"device_id": deviceid})).
-	Row(&count)
+		Where(dbx.And(dbx.Between("data_date", from, to), dbx.HashExp{"device_id": deviceid})).
+		Row(&count)
 	return count, err
 }
 
 // FetchAllTripsBetweenDates ...
 func (dao *VehicleDAO) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error) {
-	// formatedFrom := from.Format("2006-01-02 15:04:05")
-	// formatedTo := to.Format("2006-01-02 15:04:05")
-	// rows, _ := db.Query("SELECT * FROM users WHERE "+timeColoumn+" BETWEEN '"+formatedFrom+"' AND '"+formatedTo+"'")
-	
 	tdetails := []models.TripData{}
 	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed", "longitude", "latitude").
 		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
