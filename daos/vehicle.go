@@ -44,10 +44,20 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(rs app.RequestScope, deviceid strin
 // GetOverspeedByDeviceID ...
 func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
 	tdetails := []models.TripData{}
-	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed", "longitude", "latitude").
+	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed").
 		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
 		// Where(dbx.HashExp{"device_id": deviceid, "speed>": 80}).
 		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>80"))).
+		All(&tdetails)
+	return tdetails, err
+}
+
+// GetViolationsByDeviceID ...
+func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
+	tdetails := []models.TripData{}
+	err := rs.Tx().Select("trip_id", "device_id", "data_date", "failsafe", "disconnect").
+		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("transmission_reason=255"))).
 		All(&tdetails)
 	return tdetails, err
 }
@@ -66,6 +76,15 @@ func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("trip_data").
 		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>80"))).
+		Row(&count)
+	return count, err
+}
+
+// CountViolations returns the number of violation records in the database.
+func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(*)").From("trip_data").
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("transmission_reason=255"))).
 		Row(&count)
 	return count, err
 }

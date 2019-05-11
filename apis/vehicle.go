@@ -18,6 +18,8 @@ type (
 		CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 		CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
+		CountViolations(rs app.RequestScope, deviceid string) (int, error)
+		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 	}
 
@@ -34,6 +36,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getconfigdetailsbystrid/<id>", r.getConfigurationByStringID)
 	rg.Get("/gettripdata/<id>", r.getTripDataByDeviceID)
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)
+	rg.Get("/getviolations/<id>", r.getViolationsByDeviceID)
 	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
 }
 
@@ -90,6 +93,24 @@ func (r *vehicleResource) getOverspeedsByDeviceID(c *routing.Context) error {
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
 	response, err := r.service.GetOverspeedByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
+}
+
+// getViolationsByDeviceID
+func (r *vehicleResource) getViolationsByDeviceID(c *routing.Context) error {
+	deviceid := c.Param("id")
+
+	rs := app.GetRequestScope(c)
+	count, err := r.service.CountViolations(rs, deviceid)
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	response, err := r.service.GetViolationsByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
 	if err != nil {
 		return err
 	}
