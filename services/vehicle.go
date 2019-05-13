@@ -22,8 +22,8 @@ type vehicleDAO interface {
 	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error
 	UpdateConfigurationStatus(rs app.RequestScope, configid uint32, status int8) error
 	CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
-	CountViolations(rs app.RequestScope, deviceid string) (int, error)
-	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+	CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
+	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 }
 
@@ -53,8 +53,8 @@ func (s *VehicleService) GetOverspeedByDeviceID(rs app.RequestScope, deviceid st
 }
 
 // GetViolationsByDeviceID
-func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
-	return s.dao.GetViolationsByDeviceID(rs, deviceid, offset, limit)
+func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error) {
+	return s.dao.GetViolationsByDeviceID(rs, deviceid, reason, offset, limit)
 }
 
 // FetchAllTripsBetweenDates ...
@@ -73,8 +73,8 @@ func (s *VehicleService) CountOverspeed(rs app.RequestScope, deviceid string) (i
 }
 
 // CountViolations Count returns the number of Violation records.
-func (s *VehicleService) CountViolations(rs app.RequestScope, deviceid string) (int, error) {
-	return s.dao.CountViolations(rs, deviceid)
+func (s *VehicleService) CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error) {
+	return s.dao.CountViolations(rs, deviceid, reason)
 }
 
 // CountTripRecordsBtwDates Count returns the number of trip records.

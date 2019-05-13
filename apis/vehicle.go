@@ -18,8 +18,8 @@ type (
 		CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 		CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
-		CountViolations(rs app.RequestScope, deviceid string) (int, error)
-		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
+		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 	}
 
@@ -36,7 +36,8 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getconfigdetailsbystrid/<id>", r.getConfigurationByStringID)
 	rg.Get("/gettripdata/<id>", r.getTripDataByDeviceID)
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)
-	rg.Get("/getviolations/<id>", r.getViolationsByDeviceID)
+	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
+	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
 	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
 }
 
@@ -100,17 +101,35 @@ func (r *vehicleResource) getOverspeedsByDeviceID(c *routing.Context) error {
 	return c.Write(paginatedList)
 }
 
-// getViolationsByDeviceID
-func (r *vehicleResource) getViolationsByDeviceID(c *routing.Context) error {
+// getFailsafeByDeviceID
+func (r *vehicleResource) getFailsafeByDeviceID(c *routing.Context) error {
 	deviceid := c.Param("id")
 
 	rs := app.GetRequestScope(c)
-	count, err := r.service.CountViolations(rs, deviceid)
+	count, err := r.service.CountViolations(rs, deviceid, "failsafe")
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	response, err := r.service.GetViolationsByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
+	response, err := r.service.GetViolationsByDeviceID(rs, deviceid, "failsafe", paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
+}
+
+// getDisconnectsByDeviceID
+func (r *vehicleResource) getDisconnectsByDeviceID(c *routing.Context) error {
+	deviceid := c.Param("id")
+
+	rs := app.GetRequestScope(c)
+	count, err := r.service.CountViolations(rs, deviceid, "disconnects")
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	response, err := r.service.GetViolationsByDeviceID(rs, deviceid, "disconnects", paginatedList.Offset(), paginatedList.Limit())
 	if err != nil {
 		return err
 	}

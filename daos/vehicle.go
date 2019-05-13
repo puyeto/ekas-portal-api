@@ -53,11 +53,15 @@ func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid stri
 }
 
 // GetViolationsByDeviceID ...
-func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
+func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error) {
 	tdetails := []models.TripData{}
+	var query = "disconnect>0"
+	if reason == "failsafe" {
+		query = "failsafe>0"
+	}
 	err := rs.Tx().Select("trip_id", "device_id", "data_date", "failsafe", "disconnect").
 		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("transmission_reason=255"))).
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp(query))).
 		All(&tdetails)
 	return tdetails, err
 }
@@ -81,10 +85,14 @@ func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int
 }
 
 // CountViolations returns the number of violation records in the database.
-func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string) (int, error) {
+func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error) {
 	var count int
+	var query = "disconnect>0"
+	if reason == "failsafe" {
+		query = "failsafe>0"
+	}
 	err := rs.Tx().Select("COUNT(*)").From("trip_data").
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("transmission_reason=255"))).
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp(query))).
 		Row(&count)
 	return count, err
 }
