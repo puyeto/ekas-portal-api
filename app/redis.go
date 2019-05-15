@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ekas-portal-api/models"
 	"github.com/go-redis/redis"
 )
 
@@ -39,6 +40,13 @@ func InitializeRedis() error {
 // GetValue ...
 func GetValue(key string) (interface{}, error) {
 	var deserializedValue interface{}
+	serializedValue, err := redisClient.Get(key).Result()
+	json.Unmarshal([]byte(serializedValue), &deserializedValue)
+	return deserializedValue, err
+}
+
+func GetSerializedValue(key string) (models.DeviceData, error) {
+	var deserializedValue models.DeviceData
 	serializedValue, err := redisClient.Get(key).Result()
 	json.Unmarshal([]byte(serializedValue), &deserializedValue)
 	return deserializedValue, err

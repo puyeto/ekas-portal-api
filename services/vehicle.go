@@ -58,10 +58,10 @@ func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid s
 }
 
 // ListRecentViolations ...
-func (s *VehicleService) ListRecentViolations(rs app.RequestScope) (interface{}, error) {
+func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error) {
 	// key := "violations:"
 	// define slice of Identification
-	var deviceData []interface{}
+	var deviceData []models.DeviceData
 
 	keysList, err := app.ListKeys("currentviolations:*")
 	if err != nil {
@@ -70,11 +70,12 @@ func (s *VehicleService) ListRecentViolations(rs app.RequestScope) (interface{},
 
 	for i := 0; i < len(keysList); i++ {
 		fmt.Println("Getting " + keysList[i])
-		value, err := app.GetValue(keysList[i])
+		value, err := app.GetSerializedValue(keysList[i])
 		if err != nil {
 			return nil, err
 		}
-		if value != nil {
+		if value.SystemCode == "MCPG" {
+			fmt.Println("device_id", value.DeviceID)
 			deviceData = append(deviceData, value)
 		}
 	}

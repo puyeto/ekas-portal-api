@@ -21,7 +21,7 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
-		ListRecentViolations(rs app.RequestScope) (interface{}, error)
+		ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 	}
 
 	// vehicleResource defines the handlers for the CRUD APIs.
