@@ -52,9 +52,34 @@ func (s *VehicleService) GetOverspeedByDeviceID(rs app.RequestScope, deviceid st
 	return s.dao.GetOverspeedByDeviceID(rs, deviceid, offset, limit)
 }
 
-// GetViolationsByDeviceID
+// GetViolationsByDeviceID ...
 func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error) {
 	return s.dao.GetViolationsByDeviceID(rs, deviceid, reason, offset, limit)
+}
+
+// ListRecentViolations ...
+func (s *VehicleService) ListRecentViolations(rs app.RequestScope) (interface{}, error) {
+	// key := "violations:"
+	// define slice of Identification
+	var deviceData []interface{}
+
+	keysList, err := app.ListKeys("currentviolations:*")
+	if err != nil {
+		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	for i := 0; i < len(keysList); i++ {
+		fmt.Println("Getting " + keysList[i])
+		value, err := app.GetValue(keysList[i])
+		if err != nil {
+			return nil, err
+		}
+		if value != nil {
+			deviceData = append(deviceData, value)
+		}
+	}
+
+	return deviceData, err
 }
 
 // FetchAllTripsBetweenDates ...
@@ -74,6 +99,15 @@ func (s *VehicleService) CountOverspeed(rs app.RequestScope, deviceid string) (i
 
 // CountViolations Count returns the number of Violation records.
 func (s *VehicleService) CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error) {
+	key := "lastseen:" + deviceid
+	fmt.Println("Getting " + key)
+	value, err := app.GetValue(key)
+
+	if err == nil {
+		fmt.Println("Value Returned : " + value.(string))
+	} else {
+		fmt.Println("Getting Value Failed with error : " + err.Error())
+	}
 	return s.dao.CountViolations(rs, deviceid, reason)
 }
 

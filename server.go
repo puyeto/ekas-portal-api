@@ -34,12 +34,16 @@ func main() {
 
 	// connect to the database
 	dns := getDNS()
-
 	db, err := dbx.MustOpen("mysql", dns)
 	if err != nil {
 		panic(err)
 	}
 	db.LogFunc = logger.Infof
+
+	err = app.InitializeRedis()
+	if err != nil {
+		logger.Error(err)
+	}
 
 	// wire up API routing
 	http.Handle("/", buildRouter(logger, db))

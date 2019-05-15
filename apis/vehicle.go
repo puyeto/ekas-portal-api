@@ -21,6 +21,7 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+		ListRecentViolations(rs app.RequestScope) (interface{}, error)
 	}
 
 	// vehicleResource defines the handlers for the CRUD APIs.
@@ -39,6 +40,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
 	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
+	rg.Get("/listviolations", r.listRecentViolations)
 }
 
 func (r *vehicleResource) getConfigurationByStringID(c *routing.Context) error {
@@ -158,4 +160,10 @@ func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) erro
 	}
 	paginatedList.Items = response
 	return c.Write(paginatedList)
+}
+
+// listViolations
+func (r *vehicleResource) listRecentViolations(c *routing.Context) error {
+	resp, _ := r.service.ListRecentViolations(app.GetRequestScope(c))
+	return c.Write(resp)
 }
