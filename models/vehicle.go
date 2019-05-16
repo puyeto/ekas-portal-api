@@ -171,4 +171,5 @@ type DeviceData struct {
 	UTCTimeYear                    int       `json:"utc_time_year,omitempty"`         // 2 byte
 	ErrorDetectionCode             uint16    `json:"error_detection_code,omitempty"`
 	DateTime                       time.Time `json:"date_time,omitempty"`
+	Name                           string    `json:"name,omitempty"`
 }

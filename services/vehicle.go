@@ -100,15 +100,6 @@ func (s *VehicleService) CountOverspeed(rs app.RequestScope, deviceid string) (i
 
 // CountViolations Count returns the number of Violation records.
 func (s *VehicleService) CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error) {
-	key := "lastseen:" + deviceid
-	fmt.Println("Getting " + key)
-	value, err := app.GetValue(key)
-
-	if err == nil {
-		fmt.Println("Value Returned : " + value.(string))
-	} else {
-		fmt.Println("Getting Value Failed with error : " + err.Error())
-	}
 	return s.dao.CountViolations(rs, deviceid, reason)
 }
 
