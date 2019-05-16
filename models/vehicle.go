@@ -179,3 +179,9 @@ type DeviceData struct {
 	DateTime                       time.Time `json:"date_time,omitempty"`
 	Name                           string    `json:"name,omitempty"`
 }
+
+// LastSeenStruct ...
+type LastSeenStruct struct {
+	DateTime   time.Time
+	DeviceData DeviceData
+}

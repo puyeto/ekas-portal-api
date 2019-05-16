@@ -45,11 +45,20 @@ func GetValue(key string) (interface{}, error) {
 	return deserializedValue, err
 }
 
-func GetSerializedValue(key string) (models.DeviceData, error) {
+// GetDeviceDataValue ...
+func GetDeviceDataValue(key string) (models.DeviceData, error) {
 	var deserializedValue models.DeviceData
 	serializedValue, err := redisClient.Get(key).Result()
 	json.Unmarshal([]byte(serializedValue), &deserializedValue)
 	return deserializedValue, err
+}
+
+// GetLastSeenValue ...
+func GetLastSeenValue(key string) (models.DeviceData, error) {
+	var deserializedValue models.LastSeenStruct
+	serializedValue, err := redisClient.Get(key).Result()
+	json.Unmarshal([]byte(serializedValue), &deserializedValue)
+	return deserializedValue.DeviceData, err
 }
 
 // SetValue ...

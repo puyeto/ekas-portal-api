@@ -2,6 +2,8 @@ package services
 
 import (
 	"fmt"
+	"time"
+
 	//"time"
 
 	"github.com/ekas-portal-api/app"
@@ -66,7 +68,6 @@ func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, 
 
 // ListRecentViolations ...
 func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error) {
-	// key := "violations:"
 	// define slice of Identification
 	var deviceData []models.DeviceData
 
@@ -77,7 +78,7 @@ func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.Dev
 
 	for i := 0; i < len(keysList); i++ {
 		fmt.Println("Getting " + keysList[i])
-		value, err := app.GetSerializedValue(keysList[i])
+		value, err := app.GetDeviceDataValue(keysList[i])
 		if err != nil {
 			return nil, err
 		}
@@ -88,6 +89,49 @@ func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.Dev
 	}
 
 	return deviceData, err
+}
+
+// GetUnavailableDevices ...
+func (s *VehicleService) GetUnavailableDevices(rs app.RequestScope) ([]models.DeviceData, error) {
+
+	// define slice of Identification
+	var deviceData []models.DeviceData
+
+	keysList, err := app.ListKeys("lastseen:*")
+	if err != nil {
+		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	for i := 0; i < len(keysList); i++ {
+		fmt.Println("Getting " + keysList[i])
+		value, err := app.GetLastSeenValue(keysList[i])
+		if err != nil {
+			return nil, err
+		}
+		if value.SystemCode == "MCPG" {
+			if callTime(value) <= -5 {
+				fmt.Println("device_id", value.DeviceID)
+				deviceData = append(deviceData, value)
+			}
+		}
+	}
+
+	return deviceData, err
+}
+
+func callTime(m models.DeviceData) int {
+	nowd := time.Now()
+	now := dateF(nowd.Year(), nowd.Month(), nowd.Day(), nowd.Hour(), nowd.Minute(), nowd.Second())
+	pastDate := dateF(m.UTCTimeYear, time.Month(m.UTCTimeMonth), m.UTCTimeDay, m.UTCTimeHours, m.UTCTimeMinutes, m.UTCTimeSeconds)
+	diff := now.Sub(pastDate)
+
+	mins := int(diff.Minutes())
+	fmt.Println("mins = ", mins)
+	return mins
+}
+
+func dateF(year int, month time.Month, day int, hr, min, sec int) time.Time {
+	return time.Date(year, month, day, hr, min, sec, 0, time.UTC)
 }
 
 // FetchAllTripsBetweenDates ...

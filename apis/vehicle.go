@@ -24,6 +24,7 @@ type (
 		ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
 		CountSearches(rs app.RequestScope, searchterm string) (int, error)
+		GetUnavailableDevices(rs app.RequestScope) ([]models.DeviceData, error)
 	}
 
 	// vehicleResource defines the handlers for the CRUD APIs.
@@ -43,7 +44,8 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
 	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
 	rg.Get("/listviolations", r.listRecentViolations)
-	rg.Get("/search/<term>", r.searchvehicle)
+	rg.Get("/search/<term>", r.searchVehicle)
+	rg.Get("/unavailable", r.getUnavailable)
 }
 
 func (r *vehicleResource) getConfigurationByStringID(c *routing.Context) error {
@@ -142,8 +144,8 @@ func (r *vehicleResource) getDisconnectsByDeviceID(c *routing.Context) error {
 	return c.Write(paginatedList)
 }
 
-// searchvehicle ...
-func (r *vehicleResource) searchvehicle(c *routing.Context) error {
+// searchVehicle ...
+func (r *vehicleResource) searchVehicle(c *routing.Context) error {
 	searchterm := c.Param("term")
 	rs := app.GetRequestScope(c)
 	count, err := r.service.CountSearches(rs, searchterm)
@@ -184,6 +186,18 @@ func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) erro
 
 // listViolations
 func (r *vehicleResource) listRecentViolations(c *routing.Context) error {
-	resp, _ := r.service.ListRecentViolations(app.GetRequestScope(c))
+	resp, err := r.service.ListRecentViolations(app.GetRequestScope(c))
+	if err != nil {
+		return err
+	}
+	return c.Write(resp)
+}
+
+// getUnavailable
+func (r *vehicleResource) getUnavailable(c *routing.Context) error {
+	resp, err := r.service.GetUnavailableDevices(app.GetRequestScope(c))
+	if err != nil {
+		return err
+	}
 	return c.Write(resp)
 }
