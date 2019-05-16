@@ -34,7 +34,7 @@ type VehicleConfigDetails struct {
 
 // SearcDetails ...
 type SearchDetails struct {
-	VehicleName string `json:"vehicle_name,omitempty"`
+	VehicleName string `json:"vehicle_name"`
 	Data        string `json:"vehicle_data,omitempty"`
 }
 

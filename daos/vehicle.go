@@ -70,10 +70,10 @@ func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid str
 func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error) {
 	tdetails := []models.SearchDetails{}
 
-	err := rs.Tx().Select("vehicle_reg_no", "data").
+	err := rs.Tx().Select("DISTINCT(vehicle_id) AS vehicle_name", "data").
 		From("vehicle_configuration").Offset(int64(offset)).Limit(int64(limit)).
-		InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
-		Where(dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)).
+		// InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
+		Where(dbx.Like("vehicle_string_id", searchterm)).
 		All(&tdetails)
 	return tdetails, err
 }
