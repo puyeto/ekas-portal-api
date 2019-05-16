@@ -66,11 +66,33 @@ func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid str
 	return tdetails, err
 }
 
+// SearchVehicles ...
+func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error) {
+	tdetails := []models.SearchDetails{}
+
+	err := rs.Tx().Select("vehicle_reg_no", "data").
+		From("vehicle_configuration").Offset(int64(offset)).Limit(int64(limit)).
+		InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
+		Where(dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)).
+		All(&tdetails)
+	return tdetails, err
+}
+
 // CountTripRecords returns the number of trip records in the database.
 func (dao *VehicleDAO) CountTripRecords(rs app.RequestScope, deviceid string) (int, error) {
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("trip_data").
 		Where(dbx.HashExp{"device_id": deviceid}).
+		Row(&count)
+	return count, err
+}
+
+// CountSearches ///
+func (dao *VehicleDAO) CountSearches(rs app.RequestScope, searchterm string) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(*)").From("vehicle_configuration").
+		InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
+		Where(dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)).
 		Row(&count)
 	return count, err
 }

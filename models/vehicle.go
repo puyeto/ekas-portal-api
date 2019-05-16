@@ -32,6 +32,12 @@ type VehicleConfigDetails struct {
 	CreatedOn string `json:"created_on,omitempty"`
 }
 
+// SearcDetails ...
+type SearchDetails struct {
+	VehicleName string `json:"vehicle_name,omitempty"`
+	Data        string `json:"vehicle_data,omitempty"`
+}
+
 // DeviceDetails ....
 type DeviceDetails struct {
 	OwnerName        string `json:"owner_name"`

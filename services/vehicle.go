@@ -25,6 +25,8 @@ type vehicleDAO interface {
 	CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
+	CountSearches(rs app.RequestScope, searchterm string) (int, error)
 }
 
 // VehicleService provides services related with vehicles.
@@ -55,6 +57,11 @@ func (s *VehicleService) GetOverspeedByDeviceID(rs app.RequestScope, deviceid st
 // GetViolationsByDeviceID ...
 func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error) {
 	return s.dao.GetViolationsByDeviceID(rs, deviceid, reason, offset, limit)
+}
+
+// SearchVehicles ...
+func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error) {
+	return s.dao.SearchVehicles(rs, searchterm, offset, limit)
 }
 
 // ListRecentViolations ...
@@ -96,6 +103,11 @@ func (s *VehicleService) CountTripRecords(rs app.RequestScope, deviceid string) 
 // CountOverspeed Count returns the number of overspeed records.
 func (s *VehicleService) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
 	return s.dao.CountOverspeed(rs, deviceid)
+}
+
+// CountSearches Count returns the number of search records.
+func (s *VehicleService) CountSearches(rs app.RequestScope, searchterm string) (int, error) {
+	return s.dao.CountSearches(rs, searchterm)
 }
 
 // CountViolations Count returns the number of Violation records.
