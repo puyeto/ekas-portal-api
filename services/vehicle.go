@@ -109,7 +109,7 @@ func (s *VehicleService) GetUnavailableDevices(rs app.RequestScope) ([]models.De
 			return nil, err
 		}
 		if value.SystemCode == "MCPG" {
-			if callTime(value) <= -5 {
+			if callTime(value) >= 5 {
 				fmt.Println("device_id", value.DeviceID)
 				deviceData = append(deviceData, value)
 			}
