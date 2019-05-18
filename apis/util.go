@@ -3,13 +3,13 @@ package apis
 import (
 	"strconv"
 
-	"github.com/go-ozzo/ozzo-routing"
 	"github.com/ekas-portal-api/util"
+	routing "github.com/go-ozzo/ozzo-routing"
 )
 
 const (
 	DEFAULT_PAGE_SIZE int = 100
-	MAX_PAGE_SIZE     int = 1000
+	MAX_PAGE_SIZE     int = 100000
 )
 
 func getPaginatedListFromRequest(c *routing.Context, count int) *util.PaginatedList {
