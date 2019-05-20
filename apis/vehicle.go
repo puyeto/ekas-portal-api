@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -12,11 +13,12 @@ type (
 	// vehicleService specifies the interface for the vehicle service needed by vehicleResource.
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-		GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+		GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
 		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
 		CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
+		CountRedisTripRecords(rs app.RequestScope, deviceid string) int
 		CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
@@ -77,12 +79,17 @@ func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 	deviceid := c.Param("id")
 
 	rs := app.GetRequestScope(c)
-	count, err := r.service.CountTripRecords(rs, deviceid)
-	if err != nil {
-		return err
-	}
+	count := r.service.CountRedisTripRecords(rs, deviceid)
 	paginatedList := getPaginatedListFromRequest(c, count)
-	response, err := r.service.GetTripDataByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
+	offset := paginatedList.Offset()
+	limit := paginatedList.Limit()
+	if offset > 0 {
+		limit = offset + paginatedList.Limit()
+	}
+
+	fmt.Println(offset, limit)
+
+	response, err := r.service.GetTripDataByDeviceID(rs, deviceid, offset, limit)
 	if err != nil {
 		return err
 	}

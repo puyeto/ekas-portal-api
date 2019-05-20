@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -47,8 +48,33 @@ func (s *VehicleService) GetVehicleByStrID(rs app.RequestScope, strid string) (*
 }
 
 // GetTripDataByDeviceID ...
-func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
-	return s.dao.GetTripDataByDeviceID(rs, deviceid, offset, limit)
+func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error) {
+	// return s.dao.GetTripDataByDeviceID(rs, deviceid, offset, limit)
+	// define slice of Identification
+	var deviceData []models.DeviceData
+
+	keysList, err := app.LRange("datalist:"+deviceid, int64(offset), int64(limit))
+	if err != nil {
+		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	for i := 0; i < len(keysList); i++ {
+
+		if keysList[i] != "0" {
+			var deserializedValue models.DeviceData
+			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
+			deviceData = append(deviceData, deserializedValue)
+		}
+
+	}
+
+	return deviceData, err
+}
+
+// CountRedisTripRecords ...
+func (s *VehicleService) CountRedisTripRecords(rs app.RequestScope, deviceid string) int {
+	ListLength := app.ListLength("datalist:" + deviceid)
+	return int(ListLength)
 }
 
 // GetOverspeedByDeviceID ...

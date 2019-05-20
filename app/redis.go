@@ -21,11 +21,12 @@ func InitializeRedis() error {
 	}
 
 	redisClient = redis.NewClient(&redis.Options{
-		Addr:       dockerURL,
-		PoolSize:   100,
-		MaxRetries: 2,
-		Password:   "",
-		DB:         0,
+		Addr:        dockerURL,
+		PoolSize:    100,
+		MaxRetries:  2,
+		ReadTimeout: -1,
+		Password:    "",
+		DB:          0,
 	})
 
 	ping, err := redisClient.Ping().Result()
@@ -88,9 +89,9 @@ func RpushWithTTL(key string, valueList []string, ttl int) (bool, error) {
 }
 
 // LRange ...
-func LRange(key string) (bool, error) {
-	err := redisClient.LRange(key, 0, -1).Err()
-	return true, err
+func LRange(key string, start, stop int64) ([]string, error) {
+	val, err := redisClient.LRange(key, start, stop).Result()
+	return val, err
 }
 
 // ListLength ...
