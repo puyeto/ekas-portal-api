@@ -87,8 +87,6 @@ func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 		limit = offset + paginatedList.Limit()
 	}
 
-	fmt.Println(offset, limit)
-
 	response, err := r.service.GetTripDataByDeviceID(rs, deviceid, offset, limit)
 	if err != nil {
 		return err

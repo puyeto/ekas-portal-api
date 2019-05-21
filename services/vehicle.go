@@ -53,7 +53,7 @@ func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid str
 	// define slice of Identification
 	var deviceData []models.DeviceData
 
-	keysList, err := app.LRange("datalist:"+deviceid, int64(offset), int64(limit))
+	keysList, err := app.ZRevRange("data:"+deviceid, int64(offset), int64(limit))
 	if err != nil {
 		fmt.Println("Getting Keys Failed : " + err.Error())
 	}
@@ -73,7 +73,7 @@ func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid str
 
 // CountRedisTripRecords ...
 func (s *VehicleService) CountRedisTripRecords(rs app.RequestScope, deviceid string) int {
-	ListLength := app.ListLength("datalist:" + deviceid)
+	ListLength := app.ZCount("data:" + deviceid)
 	return int(ListLength)
 }
 

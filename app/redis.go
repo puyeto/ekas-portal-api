@@ -94,6 +94,23 @@ func LRange(key string, start, stop int64) ([]string, error) {
 	return val, err
 }
 
+// ZRange ...
+func ZRange(key string, start, stop int64) ([]string, error) {
+	val, err := redisClient.ZRange(key, start, stop).Result()
+	return val, err
+}
+
+// ZRevRange ...
+func ZRevRange(key string, start, stop int64) ([]string, error) {
+	val, err := redisClient.ZRevRange(key, start, stop).Result()
+	return val, err
+}
+
+// ZCount ...
+func ZCount(key string) int64 {
+	return redisClient.ZCount(key, "-inf", "+inf").Val()
+}
+
 // ListLength ...
 func ListLength(key string) int64 {
 	return redisClient.LLen(key).Val()
