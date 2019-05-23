@@ -23,6 +23,7 @@ type (
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 		ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error)
+		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error)
 		CountAllViolations(rs app.RequestScope) int
 		SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
@@ -47,6 +48,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
 	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
 	rg.Get("/listrecentviolations", r.listRecentViolations)
+	rg.Get("/currentviolation", r.getCurrentViolations)
 	rg.Get("/listviolations", r.listAllViolations)
 	rg.Get("/search/<term>", r.searchVehicle)
 	rg.Get("/unavailable", r.getUnavailable)
@@ -205,6 +207,15 @@ func (r *vehicleResource) searchVehicle(c *routing.Context) error {
 // listViolations
 func (r *vehicleResource) listRecentViolations(c *routing.Context) error {
 	resp, err := r.service.ListRecentViolations(app.GetRequestScope(c))
+	if err != nil {
+		return err
+	}
+	return c.Write(resp)
+}
+
+// getCurrentViolations.. single violation that has just happened
+func (r *vehicleResource) getCurrentViolations(c *routing.Context) error {
+	resp, err := r.service.GetCurrentViolations(app.GetRequestScope(c))
 	if err != nil {
 		return err
 	}

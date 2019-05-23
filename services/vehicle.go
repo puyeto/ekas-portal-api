@@ -150,6 +150,23 @@ func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.Dev
 	return deviceData, err
 }
 
+// GetCurrentViolations single violation as they happen...
+func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error) {
+	// define slice of Identification
+	var deviceData []models.DeviceData
+
+	value, err := app.GetDeviceDataValue("currentviolations")
+	if err != nil {
+		return nil, err
+	}
+	if value.SystemCode == "MCPG" {
+		fmt.Println("device_id", value.DeviceID)
+		deviceData = append(deviceData, value)
+	}
+
+	return deviceData, err
+}
+
 // ListAllViolations ...
 func (s *VehicleService) ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error) {
 
