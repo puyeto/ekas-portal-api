@@ -61,6 +61,7 @@ func LoadConfig(configPaths ...string) error {
 	if err := v.ReadInConfig(); err != nil {
 		return fmt.Errorf("Failed to read the configuration file: %s", err)
 	}
+
 	if err := v.Unmarshal(&Config); err != nil {
 		return err
 	}

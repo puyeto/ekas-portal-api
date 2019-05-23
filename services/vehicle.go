@@ -160,7 +160,26 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.Dev
 		return nil, err
 	}
 	if value.SystemCode == "MCPG" {
-		fmt.Println("device_id", value.DeviceID)
+		var message string
+		var message_id int
+		// fmt.Println("device_id", value.DeviceID)
+		if value.Offline {
+			message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
+			message_id = 4
+		} else if value.Disconnect {
+			message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
+			message_id = 3
+		} else if value.Failsafe {
+			message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
+			message_id = 2
+		} else if value.GroundSpeed > 80 {
+			message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
+			message_id = 1
+		}
+
+		app.Message <- models.MessageDetails{message_id, message}
+
+		// go app.SendSMSMessages("+254723436438", message)
 		deviceData = append(deviceData, value)
 	}
 

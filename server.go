@@ -45,8 +45,6 @@ func main() {
 		logger.Error(err)
 	}
 
-	app.InitializeTwilio()
-
 	// wire up API routing
 	http.Handle("/", buildRouter(logger, db))
 

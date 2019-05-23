@@ -23,6 +23,12 @@ func (m UserData) ValidateUserData() error {
 	)
 }
 
+// MessageDetails ...
+type MessageDetails struct {
+	MessageID int
+	Message   string
+}
+
 // User ...
 type User struct {
 	ID   string
