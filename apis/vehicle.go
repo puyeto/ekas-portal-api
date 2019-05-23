@@ -1,7 +1,6 @@
 package apis
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -14,16 +13,18 @@ type (
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
 		GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
-		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
+		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from int64, to int64) ([]models.DeviceData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
-		CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 		CountRedisTripRecords(rs app.RequestScope, deviceid string) int
+		CountRedisTripRecordsBtwDates(rs app.RequestScope, deviceid string, from int64, to int64) int
 		CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 		ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error)
+		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error)
+		CountAllViolations(rs app.RequestScope) int
 		SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
 		CountSearches(rs app.RequestScope, searchterm string) (int, error)
 		GetUnavailableDevices(rs app.RequestScope) ([]models.DeviceData, error)
@@ -45,7 +46,8 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
 	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
-	rg.Get("/listviolations", r.listRecentViolations)
+	rg.Get("/listrecentviolations", r.listRecentViolations)
+	rg.Get("/listviolations", r.listAllViolations)
 	rg.Get("/search/<term>", r.searchVehicle)
 	rg.Get("/unavailable", r.getUnavailable)
 }
@@ -88,6 +90,40 @@ func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 	}
 
 	response, err := r.service.GetTripDataByDeviceID(rs, deviceid, offset, limit)
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
+}
+
+// getTripDataByDeviceID ...
+func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) error {
+	var model models.TripBetweenDates
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	rs := app.GetRequestScope(c)
+	count := r.service.CountRedisTripRecordsBtwDates(rs, model.DeviceID, model.From, model.To)
+	paginatedList := getPaginatedListFromRequest(c, count)
+
+	response, err := r.service.FetchAllTripsBetweenDates(rs, model.DeviceID, paginatedList.Offset(), paginatedList.Limit(), model.From, model.To)
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
+}
+
+// listAllViolations ...
+func (r *vehicleResource) listAllViolations(c *routing.Context) error {
+
+	rs := app.GetRequestScope(c)
+	count := r.service.CountAllViolations(rs)
+	paginatedList := getPaginatedListFromRequest(c, count)
+
+	response, err := r.service.ListAllViolations(rs, paginatedList.Offset(), paginatedList.Limit())
 	if err != nil {
 		return err
 	}
@@ -159,29 +195,6 @@ func (r *vehicleResource) searchVehicle(c *routing.Context) error {
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
 	response, err := r.service.SearchVehicles(rs, searchterm, paginatedList.Offset(), paginatedList.Limit())
-	if err != nil {
-		return err
-	}
-	paginatedList.Items = response
-	return c.Write(paginatedList)
-}
-
-// getTripDataByDeviceID ...
-func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) error {
-	var model models.TripBetweenDates
-	if err := c.Read(&model); err != nil {
-		return err
-	}
-
-	rs := app.GetRequestScope(c)
-	count, err := r.service.CountTripRecordsBtwDates(rs, model.DeviceID, model.From, model.To)
-	if err != nil {
-		return err
-	}
-
-	paginatedList := getPaginatedListFromRequest(c, count)
-
-	response, err := r.service.FetchAllTripsBetweenDates(rs, model.DeviceID, paginatedList.Offset(), paginatedList.Limit(), model.From, model.To)
 	if err != nil {
 		return err
 	}

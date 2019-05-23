@@ -16,3 +16,7 @@ jwt_signing_key: "QfCAH04Cob7b71QCqy738vw5XGSnFZ9d"
 # Uncomment the following line and set an appropriate JWT signing method, if needed
 # The default signing method is HS256.
 #jwt_signing_method: "HS256"
+
+#twilio
+twilio_account_sid: "ACaf620953d5f7674a99ae2f2ccff82c0c"
+twilio_auth_token : "acb0a1b9cc9cc069a7a521677f09f4e7"

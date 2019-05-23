@@ -95,20 +95,37 @@ func LRange(key string, start, stop int64) ([]string, error) {
 }
 
 // ZRange ...
+// Returns the specified range of elements in the sorted set stored at key
 func ZRange(key string, start, stop int64) ([]string, error) {
 	val, err := redisClient.ZRange(key, start, stop).Result()
 	return val, err
 }
 
 // ZRevRange ...
+// Returns the specified range of elements in the sorted set stored at key
+// elements are considered to be ordered from high to low scores
 func ZRevRange(key string, start, stop int64) ([]string, error) {
 	val, err := redisClient.ZRevRange(key, start, stop).Result()
 	return val, err
 }
 
+// ZRevRangeByScore ...
+// Returns the specified range of elements in the sorted set stored at key
+// elements are considered to be ordered from high to low scores
+func ZRevRangeByScore(key string, min, max string, offset, lim int64) ([]string, error) {
+	opt := redis.ZRangeBy{
+		Min:    min,
+		Max:    max,
+		Offset: offset,
+		Count:  lim,
+	}
+	val, err := redisClient.ZRevRangeByScore(key, opt).Result()
+	return val, err
+}
+
 // ZCount ...
-func ZCount(key string) int64 {
-	return redisClient.ZCount(key, "-inf", "+inf").Val()
+func ZCount(key, min, max string) int64 {
+	return redisClient.ZCount(key, min, max).Val()
 }
 
 // ListLength ...

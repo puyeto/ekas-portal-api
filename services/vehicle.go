@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	//"time"
@@ -15,7 +16,6 @@ import (
 type vehicleDAO interface {
 	GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
 	GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
-	CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error)
 	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
 	// Create saves a new vehicle in the storage.
@@ -71,10 +71,43 @@ func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid str
 	return deviceData, err
 }
 
+// FetchAllTripsBetweenDates ...
+func (s *VehicleService) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error) {
+	var deviceData []models.DeviceData
+
+	min := strconv.FormatInt(from, 10)
+	max := strconv.FormatInt(to, 10)
+
+	keysList, err := app.ZRevRangeByScore("data:"+deviceid, min, max, int64(offset), int64(limit))
+	if err != nil {
+		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	for i := 0; i < len(keysList); i++ {
+
+		if keysList[i] != "0" {
+			var deserializedValue models.DeviceData
+			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
+			deviceData = append(deviceData, deserializedValue)
+		}
+
+	}
+
+	return deviceData, err
+}
+
 // CountRedisTripRecords ...
 func (s *VehicleService) CountRedisTripRecords(rs app.RequestScope, deviceid string) int {
-	ListLength := app.ZCount("data:" + deviceid)
+	ListLength := app.ZCount("data:"+deviceid, "-inf", "+inf")
 	return int(ListLength)
+}
+
+// CountRedisTripRecordsBtwDates ...
+func (s *VehicleService) CountRedisTripRecordsBtwDates(rs app.RequestScope, deviceid string, from, to int64) int {
+	min := strconv.FormatInt(from, 10)
+	max := strconv.FormatInt(to, 10)
+	count := app.ZCount("data:"+deviceid, min, max)
+	return int(count)
 }
 
 // GetOverspeedByDeviceID ...
@@ -115,6 +148,35 @@ func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.Dev
 	}
 
 	return deviceData, err
+}
+
+// ListAllViolations ...
+func (s *VehicleService) ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error) {
+
+	var deviceData []models.DeviceData
+
+	keysList, err := app.ZRevRange("violations", int64(offset), int64(limit))
+	if err != nil {
+		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	for i := 0; i < len(keysList); i++ {
+
+		if keysList[i] != "0" {
+			var deserializedValue models.DeviceData
+			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
+			deviceData = append(deviceData, deserializedValue)
+		}
+
+	}
+
+	return deviceData, err
+}
+
+// CountAllViolations ...
+func (s *VehicleService) CountAllViolations(rs app.RequestScope) int {
+	count := app.ZCount("violation", "-inf", "+inf")
+	return int(count)
 }
 
 // GetUnavailableDevices ...
@@ -160,11 +222,6 @@ func dateF(year int, month time.Month, day int, hr, min, sec int) time.Time {
 	return time.Date(year, month, day, hr, min, sec, 0, time.UTC)
 }
 
-// FetchAllTripsBetweenDates ...
-func (s *VehicleService) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error) {
-	return s.dao.FetchAllTripsBetweenDates(rs, deviceid, offset, limit, from, to)
-}
-
 // CountTripRecords Count returns the number of trip records.
 func (s *VehicleService) CountTripRecords(rs app.RequestScope, deviceid string) (int, error) {
 	return s.dao.CountTripRecords(rs, deviceid)
@@ -183,11 +240,6 @@ func (s *VehicleService) CountSearches(rs app.RequestScope, searchterm string) (
 // CountViolations Count returns the number of Violation records.
 func (s *VehicleService) CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error) {
 	return s.dao.CountViolations(rs, deviceid, reason)
-}
-
-// CountTripRecordsBtwDates Count returns the number of trip records.
-func (s *VehicleService) CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error) {
-	return s.dao.CountTripRecordsBtwDates(rs, deviceid, from, to)
 }
 
 // Create creates a new vehicle.

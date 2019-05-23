@@ -29,6 +29,9 @@ type appConfig struct {
 	JWTVerificationKey string `mapstructure:"jwt_verification_key"`
 	// url to tracking server
 	TrackingServerURL string `mapstructure:"tracking_server_url"`
+	// Twilio
+	TwilioAccountSID string `mapstructure:"twilio_account_sid"`
+	TwilioAuthToken  string `mapstructure:"twilio_auth_token"`
 }
 
 func (config appConfig) Validate() error {
