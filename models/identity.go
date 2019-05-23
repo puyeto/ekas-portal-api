@@ -1,6 +1,10 @@
 package models
 
-import validation "github.com/go-ozzo/ozzo-validation"
+import (
+	"time"
+
+	validation "github.com/go-ozzo/ozzo-validation"
+)
 
 // Identity ..
 type Identity interface {
@@ -23,12 +27,6 @@ func (m UserData) ValidateUserData() error {
 	)
 }
 
-// MessageDetails ...
-type MessageDetails struct {
-	MessageID int
-	Message   string
-}
-
 // User ...
 type User struct {
 	ID   string
@@ -43,4 +41,22 @@ func (u User) GetID() string {
 // GetName ...
 func (u User) GetName() string {
 	return u.Name
+}
+
+// MessageDetails ...
+type MessageDetails struct {
+	MessageID int
+	Message   string
+}
+
+// SaveMessages ...
+type SaveMessageDetails struct {
+	MessageID   int
+	Message     string
+	DateTime    time.Time
+	SID         string
+	Status      string
+	DateCreated string
+	From        string
+	To          string
 }
