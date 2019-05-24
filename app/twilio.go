@@ -35,9 +35,9 @@ func SendSMSMessages(message chan models.MessageDetails) {
 			diff := t1.Sub(data.DateTime)
 			dif := int64(diff.Minutes())
 			fmt.Println(dif, data.MessageID)
-			if ("Sent from your Twilio trial account - " + message.Message) == data.Message {
+			if ("Sent from your Twilio trial account - " + message.Message) != data.Message {
 
-				if (dif > 10 && data.MessageID == message.MessageID) || (data.MessageID != message.MessageID) {
+				if (dif > 5 && data.MessageID == message.MessageID) || (data.MessageID != message.MessageID) {
 					accountSid := "ACeab16ebd80a48c1f4318f09c6ad6e33e"
 					authToken := "8812492c587bf5cda4ee01a0bfedff3d"
 					urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"

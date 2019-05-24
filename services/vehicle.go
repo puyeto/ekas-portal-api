@@ -209,6 +209,29 @@ func (s *VehicleService) ListAllViolations(rs app.RequestScope, offset, limit in
 	return deviceData, err
 }
 
+// GetOfflineViolations ...
+func (s *VehicleService) GetOfflineViolations(rs app.RequestScope, deviceid string) ([]models.DeviceData, error) {
+
+	var deviceData []models.DeviceData
+
+	keysList, err := app.ZRevRange("offline:"+deviceid, 0, 100)
+	if err != nil {
+		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	for i := 0; i < len(keysList); i++ {
+
+		if keysList[i] != "0" {
+			var deserializedValue models.DeviceData
+			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
+			deviceData = append(deviceData, deserializedValue)
+		}
+
+	}
+
+	return deviceData, err
+}
+
 // CountAllViolations ...
 func (s *VehicleService) CountAllViolations(rs app.RequestScope) int {
 	count := app.ZCount("violation", "-inf", "+inf")

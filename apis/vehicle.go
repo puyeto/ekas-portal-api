@@ -29,6 +29,7 @@ type (
 		SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
 		CountSearches(rs app.RequestScope, searchterm string) (int, error)
 		GetUnavailableDevices(rs app.RequestScope) ([]models.DeviceData, error)
+		GetOfflineViolations(rs app.RequestScope, deviceid string) ([]models.DeviceData, error)
 	}
 
 	// vehicleResource defines the handlers for the CRUD APIs.
@@ -50,6 +51,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/listrecentviolations", r.listRecentViolations)
 	rg.Get("/currentviolation", r.getCurrentViolations)
 	rg.Get("/listviolations", r.listAllViolations)
+	rg.Get("/getoffline/<id>", r.getOffline)
 	rg.Get("/search/<term>", r.searchVehicle)
 	rg.Get("/unavailable", r.getUnavailable)
 }
@@ -131,6 +133,15 @@ func (r *vehicleResource) listAllViolations(c *routing.Context) error {
 	}
 	paginatedList.Items = response
 	return c.Write(paginatedList)
+}
+
+func (r *vehicleResource) getOffline(c *routing.Context) error {
+	deviceid := c.Param("id")
+	resp, err := r.service.GetOfflineViolations(app.GetRequestScope(c), deviceid)
+	if err != nil {
+		return err
+	}
+	return c.Write(resp)
 }
 
 // getOverspeedsByDeviceID ...
