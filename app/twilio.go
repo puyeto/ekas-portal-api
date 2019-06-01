@@ -17,7 +17,7 @@ var Message = make(chan models.MessageDetails)
 
 func init() {
 	// message := <-Message
-	go SendSMSMessages(Message)
+	// go SendSMSMessages(Message)
 }
 
 // check if messages have been sent
@@ -30,7 +30,8 @@ func SendSMSMessages(message chan models.MessageDetails) {
 		// Set account keys & information
 
 		if message.MessageID > 0 {
-			data, _ := checkSentMessages(toNumber)
+			// check if user has sent message in the last 5min
+			data, _ := checkMessages(toNumber)
 			t1 := time.Now()
 			diff := t1.Sub(data.DateTime)
 			dif := int64(diff.Minutes())
@@ -94,8 +95,8 @@ type SMSCheck struct {
 	Message   string    `json:"message"`
 }
 
-// check if user has sent message in the last 5min
-func checkSentMessages(tonumber string) (SMSCheck, error) {
+// check for sent messages
+func checkMessages(tonumber string) (SMSCheck, error) {
 	var data SMSCheck
 	q := DBCon.NewQuery("SELECT date_time, message_id, message FROM saved_messages WHERE `to`='" + tonumber + "' ORDER BY id DESC  LIMIT 1 ")
 	err := q.One(&data)
