@@ -119,7 +119,7 @@ func ZRevRangeByScore(key string, min, max string, offset, lim int64) ([]string,
 		Offset: offset,
 		Count:  lim,
 	}
-	val, err := redisClient.ZRevRangeByScore(key, opt).Result()
+	val, err := redisClient.ZRevRangeByScore(key, &opt).Result()
 	return val, err
 }
 
