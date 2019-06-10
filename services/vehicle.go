@@ -136,13 +136,13 @@ func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.Dev
 	}
 
 	for i := 0; i < len(keysList); i++ {
-		fmt.Println("Getting " + keysList[i])
+		// fmt.Println("Getting " + keysList[i])
 		value, err := app.GetDeviceDataValue(keysList[i])
 		if err != nil {
 			return nil, err
 		}
 		if value.SystemCode == "MCPG" {
-			fmt.Println("device_id", value.DeviceID)
+			// fmt.Println("device_id", value.DeviceID)
 			deviceData = append(deviceData, value)
 		}
 	}
@@ -160,24 +160,24 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.Dev
 		return nil, err
 	}
 	if value.SystemCode == "MCPG" {
-		var message string
-		var message_id int
-		// fmt.Println("device_id", value.DeviceID)
-		if value.Offline {
-			message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
-			message_id = 4
-		} else if value.Disconnect {
-			message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
-			message_id = 3
-		} else if value.Failsafe {
-			message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
-			message_id = 2
-		} else if value.GroundSpeed > 80 {
-			message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
-			message_id = 1
-		}
+		// var message string
+		// var message_id int
+		// // fmt.Println("device_id", value.DeviceID)
+		// if value.Offline {
+		// 	message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
+		// 	message_id = 4
+		// } else if value.Disconnect {
+		// 	message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
+		// 	message_id = 3
+		// } else if value.Failsafe {
+		// 	message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
+		// 	message_id = 2
+		// } else if value.GroundSpeed > 80 {
+		// 	message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
+		// 	message_id = 1
+		// }
 
-		app.Message <- models.MessageDetails{message_id, message}
+		// app.Message <- models.MessageDetails{message_id, message}
 
 		// go app.SendSMSMessages("+254723436438", message)
 		deviceData = append(deviceData, value)
