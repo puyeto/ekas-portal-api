@@ -3,9 +3,9 @@ package apis
 import (
 	"strconv"
 
-	"github.com/go-ozzo/ozzo-routing"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
+	routing "github.com/go-ozzo/ozzo-routing"
 )
 
 type (

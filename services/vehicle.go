@@ -18,6 +18,7 @@ type vehicleDAO interface {
 	GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
+	ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
 	// Create saves a new vehicle in the storage.
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) error
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
@@ -126,28 +127,8 @@ func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, 
 }
 
 // ListRecentViolations ...
-func (s *VehicleService) ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error) {
-	// define slice of Identification
-	var deviceData []models.DeviceData
-
-	keysList, err := app.ListKeys("currentviolations:*")
-	if err != nil {
-		fmt.Println("Getting Keys Failed : " + err.Error())
-	}
-
-	for i := 0; i < len(keysList); i++ {
-		// fmt.Println("Getting " + keysList[i])
-		value, err := app.GetDeviceDataValue(keysList[i])
-		if err != nil {
-			return nil, err
-		}
-		if value.SystemCode == "MCPG" {
-			// fmt.Println("device_id", value.DeviceID)
-			deviceData = append(deviceData, value)
-		}
-	}
-
-	return deviceData, err
+func (s *VehicleService) ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error) {
+	return s.dao.ListRecentViolations(rs, offset, limit)
 }
 
 // GetCurrentViolations single violation as they happen...

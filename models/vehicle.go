@@ -150,7 +150,7 @@ type DeviceData struct {
 	TransmissionReasonSpecificData int       `json:"transmission_reason_specificData,omitempty"` // 1 byte
 	Failsafe                       bool      `json:"failsafe"`
 	Disconnect                     bool      `json:"disconnect"`
-	Offline                     bool      `json:"offline"`
+	Offline                        bool      `json:"offline"`
 	TransmissionReason             int       `json:"transmission_reason,omitempty"` // 1 byte
 	ModeOfOperation                int       `json:"mode_of_operation,omitempty"`   // 1 byte
 	IOStatus                       uint16    `json:"io_status,omitempty"`           // 5 bytes
@@ -186,4 +186,23 @@ type DeviceData struct {
 type LastSeenStruct struct {
 	DateTime   time.Time
 	DeviceData DeviceData
+}
+
+// CurrentViolations ...
+type CurrentViolations struct {
+	DeviceID            string    `json:"device_id" db:"device_id"`
+	Name                string    `json:"name" db:"name"`
+	OverspeedTripData   string    `json:"overspeed_trip_data,omitempty" db:"overspeed_trip_data"`
+	OverspeedSpeed      string    `json:"overspeed_speed,omitempty" db:"overspeed_speed"`
+	OverspeedDate       time.Time `json:"overspeed_date,omitempty" db:"overspeed_date"`
+	DisconnectTripData  string    `json:"disconnect_trip_data,omitempty" db:"disconnect_trip_data"`
+	DisconnectTripSpeed string    `json:"disconnect_trip_speed,omitempty" db:"disconnect_trip_speed"`
+	DisconnectTripDate  time.Time `json:"disconnect_trip_date,omitempty" db:"disconnect_trip_date"`
+	FailsafeTripData    string    `json:"failsafe_trip_data,omitempty" db:"failsafe_trip_data"`
+	FailsafeTripSpeed   string    `json:"failsafe_trip_speed,omitempty" db:"failsafe_trip_speed"`
+	FailsafeTripDate    time.Time `json:"failsafe_trip_date,omitempty" db:"failsafe_trip_date"`
+	OfflineTripData     string    `json:"offline_trip_data,omitempty" db:"offline_trip_data"`
+	OfflineTripSpeeds   string    `json:"offline_trip_speed,omitempty" db:"offline_trip_speed"`
+	OfflineTripDate     time.Time `json:"offline_trip_date,omitempty" db:"offline_trip_date"`
+	CreatedOn           time.Time `json:"created_on" db:"created_on"`
 }

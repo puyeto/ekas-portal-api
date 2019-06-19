@@ -139,6 +139,14 @@ func (dao *VehicleDAO) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid s
 	return tdetails, err
 }
 
+// ListRecentViolations
+func (dao *VehicleDAO) ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error) {
+	tdetails := []models.CurrentViolations{}
+	err := rs.Tx().Select().
+		OrderBy("created_on DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
+	return tdetails, err
+}
+
 // ----------------------------Add / Update Vehicle------------------------------------
 
 // CreateVehicle saves a new vehicle record in the database.

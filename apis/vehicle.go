@@ -22,7 +22,7 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
-		ListRecentViolations(rs app.RequestScope) ([]models.DeviceData, error)
+		ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
 		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error)
 		CountAllViolations(rs app.RequestScope) int
@@ -217,7 +217,9 @@ func (r *vehicleResource) searchVehicle(c *routing.Context) error {
 
 // listViolations
 func (r *vehicleResource) listRecentViolations(c *routing.Context) error {
-	resp, err := r.service.ListRecentViolations(app.GetRequestScope(c))
+	offset := 0
+	limit := 50
+	resp, err := r.service.ListRecentViolations(app.GetRequestScope(c), offset, limit)
 	if err != nil {
 		return err
 	}
