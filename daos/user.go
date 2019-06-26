@@ -97,6 +97,13 @@ func (dao *UserDAO) CreateNewEmailVerification(rs app.RequestScope, con *models.
 	return err
 }
 
+func (dao *UserDAO) IsEmailExists(rs app.RequestScope, email string) (int, error) {
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM admin_user_details WHERE email='" + email + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	return exists, err
+}
+
 // CreateLoginSession creates a new one-time-use login token
 func (dao *UserDAO) CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error {
 	return rs.Tx().Model(ls).Exclude().Insert()

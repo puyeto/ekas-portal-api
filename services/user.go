@@ -23,6 +23,7 @@ type userDAO interface {
 	GetUserByEmail(rs app.RequestScope, email string) (*models.ListUserDetails, error)
 	// Register saves a new user in the storage.
 	Register(rs app.RequestScope, usr *models.AdminUserDetails) error
+	IsEmailExists(rs app.RequestScope, email string) (int, error)
 	// SubmitUserRole saves a new user role.
 	SubmitUserRole(rs app.RequestScope, usr *models.AdminUserRoles) error
 	Delete(rs app.RequestScope, id int32) error
@@ -122,6 +123,16 @@ func (u *UserService) Register(rs app.RequestScope, model *models.AdminUserDetai
 	model.UserID = 0
 	if err := model.ValidateNewUser(); err != nil {
 		return 0, err
+	}
+
+	//cehck if email exists
+	exists, err := u.dao.IsEmailExists(rs, model.Email)
+	if err != nil {
+		return 0, err
+	}
+
+	if exists == 1 {
+		return 0, errors.New("User already exist")
 	}
 
 	s := New()
