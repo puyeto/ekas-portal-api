@@ -80,6 +80,9 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	rg := router.Group("/api/v" + app.Version)
 
+	userDAO := daos.NewUserDAO()
+	apis.ServeUserResource(rg, services.NewUserService(userDAO))
+
 	// rg.Post("/auth", apis.Auth(app.Config.JWTSigningKey))
 	// rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
 	// 	SigningMethod: app.Config.JWTSigningMethod,

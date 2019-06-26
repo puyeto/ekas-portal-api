@@ -1,12 +1,16 @@
 package app
 
 import (
+	"crypto/sha1"
 	"fmt"
+	"io"
 	"math/rand"
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/rs/xid"
 	"github.com/sony/sonyflake"
+	"github.com/speps/go-hashids"
 	"github.com/spf13/viper"
 )
 
@@ -81,4 +85,25 @@ func GenerateNewID1() uint64 {
 func GenerateNewID() uint32 {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return r.Uint32()
+}
+
+// GenerateNewStringID ...
+func GenerateNewStringID() string {
+	guid := xid.New()
+	hd := hashids.NewData()
+	hd.Salt = guid.String()
+	hd.MinLength = 10
+	hd.Alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
+	h, _ := hashids.NewWithData(hd)
+	e, _ := h.Encode([]int{45, 434, 1313})
+
+	return e
+}
+
+// CalculatePassHash calculate password hash usin paswword and salt
+func CalculatePassHash(pass, salt string) string {
+	h := sha1.New()
+	io.WriteString(h, salt)
+	io.WriteString(h, pass)
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

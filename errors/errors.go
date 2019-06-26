@@ -1,15 +1,21 @@
 package errors
 
 import (
+	"errors"
 	"net/http"
 	"sort"
 
-	"github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation"
 )
 
 type validationError struct {
 	Field string `json:"field"`
 	Error string `json:"error"`
+}
+
+// New ...
+func New(err string) error {
+	return errors.New(err)
 }
 
 // InternalServerError creates a new API error representing an internal server error (HTTP 500)
@@ -25,6 +31,16 @@ func NotFound(resource string) *APIError {
 // Unauthorized creates a new API error representing an authentication failure (HTTP 401)
 func Unauthorized(err string) *APIError {
 	return NewAPIError(http.StatusUnauthorized, "UNAUTHORIZED", Params{"error": err})
+}
+
+// BadRequest creates a new API error representing a bad request (HTTP 400)
+func BadRequest(err string) *APIError {
+	return NewAPIError(http.StatusBadRequest, "BADREQUEST", Params{"error": err})
+}
+
+// NoContentFound creates a new API error representing a no content request (HTTP 204)
+func NoContentFound(err string) *APIError {
+	return NewAPIError(http.StatusNoContent, "NOCONTENT", Params{"error": err})
 }
 
 // InvalidData converts a data validation error into an API error (HTTP 400)
