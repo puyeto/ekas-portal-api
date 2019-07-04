@@ -2,7 +2,8 @@
 # Make sure you override this in production with the environment variable: RESTFUL_DSN
 # dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
 # local_dsn: "root:@/ekas_portal?parseTime=true"
-local_dsn: "root:@tcp(127.0.0.1:3306)/ekas_portal?parseTime=true"
+# local_dsn: "root:@tcp(127.0.0.1:3306)/ekas_portal?parseTime=true"
+local_dsn: "root:safcom2012@tcp(35.184.65.222:3306)/ekas_portal?parseTime=true"
 server_dns: "root:safcom2012@tcp(35.184.65.222:3306)/ekas_portal?parseTime=true"
 tracking_server_url: "http://tracking.ekastech.com/api/"
 server_port: "8081"

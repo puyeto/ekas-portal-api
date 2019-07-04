@@ -142,8 +142,22 @@ func (dao *VehicleDAO) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid s
 // ListRecentViolations
 func (dao *VehicleDAO) ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error) {
 	tdetails := []models.CurrentViolations{}
-	err := rs.Tx().Select().
-		OrderBy("created_on DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
+	// err := rs.Tx().Select().
+	//	OrderBy("created_on DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
+
+	err := rs.Tx().Select("cv.device_id", "name", "overspeed_trip_data", "overspeed_speed",
+		"COALESCE(td.data_date, '') AS overspeed_date", "disconnect_trip_data",
+		"disconnect_trip_speed", "COALESCE(tdd.data_date, '') AS disconnect_trip_date",
+		"failsafe_trip_data", "failsafe_trip_speed",
+		"COALESCE(tdf.data_date, '') AS failsafe_trip_date", "offline_trip_data",
+		"offline_trip_speed", "COALESCE(tdo.data_date, '') AS offline_trip_date").
+		From("current_violations AS cv").
+		LeftJoin("trip_data AS td", dbx.NewExp("td.trip_id = overspeed_trip_data")).
+		LeftJoin("trip_data AS tdd", dbx.NewExp("tdd.trip_id = disconnect_trip_data")).
+		LeftJoin("trip_data AS tdf", dbx.NewExp("tdf.trip_id = failsafe_trip_data")).
+		LeftJoin("trip_data AS tdo", dbx.NewExp("tdo.trip_id = offline_trip_data")).
+		OrderBy("cv.created_on DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
+
 	return tdetails, err
 }
 

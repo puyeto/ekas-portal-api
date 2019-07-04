@@ -159,8 +159,6 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.Dev
 		// }
 
 		// app.Message <- models.MessageDetails{message_id, message}
-
-		// go app.SendSMSMessages("+254723436438", message)
 		deviceData = append(deviceData, value)
 	}
 
@@ -309,12 +307,11 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	}
 
 	// Add Vehicle
-	fmt.Println(model.VehicleID)
 	var vid = app.GenerateNewID()
 	if model.VehicleID > 0 {
 		vid = model.VehicleID
 	}
-	fmt.Println(vid)
+
 	vd := NewVehicle(model.DeviceDetails, vid)
 	if err := s.dao.CreateVehicle(rs, vd); err != nil {
 		return 0, err
