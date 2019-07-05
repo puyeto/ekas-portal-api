@@ -139,7 +139,7 @@ func (dao *VehicleDAO) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid s
 	return tdetails, err
 }
 
-// ListRecentViolations
+// ListRecentViolations ...
 func (dao *VehicleDAO) ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error) {
 	tdetails := []models.CurrentViolations{}
 	// err := rs.Tx().Select().
@@ -165,20 +165,23 @@ func (dao *VehicleDAO) ListRecentViolations(rs app.RequestScope, offset, limit i
 
 // CreateVehicle saves a new vehicle record in the database.
 func (dao *VehicleDAO) CreateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
-	if exists, _ := dao.VehicleExists(rs, v.VehicleID); exists == 1 {
+	exists, _ := dao.VehicleExists(rs, v.VehicleID)
+	if exists == 1 {
 		return dao.UpdateVehicle(rs, v)
 	}
 
-	return rs.Tx().Model(v).Insert("VehicleID", "VehicleStringID", "VehicleRegNo", "ChassisNo", "MakeType")
+	return rs.Tx().Model(v).Insert("VehicleID", "VehicleStringID", "VehicleRegNo", "ChassisNo", "MakeType", "NotificationEmail", "NotificationNO")
 }
 
 // UpdateVehicle ....
 func (dao *VehicleDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
 	_, err := rs.Tx().Update("vehicle_details", dbx.Params{
-		"vehicle_string_id": v.VehicleStringID,
-		"vehicle_reg_no":    v.VehicleRegNo,
-		"chassis_no":        v.ChassisNo,
-		"make_type":         v.MakeType},
+		"vehicle_string_id":  v.VehicleStringID,
+		"vehicle_reg_no":     v.VehicleRegNo,
+		"chassis_no":         v.ChassisNo,
+		"make_type":          v.MakeType,
+		"notification_email": v.NotificationEmail,
+		"notification_no":    v.NotificationNO},
 		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute()
 	return err
 }
@@ -195,7 +198,8 @@ func (dao *VehicleDAO) VehicleExists(rs app.RequestScope, id uint32) (int, error
 
 // CreateVehicleOwner Add vehicle owner
 func (dao *VehicleDAO) CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error {
-	if exists, _ := dao.VehicleOwnerExists(rs, vo.OwnerID); exists == 1 {
+	exists, _ := dao.VehicleOwnerExists(rs, vo.OwnerID)
+	if exists == 1 {
 		return dao.UpdateVehicleOwners(rs, vo)
 	}
 	return rs.Tx().Model(vo).Insert("OwnerID", "OwnerIDNo", "OwnerName", "OwnerEmail", "OwnerPhone")
@@ -223,7 +227,8 @@ func (dao *VehicleDAO) VehicleOwnerExists(rs app.RequestScope, id uint32) (int, 
 
 // CreateFitter Add Fitter
 func (dao *VehicleDAO) CreateFitter(rs app.RequestScope, fd *models.FitterDetails) error {
-	if exists, _ := dao.FitterExists(rs, fd.FitterID); exists == 1 {
+	exists, _ := dao.FitterExists(rs, fd.FitterID)
+	if exists == 1 {
 		return dao.UpdateFitter(rs, fd)
 	}
 	return rs.Tx().Model(fd).Insert("FitterID", "FitterIDNo", "FittingCenterName", "FitterLocation", "FitterEmail", "FitterAddress", "FitterPhone", "FittingDate", "FitterBizRegNo")
@@ -258,6 +263,7 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 	a, _ := json.Marshal(cd)
 	_, err := rs.Tx().Insert("vehicle_configuration", dbx.Params{
 		"conf_id":           app.GenerateNewID(),
+		"device_id":         cd.GovernorDetails.DeviceID,
 		"vehicle_id":        vehicleid,
 		"owner_id":          ownerid,
 		"fitter_id":         fitterid,

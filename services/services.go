@@ -39,11 +39,13 @@ func NewFitter(m models.DeviceDetails, id uint32) *models.FitterDetails {
 // NewVehicle ...
 func NewVehicle(m models.DeviceDetails, id uint32) *models.VehicleDetails {
 	vd := &models.VehicleDetails{
-		VehicleID:       id,
-		VehicleStringID: strings.ToLower(strings.Replace(m.RegistrationNO, " ", "", -1)),
-		VehicleRegNo:    m.RegistrationNO,
-		ChassisNo:       m.ChasisNO,
-		MakeType:        m.MakeType,
+		VehicleID:         id,
+		VehicleStringID:   strings.ToLower(strings.Replace(m.RegistrationNO, " ", "", -1)),
+		VehicleRegNo:      m.RegistrationNO,
+		ChassisNo:         m.ChasisNO,
+		MakeType:          m.MakeType,
+		NotificationEmail: m.NotificationEmail,
+		NotificationNO:    m.NotificationNO,
 	}
 	return vd
 }

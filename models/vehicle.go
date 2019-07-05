@@ -40,30 +40,32 @@ type SearchDetails struct {
 
 // DeviceDetails ....
 type DeviceDetails struct {
-	OwnerName        string `json:"owner_name"`
-	OwnerID          string `json:"owner_id"`
-	OwnerPhoneNumber string `json:"owner_phone_number,omitempty"`
-	OwnerEmail       string `json:"owner_email,omitempty"`
-	RegistrationNO   string `json:"registration_no"`
-	ChasisNO         string `json:"chasis_no"`
-	MakeType         string `json:"make_type"`
-	Certificate      string `json:"certificate"`
-	DeviceType       string `json:"device_type"`
-	SerialNO         string `json:"serial_no"`
-	FittingDate      string `json:"fitting_date"`
-	FittingTime      string `json:"fitting_time"`
-	FittingCenter    string `json:"fitting_center"`
-	AgentID          string `json:"agent_id"`
-	AgentLocation    string `json:"agent_location"`
-	EmailAddress     string `json:"email_address"`
-	AgentPhone       string `json:"agent_phone"`
-	BusinessRegNo    string `json:"business_reg_no"`
-	SetAlarm         string `json:"set_alarm"`
-	SetFrequency     string `json:"set_frequency"`
-	PresetSpeed      string `json:"preset_speed"`
-	GPRSSetSpeed     string `json:"gprs_set_speed"`
-	SpeedSource      string `json:"speed_source"`
-	ConfigDone       string `json:"config_done"`
+	OwnerName         string `json:"owner_name"`
+	OwnerID           string `json:"owner_id"`
+	OwnerPhoneNumber  string `json:"owner_phone_number,omitempty"`
+	OwnerEmail        string `json:"owner_email,omitempty"`
+	RegistrationNO    string `json:"registration_no"`
+	ChasisNO          string `json:"chasis_no"`
+	MakeType          string `json:"make_type"`
+	Certificate       string `json:"certificate"`
+	DeviceType        string `json:"device_type"`
+	SerialNO          string `json:"serial_no"`
+	FittingDate       string `json:"fitting_date"`
+	FittingTime       string `json:"fitting_time"`
+	FittingCenter     string `json:"fitting_center"`
+	AgentID           string `json:"agent_id"`
+	AgentLocation     string `json:"agent_location"`
+	EmailAddress      string `json:"email_address"`
+	AgentPhone        string `json:"agent_phone"`
+	BusinessRegNo     string `json:"business_reg_no"`
+	SetAlarm          string `json:"set_alarm"`
+	SetFrequency      string `json:"set_frequency"`
+	PresetSpeed       string `json:"preset_speed"`
+	GPRSSetSpeed      string `json:"gprs_set_speed"`
+	SpeedSource       string `json:"speed_source"`
+	ConfigDone        string `json:"config_done"`
+	NotificationEmail string `json:"notification_email"`
+	NotificationNO    string `json:"notification_no"`
 }
 
 // GovernorDetails ...
@@ -86,11 +88,13 @@ type GovernorDetails struct {
 
 // VehicleDetails ...
 type VehicleDetails struct {
-	VehicleID       uint32 `json:"vehicle_id" db:"pk,vehicle_id"`
-	VehicleStringID string `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
-	VehicleRegNo    string `json:"vehicle_reg_no" db:"vehicle_reg_no"`
-	ChassisNo       string `json:"chassis_no" db:"chassis_no"`
-	MakeType        string `json:"make_type" db:"make_type"`
+	VehicleID         uint32 `json:"vehicle_id" db:"pk,vehicle_id"`
+	VehicleStringID   string `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
+	VehicleRegNo      string `json:"vehicle_reg_no" db:"vehicle_reg_no"`
+	ChassisNo         string `json:"chassis_no" db:"chassis_no"`
+	MakeType          string `json:"make_type" db:"make_type"`
+	NotificationEmail string `json:"notification_email" db:"notification_email"`
+	NotificationNO    string `json:"notification_no" db:"notification_no"`
 }
 
 // VehicleOwner ...

@@ -317,7 +317,7 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	// Add Configuartion Details
+	// Add Configuration Details
 	if model.ConfigID > 0 {
 		// update configuration status
 		if err := s.dao.UpdateConfigurationStatus(rs, model.ConfigID, 0); err != nil {

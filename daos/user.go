@@ -97,6 +97,7 @@ func (dao *UserDAO) CreateNewEmailVerification(rs app.RequestScope, con *models.
 	return err
 }
 
+// IsEmailExists ...
 func (dao *UserDAO) IsEmailExists(rs app.RequestScope, email string) (int, error) {
 	var exists int
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM admin_user_details WHERE email='" + email + "' LIMIT 1) AS exist")
