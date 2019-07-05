@@ -24,10 +24,11 @@ func NewVehicleDAO() *VehicleDAO {
 // GetVehicleByStrID ...
 func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vehicle_id, owner_id, fitter_id, data FROM vehicle_configuration "
-	query += " WHERE status=1 AND vehicle_string_id='" + strid + "' LIMIT 1"
+	query := "SELECT conf_id, device_id, vc.vehicle_id, owner_id, fitter_id, notification_email, notification_no, data FROM vehicle_configuration AS vc "
+	query += " LEFT JOIN vehicle_details ON (vehicle_details.vehicle_id = vc.vehicle_id) "
+	query += " WHERE status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.Data)
 	fmt.Println(vdetails)
 	return &vdetails, err
 }

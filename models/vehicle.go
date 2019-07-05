@@ -24,12 +24,15 @@ type TrackingVehicleDetails struct{}
 
 // VehicleConfigDetails ...
 type VehicleConfigDetails struct {
-	ConfigID  uint32 `json:"conf_id"`
-	VehicleID uint32 `json:"vehicle_id,omitempty"`
-	OwnerID   uint32 `json:"owner_id,omitempty"`
-	FitterID  uint32 `json:"fitter_id,omitempty"`
-	Data      string `json:"vehicle_data,omitempty"`
-	CreatedOn string `json:"created_on,omitempty"`
+	ConfigID          uint32 `json:"conf_id"`
+	DeviceID          uint32 `json:"device_id,omitempty"`
+	VehicleID         uint32 `json:"vehicle_id,omitempty"`
+	OwnerID           uint32 `json:"owner_id,omitempty"`
+	FitterID          uint32 `json:"fitter_id,omitempty"`
+	NotificationEmail string `json:"notification_email,omitempty"`
+	NotificationNO    string `json:"notification_no,omitempty"`
+	Data              string `json:"vehicle_data,omitempty"`
+	CreatedOn         string `json:"created_on,omitempty"`
 }
 
 // SearcDetails ...
