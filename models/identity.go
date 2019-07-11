@@ -49,7 +49,7 @@ type MessageDetails struct {
 	Message   string
 }
 
-// SaveMessages ...
+// SaveMessageDetails ...
 type SaveMessageDetails struct {
 	MessageID   int
 	Message     string

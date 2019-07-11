@@ -101,5 +101,8 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	trackingServerDAO := daos.NewTrackingServerDAO()
 	apis.ServeTrackingServerResource(rg, services.NewTrackingServerService(trackingServerDAO))
 
+	deviceDAO := daos.NewDeviceDAO()
+	apis.ServeDeviceResource(rg, services.NewDeviceService(deviceDAO))
+
 	return router
 }
