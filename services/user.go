@@ -20,7 +20,7 @@ type userDAO interface {
 	GetUser(rs app.RequestScope, id int32) (*models.ListUserDetails, error)
 	// GetUserByEmail returns the user with the specified user email.
 	// GetUserByEmail(rs app.RequestScope, email string) (*models.UserDetails, error)
-	GetUserByEmail(rs app.RequestScope, email string) (*models.ListUserDetails, error)
+	GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error)
 	// Register saves a new user in the storage.
 	Register(rs app.RequestScope, usr *models.AdminUserDetails) error
 	IsEmailExists(rs app.RequestScope, email string) (int, error)
@@ -54,12 +54,12 @@ func (u *UserService) GetUser(rs app.RequestScope, id int32) (*models.ListUserDe
 }
 
 // GetUserByEmail returns the user with the specified the user email.
-func (u *UserService) GetUserByEmail(rs app.RequestScope, email string) (*models.ListUserDetails, error) {
+func (u *UserService) GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error) {
 	return u.dao.GetUserByEmail(rs, email)
 }
 
 //Login a user
-func (u *UserService) Login(rs app.RequestScope, c *models.Credential) (*models.ListUserDetails, error) {
+func (u *UserService) Login(rs app.RequestScope, c *models.Credential) (*models.AdminUserDetails, error) {
 	if err := c.ValidateCredential(); err != nil {
 		return nil, err
 	}
@@ -69,31 +69,31 @@ func (u *UserService) Login(rs app.RequestScope, c *models.Credential) (*models.
 		return nil, err
 	}
 
-	if &res.UserDetails == nil {
+	if &res == nil {
 		return nil, errors.New("no user found")
 	}
 
-	if res.UserDetails.Password != app.CalculatePassHash(c.Password, res.UserDetails.Salt) {
+	if res.Password != app.CalculatePassHash(c.Password, res.Salt) {
 		return nil, errors.New("invalid credential")
 	}
 
-	if res.UserDetails.IsVerified != 1 {
+	if res.IsVerified != 1 {
 		return nil, errors.New("Account not verified")
 	}
 
-	reset(&res.UserDetails)
+	reset(res)
 
 	token, err := auth.NewJWT(jwt.MapClaims{
-		"id":  strconv.Itoa(int(res.UserDetails.UserID)),
+		"id":  strconv.Itoa(int(res.UserID)),
 		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	}, app.Config.JWTSigningKey)
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}
 
-	res.UserDetails.Token = token
+	res.Token = token
 
-	u.storeLoginSession(rs, &res.UserDetails)
+	u.storeLoginSession(rs, res)
 
 	return res, nil
 }

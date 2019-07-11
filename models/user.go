@@ -26,9 +26,9 @@ type Credential struct {
 	Password string `json:"password" db:"password"`
 }
 
-//UserDetails user structure
+//AdminUserDetails user structure
 type AdminUserDetails struct {
-	UserID           int32 `json:"user_id" db:"pk,user_id"`
+	UserID           int32  `json:"user_id" db:"pk,user_id"`
 	FirstName        string `json:"user_first_name" db:"first_name"`
 	LastName         string `json:"user_last_name" db:"last_name"`
 	Email            string `json:"user_email" db:"email"`
@@ -40,6 +40,8 @@ type AdminUserDetails struct {
 	VerificationCode string `json:"Verification_code,omitempty" db:"Verification_code"`
 	Token            string `json:"token,omitempty"`
 	IsVerified       int8   `json:"is_verified,omitempty"`
+	RoleID           int32  `json:"role,omitempty" db:"role_id"`
+	RoleName         string `json:"role_name,omitempty" db:"role_name"`
 }
 
 // ListUserDetails list users structure

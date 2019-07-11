@@ -15,7 +15,7 @@ type (
 		// GetUser returns the user with the specified user ID.
 		GetUser(rs app.RequestScope, id int32) (*models.ListUserDetails, error)
 		Register(rs app.RequestScope, usr *models.AdminUserDetails) (int32, error)
-		Login(rs app.RequestScope, usr *models.Credential) (*models.ListUserDetails, error)
+		Login(rs app.RequestScope, usr *models.Credential) (*models.AdminUserDetails, error)
 		SubmitUserRole(rs app.RequestScope, usr *models.AdminUserRoles) (*models.AdminUserRoles, error)
 		Delete(rs app.RequestScope, id int32) error
 	}

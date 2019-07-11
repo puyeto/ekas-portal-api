@@ -43,23 +43,19 @@ func (dao *UserDAO) GetUser(rs app.RequestScope, id int32) (*models.ListUserDeta
 // }
 
 // GetUserByEmail reads the user with the specified email from the database.
-func (dao *UserDAO) GetUserByEmail(rs app.RequestScope, email string) (*models.ListUserDetails, error) {
-	usr := &models.ListUserDetails{}
-	err := rs.Tx().Select("first_name", "last_name", "user_id", "mobile_number", "email", "password", "username", "is_verified", "salt").
-		Where(dbx.HashExp{"email": email}).One(&usr.UserDetails)
+func (dao *UserDAO) GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error) {
+	usr := &models.AdminUserDetails{}
+	err := rs.Tx().Select("first_name", "last_name", "aud.user_id", "mobile_number", "email", "password", "username", "is_verified", "salt", "aur.role_id", "role_name").
+		From("admin_user_details AS aud").
+		LeftJoin("admin_user_roles AS aur", dbx.NewExp("aur.user_id = aud.user_id")).
+		LeftJoin("roles", dbx.NewExp("roles.role_id = aur.role_id")).
+		Where(dbx.HashExp{"email": email}).One(&usr)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var rls []models.AdminUserRoles
-	//rs.Tx().Select().Where(dbx.HashExp{"user_id": usr.UserDetails.UserID}).All(&rls)
-	rs.Tx().Select().From("user_roles").
-		LeftJoin("roles", dbx.NewExp("roles.role_id = user_roles.role_id")).
-		Where(dbx.HashExp{"user_id": usr.UserDetails.UserID}).All(&rls)
-	usr.Roles = rls
-
-	return usr, err
+	return usr, nil
 }
 
 // Register saves a new user record in the database.
