@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	validation "github.com/go-ozzo/ozzo-validation"
 )
 
 // Vehicle ...
@@ -91,13 +93,22 @@ type GovernorDetails struct {
 
 // VehicleDetails ...
 type VehicleDetails struct {
-	VehicleID         uint32 `json:"vehicle_id" db:"pk,vehicle_id"`
-	VehicleStringID   string `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
-	VehicleRegNo      string `json:"vehicle_reg_no" db:"vehicle_reg_no"`
-	ChassisNo         string `json:"chassis_no" db:"chassis_no"`
-	MakeType          string `json:"make_type" db:"make_type"`
-	NotificationEmail string `json:"notification_email" db:"notification_email"`
-	NotificationNO    string `json:"notification_no" db:"notification_no"`
+	VehicleID         uint32    `json:"vehicle_id" db:"pk,vehicle_id"`
+	VehicleStringID   string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
+	VehicleRegNo      string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
+	ChassisNo         string    `json:"chassis_no" db:"chassis_no"`
+	MakeType          string    `json:"make_type" db:"make_type"`
+	NotificationEmail string    `json:"notification_email" db:"notification_email"`
+	NotificationNO    string    `json:"notification_no" db:"notification_no"`
+	VehicleStatus     int8      `json:"vehicle_status,omitempty" db:"vehicle_status"`
+	CreatedOn         time.Time `json:"created_on" db:"created_on"`
+}
+
+// ValidateVehicleRecord validates the login fields.
+func (v VehicleDetails) ValidateVehicleDetails() error {
+	return validation.ValidateStruct(&v,
+		validation.Field(&v.VehicleRegNo, validation.Required),
+	)
 }
 
 // VehicleOwner ...
