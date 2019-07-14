@@ -107,3 +107,12 @@ func CalculatePassHash(pass, salt string) string {
 	io.WriteString(h, pass)
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
+
+// RandStringBytes ...
+func RandStringBytes(letterBytes string, n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
+}

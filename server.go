@@ -107,5 +107,8 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	vehicleRecordDAO := daos.NewVehicleRecordDAO()
 	apis.ServeVehicleRecordResource(rg, services.NewVehicleRecordService(vehicleRecordDAO))
 
+	settingDAO := daos.NewSettingDAO()
+	apis.ServeSettingResource(rg, services.NewSettingService(settingDAO))
+
 	return router
 }
