@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/go-ozzo/ozzo-routing"
+	"github.com/ekas-portal-api/errors"
+	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/go-ozzo/ozzo-routing/access"
 	"github.com/go-ozzo/ozzo-routing/fault"
-	"github.com/go-ozzo/ozzo-validation"
-	"github.com/ekas-portal-api/errors"
+	validation "github.com/go-ozzo/ozzo-validation"
 )
 
 // Init returns a middleware that prepares the request context and processing environment.
@@ -51,6 +51,10 @@ func logAccess(c *routing.Context, logFunc access.LogFunc, start time.Time) {
 func convertError(c *routing.Context, err error) error {
 	if err == sql.ErrNoRows {
 		return errors.NotFound("the requested resource")
+	}
+	fmt.Println(err)
+	if err == errors.New("sql: no rows in result set") {
+		return errors.NoContentFound("No result found")
 	}
 	switch err.(type) {
 	case *errors.APIError:

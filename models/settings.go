@@ -15,17 +15,25 @@ func (s Settings) ValidateSettings() error {
 	)
 }
 
+// LicenseKeys List keys
+type LicenseKeys struct {
+	KeyString string `json:"key_string" db:"pk,key_string"`
+	AssignTo  int    `json:"assign_to"`
+	Status    int    `json:"status,omitempty"`
+}
+
+// ValidateGenKeys ...
+func (s LicenseKeys) ValidateLicenseKeys() error {
+	return validation.ValidateStruct(&s,
+		validation.Field(&s.KeyString, validation.Required),
+		validation.Field(&s.AssignTo, validation.Required),
+	)
+}
+
 // GenKeys generate keys
 type GenKeys struct {
 	Number int    `json:"number"`
 	Type   string `json:"type"`
-}
-
-// LicenseKeys List keys
-type LicenseKeys struct {
-	KeyString string `json:"key_string"`
-	AssignTo  int    `json:"assign_to"`
-	Status    int    `json:"status"`
 }
 
 // ValidateGenKeys ...

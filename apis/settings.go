@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/ekas-portal-api/app"
@@ -20,6 +21,7 @@ type (
 		GenerateKey(rs app.RequestScope, model *models.GenKeys) ([]string, error)
 		CountKeys(rs app.RequestScope) (int, error)
 		QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error)
+		AssignKey(rs app.RequestScope, model *models.LicenseKeys) error
 	}
 
 	// settingResource defines the handlers for the CRUD APIs.
@@ -38,6 +40,7 @@ func ServeSettingResource(rg *routing.RouteGroup, service settingService) {
 	rg.Delete("/settings/<id>", r.delete)
 	rg.Post("/settings/generate-keys", r.generateKey)
 	rg.Get("/setting/list-keys", r.queryKeys)
+	rg.Post("/setting/assign-key", r.assignKey)
 }
 
 func (r *settingResource) get(c *routing.Context) error {
@@ -148,4 +151,18 @@ func (r *settingResource) queryKeys(c *routing.Context) error {
 	}
 	paginatedList.Items = items
 	return c.Write(paginatedList)
+}
+
+func (r *settingResource) assignKey(c *routing.Context) error {
+	var model models.LicenseKeys
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	err := r.service.AssignKey(app.GetRequestScope(c), &model)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(http.StatusOK)
 }

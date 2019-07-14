@@ -1,10 +1,12 @@
 package daos
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // SettingDAO persists setting data in database
@@ -89,4 +91,34 @@ func (dao *SettingDAO) QueryKeys(rs app.RequestScope, offset, limit int) ([]mode
 	keys := []models.LicenseKeys{}
 	err := rs.Tx().Select().Offset(int64(offset)).Limit(int64(limit)).All(&keys)
 	return keys, err
+}
+
+// GetKey reads the keys with the specified ID from the database.
+func (dao *SettingDAO) GetKey(rs app.RequestScope, key string) (*models.LicenseKeys, error) {
+	var model models.LicenseKeys
+	err := rs.Tx().Select().Model(key, &model)
+	return &model, err
+}
+
+// AssignKey assign key to user by user id.
+func (dao *SettingDAO) AssignKey(rs app.RequestScope, model *models.LicenseKeys) error {
+	keydata, err := dao.GetKey(rs, model.KeyString)
+	if err != nil {
+		return err
+	}
+
+	// check if a key has been assigned
+	if keydata.Status > 0 || keydata.AssignTo > 0 {
+		return errors.New("Key Already Assigned")
+	}
+
+	_, err = rs.Tx().Update("license_keys", dbx.Params{
+		"assign_to": model.AssignTo,
+		"status":    1,
+	}, dbx.HashExp{"key_string": model.KeyString}).Execute()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

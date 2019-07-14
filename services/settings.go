@@ -22,6 +22,8 @@ type settingDAO interface {
 	GenerateKey(rs app.RequestScope, keys []string) error
 	CountKeys(rs app.RequestScope) (int, error)
 	QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error)
+	AssignKey(rs app.RequestScope, model *models.LicenseKeys) (error)
+	GetKey(rs app.RequestScope, key string) (*models.LicenseKeys, error)
 }
 
 // SettingService provides services related with settings.
@@ -117,4 +119,17 @@ func (s *SettingService) CountKeys(rs app.RequestScope) (int, error) {
 // QueryKeys return keys with the specified offset and limit.
 func (s *SettingService) QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error) {
 	return s.dao.QueryKeys(rs, offset, limit)
+}
+
+// AssignKey assign generated keys
+func (s *SettingService) AssignKey(rs app.RequestScope, model *models.LicenseKeys) (error) {
+	if err := model.ValidateLicenseKeys(); err != nil {
+		return err
+	}
+
+	if err := s.dao.AssignKey(rs, model); err != nil {
+		return err
+	}
+
+	return nil
 }
