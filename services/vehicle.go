@@ -18,7 +18,7 @@ type vehicleDAO interface {
 	GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
-	ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
+	ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error)
 	// Create saves a new vehicle in the storage.
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) error
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
@@ -127,8 +127,8 @@ func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, 
 }
 
 // ListRecentViolations ...
-func (s *VehicleService) ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error) {
-	return s.dao.ListRecentViolations(rs, offset, limit)
+func (s *VehicleService) ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error) {
+	return s.dao.ListRecentViolations(rs, offset, limit, uid)
 }
 
 // GetCurrentViolations single violation as they happen...

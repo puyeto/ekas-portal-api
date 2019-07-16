@@ -210,6 +210,7 @@ type LastSeenStruct struct {
 type CurrentViolations struct {
 	DeviceID            string    `json:"device_id" db:"device_id"`
 	Name                string    `json:"name" db:"name"`
+	UserID              string    `json:"user_id,omitempty" db:"user_id"`
 	OverspeedTripData   string    `json:"overspeed_trip_data,omitempty" db:"overspeed_trip_data"`
 	OverspeedSpeed      string    `json:"overspeed_speed,omitempty" db:"overspeed_speed"`
 	OverspeedDate       string    `json:"overspeed_date,omitempty" db:"overspeed_date"`

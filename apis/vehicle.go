@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -22,7 +23,7 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
-		ListRecentViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
+		ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error)
 		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error)
 		CountAllViolations(rs app.RequestScope) int
@@ -217,9 +218,12 @@ func (r *vehicleResource) searchVehicle(c *routing.Context) error {
 
 // listViolations
 func (r *vehicleResource) listRecentViolations(c *routing.Context) error {
+	// get user id
+	uid := c.Query("uid", "0")
+	fmt.Println(uid)
 	offset := 0
 	limit := 50
-	resp, err := r.service.ListRecentViolations(app.GetRequestScope(c), offset, limit)
+	resp, err := r.service.ListRecentViolations(app.GetRequestScope(c), offset, limit, uid)
 	if err != nil {
 		return err
 	}
