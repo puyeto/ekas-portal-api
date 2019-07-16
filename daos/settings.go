@@ -2,6 +2,7 @@ package daos
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -27,8 +28,33 @@ func (dao *SettingDAO) Get(rs app.RequestScope, id int) (*models.Settings, error
 // Create saves a new setting record in the database.
 // The Setting.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *SettingDAO) Create(rs app.RequestScope, setting *models.Settings) error {
-	setting.SettingID = 0
-	return rs.Tx().Model(setting).Insert()
+	query := "INSERT INTO settings(company_name, company_contacts) VALUES"
+	query += "('" + setting.CompanyName + "', '" + setting.CompanyContacts + "')"
+
+	q := rs.Tx().NewQuery(query)
+	res, err := q.Execute()
+	if err != nil {
+		return err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	setting.SettingID = int(id)
+
+	// insert settings-user
+	query = "INSERT INTO setting_users(setting_id, user_id) VALUES"
+	query += "('" + strconv.Itoa(int(id)) + "', '" + strconv.Itoa(int(setting.UserID)) + "')"
+
+	q = rs.Tx().NewQuery(query)
+	_, err = q.Execute()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Update saves the changes to an setting in the database.
@@ -52,14 +78,14 @@ func (dao *SettingDAO) Delete(rs app.RequestScope, id int) error {
 // Count returns the number of the setting records in the database.
 func (dao *SettingDAO) Count(rs app.RequestScope) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(*)").From("setting").Row(&count)
+	err := rs.Tx().Select("COUNT(*)").From("settings").Row(&count)
 	return count, err
 }
 
 // Query retrieves the setting records with the specified offset and limit from the database.
 func (dao *SettingDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Settings, error) {
 	settings := []models.Settings{}
-	err := rs.Tx().Select().OrderBy("id").Offset(int64(offset)).Limit(int64(limit)).All(&settings)
+	err := rs.Tx().Select().OrderBy("setting_id").Offset(int64(offset)).Limit(int64(limit)).All(&settings)
 	return settings, err
 }
 
