@@ -285,34 +285,22 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	// if err := model.Validate(); err != nil {
 	//	return nil, err
 	// }
+	userid := model.UserID
 
 	// Add vehicle owner
-	var ownerid = app.GenerateNewID()
-	if model.OwnerID > 0 {
-		ownerid = model.OwnerID
-	}
-	vm := NewOwner(model.DeviceDetails, ownerid)
+	vm := NewOwner(model.DeviceDetails, model.OwnerID, userid)
 	if err := s.dao.CreateVehicleOwner(rs, vm); err != nil {
 		return 0, err
 	}
 
 	// Add Fitter Center / Fitter
-	var fid = app.GenerateNewID()
-	if model.FitterID > 0 {
-		fid = model.FitterID
-	}
-	fd := NewFitter(model.DeviceDetails, fid)
+	fd := NewFitter(model.DeviceDetails, model.FitterID, userid)
 	if err := s.dao.CreateFitter(rs, fd); err != nil {
 		return 0, err
 	}
 
 	// Add Vehicle
-	var vid = app.GenerateNewID()
-	if model.VehicleID > 0 {
-		vid = model.VehicleID
-	}
-
-	vd := NewVehicle(model.DeviceDetails, vid)
+	vd := NewVehicle(model.DeviceDetails, model.VehicleID, userid)
 	if err := s.dao.CreateVehicle(rs, vd); err != nil {
 		return 0, err
 	}

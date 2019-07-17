@@ -7,9 +7,10 @@ import (
 )
 
 // NewOwner ...
-func NewOwner(m models.DeviceDetails, id uint32) *models.VehicleOwner {
+func NewOwner(m models.DeviceDetails, id uint32, userid uint32) *models.VehicleOwner {
 	vm := &models.VehicleOwner{
 		OwnerID:    id,
+		UserID: userid,
 		OwnerIDNo:  m.OwnerID,
 		OwnerName:  m.OwnerName,
 		OwnerEmail: m.OwnerEmail,
@@ -20,9 +21,10 @@ func NewOwner(m models.DeviceDetails, id uint32) *models.VehicleOwner {
 }
 
 // NewFitter ...
-func NewFitter(m models.DeviceDetails, id uint32) *models.FitterDetails {
+func NewFitter(m models.DeviceDetails, id uint32, userid uint32) *models.FitterDetails {
 	fd := &models.FitterDetails{
 		FitterID:          id,
+		UserID    : userid,
 		FitterIDNo:        m.AgentID,
 		FittingCenterName: m.FittingCenter,
 		FitterLocation:    m.AgentLocation,
@@ -37,9 +39,10 @@ func NewFitter(m models.DeviceDetails, id uint32) *models.FitterDetails {
 }
 
 // NewVehicle ...
-func NewVehicle(m models.DeviceDetails, id uint32) *models.VehicleDetails {
+func NewVehicle(m models.DeviceDetails, id uint32, userid uint32) *models.VehicleDetails {
 	vd := &models.VehicleDetails{
 		VehicleID:         id,
+		UserID: userid,
 		VehicleStringID:   strings.ToLower(strings.Replace(m.RegistrationNO, " ", "", -1)),
 		VehicleRegNo:      m.RegistrationNO,
 		ChassisNo:         m.ChasisNO,

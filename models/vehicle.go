@@ -8,21 +8,17 @@ import (
 
 // Vehicle ...
 type Vehicle struct {
-	VehicleDetails  TrackingVehicleDetails `json:"dehicle_details,omitempty"`
-	DeviceDetails   DeviceDetails          `json:"device_detail"`
-	GovernorDetails GovernorDetails        `json:"governor_details"`
-	UserID          uint32                 `json:"user_id,omitempty"`
-	UserHash        string                 `json:"user_hash,omitempty"`
-	SimNO           string                 `json:"sim_no,omitempty"`
-	SimIMEI         string                 `json:"sim_imei,omitempty"`
-	VehicleID       uint32                 `json:"vehicle_id,omitempty"`
-	OwnerID         uint32                 `json:"owner_id,omitempty"`
-	FitterID        uint32                 `json:"fitter_id,omitempty"`
-	ConfigID        uint32                 `json:"conf_id,omitempty"`
+	DeviceDetails   DeviceDetails   `json:"device_detail"`
+	GovernorDetails GovernorDetails `json:"governor_details"`
+	UserID          uint32          `json:"user_id,omitempty"`
+	UserHash        string          `json:"user_hash,omitempty"`
+	SimNO           string          `json:"sim_no,omitempty"`
+	SimIMEI         string          `json:"sim_imei,omitempty"`
+	VehicleID       uint32          `json:"vehicle_id,omitempty"`
+	OwnerID         uint32          `json:"owner_id,omitempty"`
+	FitterID        uint32          `json:"fitter_id,omitempty"`
+	ConfigID        uint32          `json:"conf_id,omitempty"`
 }
-
-// TrackingVehicleDetails ...
-type TrackingVehicleDetails struct{}
 
 // VehicleConfigDetails ...
 type VehicleConfigDetails struct {
@@ -94,6 +90,7 @@ type GovernorDetails struct {
 // VehicleDetails ...
 type VehicleDetails struct {
 	VehicleID         uint32    `json:"vehicle_id" db:"pk,vehicle_id"`
+	UserID            uint32    `json:"user_id" db:"user_id"`
 	VehicleStringID   string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
 	VehicleRegNo      string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
 	ChassisNo         string    `json:"chassis_no" db:"chassis_no"`
@@ -114,6 +111,7 @@ func (v VehicleDetails) ValidateVehicleDetails() error {
 // VehicleOwner ...
 type VehicleOwner struct {
 	OwnerID    uint32 `json:"owner_id" db:"pk,owner_id"`
+	UserID     uint32 `json:"user_id" db:"user_id"`
 	OwnerIDNo  string `json:"owner_id_no" db:"owner_id_no"`
 	OwnerName  string `json:"owner_name" db:"owner_name"`
 	OwnerEmail string `json:"owner_email" db:"owner_email"`
@@ -123,6 +121,7 @@ type VehicleOwner struct {
 // FitterDetails ...
 type FitterDetails struct {
 	FitterID          uint32 `json:"fitting_id" db:"pk,fitting_id"`
+	UserID            uint32 `json:"user_id" db:"user_id"`
 	FitterIDNo        string `json:"fitting_id_no" db:"fitting_id_no"`
 	FittingCenterName string `json:"fitting_center_name" db:"fitting_center_name"`
 	FitterLocation    string `json:"fitter_location" db:"fitter_location"`
