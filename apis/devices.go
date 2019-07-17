@@ -17,6 +17,8 @@ type (
 		Create(rs app.RequestScope, model *models.Devices) (*models.Devices, error)
 		Update(rs app.RequestScope, id int32, model *models.Devices) (*models.Devices, error)
 		Delete(rs app.RequestScope, id int32) (*models.Devices, error)
+		CountConfiguredDevices(rs app.RequestScope) (int, error)
+		ConfiguredDevices(rs app.RequestScope, offset, limit int) ([]models.DeviceConfiguration, error)
 	}
 
 	// deviceResource defines the handlers for the CRUD APIs.
@@ -28,11 +30,13 @@ type (
 // ServeDeviceResource sets up the routing of device endpoints and the corresponding handlers.
 func ServeDeviceResource(rg *routing.RouteGroup, service deviceService) {
 	r := &deviceResource{service}
-	rg.Get("/devices/<id>", r.get)
-	rg.Get("/devices", r.query)
+	rg.Get("/device/<id>", r.get)
+	rg.Get("/devices/list", r.query)
+	rg.Get("/devices/count", r.count)
+	rg.Get("/devices/configured-devices", r.configuredDevices)
 	rg.Post("/devices", r.create)
 	rg.Put("/devices/<id>", r.update)
-	rg.Delete("/devices/<id>", r.delete)
+	rg.Delete("/device/<id>", r.delete)
 }
 
 func (r *deviceResource) get(c *routing.Context) error {
@@ -62,6 +66,17 @@ func (r *deviceResource) query(c *routing.Context) error {
 	}
 	paginatedList.Items = items
 	return c.Write(paginatedList)
+}
+
+func (r *deviceResource) count(c *routing.Context) error {
+	response, err := r.service.Count(app.GetRequestScope(c))
+	if err != nil {
+		return err
+	}
+
+	return c.Write(map[string]int{
+		"count": response,
+	})
 }
 
 func (r *deviceResource) create(c *routing.Context) error {
@@ -114,4 +129,19 @@ func (r *deviceResource) delete(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+func (r *deviceResource) configuredDevices(c *routing.Context) error {
+	rs := app.GetRequestScope(c)
+	count, err := r.service.CountConfiguredDevices(rs)
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	items, err := r.service.ConfiguredDevices(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = items
+	return c.Write(paginatedList)
 }

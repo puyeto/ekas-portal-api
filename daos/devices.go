@@ -48,19 +48,31 @@ func (dao *DeviceDAO) Delete(rs app.RequestScope, id int32) error {
 // Count returns the number of the device records in the database.
 func (dao *DeviceDAO) Count(rs app.RequestScope) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(distinct device_id)").From("vehicle_configuration").Row(&count)
+	err := rs.Tx().Select("COUNT(*)").From("device_details").Row(&count)
 	return count, err
 }
 
 // Query retrieves the device records with the specified offset and limit from the database.
 func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error) {
 	devices := []models.Devices{}
+	err := rs.Tx().Select().From("device_details").OrderBy("id").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+	return devices, err
+}
+
+// CountConfiguredDevices returns the number of the device configuration records in the database.
+func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(distinct device_id)").From("vehicle_configuration").Row(&count)
+	return count, err
+}
+
+// Query retrieves the device records with the specified offset and limit from the database.
+func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit int) ([]models.DeviceConfiguration, error) {
+	devices := []models.DeviceConfiguration{}
 	query := "SELECT DISTINCT device_id, data->'$.sim_imei' AS sim_imei FROM vehicle_configuration"
 	query += " LIMIT 0, 100"
 	q := rs.Tx().NewQuery(query)
 	err := q.All(&devices)
 
-	// err := rs.Tx().Select("DISTINCT(device_id)", "data->$.governor_details.device_id AS sim_imei").
-	// .. 	From("vehicle_configuration").OrderBy("created_on").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
 	return devices, err
 }
