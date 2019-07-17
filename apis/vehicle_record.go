@@ -12,8 +12,8 @@ type (
 	// vehicleRecordService specifies the interface for the vehicleRecord service needed by vehicleRecordResource.
 	vehicleRecordService interface {
 		Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
-		Query(rs app.RequestScope, offset, limit int) ([]models.VehicleDetails, error)
-		Count(rs app.RequestScope) (int, error)
+		Query(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
+		Count(rs app.RequestScope, uid int) (int, error)
 		Update(rs app.RequestScope, id uint32, model *models.VehicleDetails) (*models.VehicleDetails, error)
 		Delete(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
 	}
@@ -29,6 +29,7 @@ func ServeVehicleRecordResource(rg *routing.RouteGroup, service vehicleRecordSer
 	r := &vehicleRecordResource{service}
 	rg.Get("/vehicleRecords/<id>", r.get)
 	rg.Get("/vehicles/list", r.query)
+	rg.Get("/vehicles/count", r.count)
 	rg.Put("/vehicleRecords/<id>", r.update)
 	rg.Delete("/vehicleRecords/<id>", r.delete)
 }
@@ -48,13 +49,18 @@ func (r *vehicleRecordResource) get(c *routing.Context) error {
 }
 
 func (r *vehicleRecordResource) query(c *routing.Context) error {
+	uid, err := strconv.Atoi(c.Query("uid", "0"))
+	if err != nil {
+		return err
+	}
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
+	count, err := r.service.Count(rs, uid)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uid)
 	if err != nil {
 		return err
 	}
@@ -99,4 +105,20 @@ func (r *vehicleRecordResource) delete(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+func (r *vehicleRecordResource) count(c *routing.Context) error {
+	uid, err := strconv.Atoi(c.Query("uid", "0"))
+	if err != nil {
+		return err
+	}
+
+	response, err := r.service.Count(app.GetRequestScope(c), uid)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(map[string]int{
+		"count": response,
+	})
 }

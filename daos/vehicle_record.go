@@ -3,6 +3,7 @@ package daos
 import (
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // VehicleRecordDAO persists vehicleRecord data in database
@@ -39,15 +40,27 @@ func (dao *VehicleRecordDAO) Delete(rs app.RequestScope, id uint32) error {
 }
 
 // Count returns the number of the vehicleRecord records in the database.
-func (dao *VehicleRecordDAO) Count(rs app.RequestScope) (int, error) {
+func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(*)").From("vehicle_details").Row(&count)
+	var err error
+	if uid > 0 {
+		err = rs.Tx().Select("COUNT(*)").From("vehicle_details").
+			Where(dbx.HashExp{"user_id": uid}).Row(&count)
+	} else {
+		err = rs.Tx().Select("COUNT(*)").From("vehicle_details").Row(&count)
+	}
+
 	return count, err
 }
 
 // Query retrieves the vehicleRecord records with the specified offset and limit from the database.
-func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int) ([]models.VehicleDetails, error) {
+func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error) {
 	vehicleRecords := []models.VehicleDetails{}
-	err := rs.Tx().Select().OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+	var err error
+	if uid > 0 {
+		err = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid}).OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+	} else {
+		err = rs.Tx().Select().OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+	}
 	return vehicleRecords, err
 }
