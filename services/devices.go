@@ -46,7 +46,7 @@ func (s *DeviceService) Create(rs app.RequestScope, model *models.Devices) (*mod
 	if err := s.dao.Create(rs, model); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, model.DeviceID)
+	return s.dao.Get(rs, model.ID)
 }
 
 // Update updates the device with the specified ID.

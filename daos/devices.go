@@ -1,8 +1,11 @@
 package daos
 
 import (
+	"strings"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // DeviceDAO persists device data in database
@@ -16,15 +19,28 @@ func NewDeviceDAO() *DeviceDAO {
 // Get reads the device with the specified ID from the database.
 func (dao *DeviceDAO) Get(rs app.RequestScope, id int32) (*models.Devices, error) {
 	var device models.Devices
-	err := rs.Tx().Select().Model(id, &device)
+	err := rs.Tx().Select().From("device_details").Model(id, &device)
 	return &device, err
 }
 
 // Create saves a new device record in the database.
 // The Device.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *DeviceDAO) Create(rs app.RequestScope, device *models.Devices) error {
-	device.DeviceID = 0
-	return rs.Tx().Model(device).Insert()
+	res, err := rs.Tx().Insert("device_details", dbx.Params{
+		"device_id":           device.DeviceID,
+		"device_name":         device.DeviceName,
+		"device_serial_no":    strings.ToUpper(device.DeviceSerialNo),
+		"device_model":        strings.ToUpper(device.DeviceModelNo),
+		"device_manufacturer": strings.ToUpper(device.DeviceManufacturer),
+		"configured":          device.Configured,
+		"note":                device.Note}).Execute()
+	if err != nil {
+		return err
+	}
+
+	id, err := res.LastInsertId()
+	device.ID = int32(id)
+	return err
 }
 
 // Update saves the changes to an device in the database.

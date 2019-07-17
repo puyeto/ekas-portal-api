@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/ekas-portal-api/app"
@@ -34,7 +35,7 @@ func ServeDeviceResource(rg *routing.RouteGroup, service deviceService) {
 	rg.Get("/devices/list", r.query)
 	rg.Get("/devices/count", r.count)
 	rg.Get("/devices/configured-devices", r.configuredDevices)
-	rg.Post("/devices", r.create)
+	rg.Post("/devices/create", r.create)
 	rg.Put("/devices/<id>", r.update)
 	rg.Delete("/device/<id>", r.delete)
 }
@@ -84,6 +85,7 @@ func (r *deviceResource) create(c *routing.Context) error {
 	if err := c.Read(&model); err != nil {
 		return err
 	}
+	fmt.Println(model)
 	response, err := r.service.Create(app.GetRequestScope(c), &model)
 	if err != nil {
 		return err

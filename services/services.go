@@ -10,7 +10,7 @@ import (
 func NewOwner(m models.DeviceDetails, id uint32, userid uint32) *models.VehicleOwner {
 	vm := &models.VehicleOwner{
 		OwnerID:    id,
-		UserID: userid,
+		UserID:     userid,
 		OwnerIDNo:  m.OwnerID,
 		OwnerName:  m.OwnerName,
 		OwnerEmail: m.OwnerEmail,
@@ -24,7 +24,7 @@ func NewOwner(m models.DeviceDetails, id uint32, userid uint32) *models.VehicleO
 func NewFitter(m models.DeviceDetails, id uint32, userid uint32) *models.FitterDetails {
 	fd := &models.FitterDetails{
 		FitterID:          id,
-		UserID    : userid,
+		UserID:            userid,
 		FitterIDNo:        m.AgentID,
 		FittingCenterName: m.FittingCenter,
 		FitterLocation:    m.AgentLocation,
@@ -42,12 +42,12 @@ func NewFitter(m models.DeviceDetails, id uint32, userid uint32) *models.FitterD
 func NewVehicle(m models.DeviceDetails, id uint32, userid uint32) *models.VehicleDetails {
 	vd := &models.VehicleDetails{
 		VehicleID:         id,
-		UserID: userid,
+		UserID:            userid,
 		VehicleStringID:   strings.ToLower(strings.Replace(m.RegistrationNO, " ", "", -1)),
-		VehicleRegNo:      m.RegistrationNO,
-		ChassisNo:         m.ChasisNO,
-		MakeType:          m.MakeType,
-		NotificationEmail: m.NotificationEmail,
+		VehicleRegNo:      strings.ToUpper(m.RegistrationNO),
+		ChassisNo:         strings.ToUpper(m.ChasisNO),
+		MakeType:          strings.ToUpper(m.MakeType),
+		NotificationEmail: strings.ToLower(m.NotificationEmail),
 		NotificationNO:    m.NotificationNO,
 	}
 	return vd
