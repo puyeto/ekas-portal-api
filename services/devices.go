@@ -82,7 +82,7 @@ func (s *DeviceService) Query(rs app.RequestScope, offset, limit int) ([]models.
 
 // CountConfiguredDevices ...
 func (s *DeviceService) CountConfiguredDevices(rs app.RequestScope) (int, error) {
-	return s.dao.Count(rs)
+	return s.dao.CountConfiguredDevices(rs)
 }
 
 // ConfiguredDevices ...
