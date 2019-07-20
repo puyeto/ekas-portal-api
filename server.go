@@ -110,5 +110,8 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	settingDAO := daos.NewSettingDAO()
 	apis.ServeSettingResource(rg, services.NewSettingService(settingDAO))
 
+	certificateDAO := daos.NewCertificateDAO()
+	apis.ServeCertificateResource(rg, services.NewCertificateService(certificateDAO))
+
 	return router
 }

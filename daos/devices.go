@@ -82,7 +82,7 @@ func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope) (int, error) {
 	return count, err
 }
 
-// Query retrieves the device records with the specified offset and limit from the database.
+// ConfiguredDevices retrieves the device records with the specified offset and limit from the database.
 func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit int) ([]models.DeviceConfiguration, error) {
 	devices := []models.DeviceConfiguration{}
 	query := "SELECT DISTINCT device_id, data->'$.sim_imei' AS sim_imei FROM vehicle_configuration"
