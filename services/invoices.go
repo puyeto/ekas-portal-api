@@ -11,9 +11,9 @@ import (
 // invoiceDAO specifies the interface of the invoice DAO needed by InvoiceService.
 type invoiceDAO interface {
 	GetInvoice(rs app.RequestScope, id int32) (*models.Invoices, error)
-	GetInvoices(rs app.RequestScope, offset, limit int) ([]models.Invoices, error)
+	ListInvoices(rs app.RequestScope, offset, limit, uid, vid int) ([]models.Invoices, error)
 	AddInvoices(rs app.RequestScope, model *models.Invoices) error
-	CountInvoices(rs app.RequestScope) (int, error)
+	CountInvoices(rs app.RequestScope, uid, vid int) (int, error)
 	GetPricing(rs app.RequestScope, id int32) (*models.Pricings, error)
 	GetDiscount(rs app.RequestScope, id int32) (*models.Discounts, error)
 	GetVehicle(rs app.RequestScope, id int32) (*models.VehicleDetails, error)
@@ -34,9 +34,9 @@ func (s *InvoiceService) GetInvoice(rs app.RequestScope, id int32) (*models.Invo
 	return s.dao.GetInvoice(rs, id)
 }
 
-// GetInvoices get alist of invoices.
-func (s *InvoiceService) GetInvoices(rs app.RequestScope, offset, limit int) ([]models.Invoices, error) {
-	return s.dao.GetInvoices(rs, offset, limit)
+// ListInvoices get alist of invoices.
+func (s *InvoiceService) ListInvoices(rs app.RequestScope, offset, limit, uid, vid int) ([]models.Invoices, error) {
+	return s.dao.ListInvoices(rs, offset, limit, uid, vid)
 }
 
 // AddInvoices ...
@@ -120,6 +120,6 @@ func (s *InvoiceService) newInvoice(rs app.RequestScope, model *models.Invoices)
 }
 
 // CountInvoices returns the number of artists.
-func (s *InvoiceService) CountInvoices(rs app.RequestScope) (int, error) {
-	return s.dao.CountInvoices(rs)
+func (s *InvoiceService) CountInvoices(rs app.RequestScope, uid, vid int) (int, error) {
+	return s.dao.CountInvoices(rs, uid, vid)
 }

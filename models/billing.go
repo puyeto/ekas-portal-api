@@ -43,6 +43,7 @@ func (p Pricings) ValidatePricing() error {
 type Invoices struct {
 	InvoiceID        int32     `json:"invoice_id,omitempty" db:"pk,invoice_id"`
 	VehicleID        int32     `json:"vehicle_id" db:"vehicle_id"`
+	SettingID        int32     `json:"vehicle_id" db:"setting_id"`
 	PricingID        int32     `json:"pricing_id" db:"pricing_id"`
 	DiscountID       int32     `json:"discount_id" db:"discount_id"`
 	InvoiceName      string    `json:"invoice_name,omitempty" db:"invoice_name"`
@@ -51,6 +52,8 @@ type Invoices struct {
 	InvoicingDate    time.Time `json:"invoicing_date,omitempty" db:"invoicing_date"`
 	InvoiceStartDate time.Time `json:"invoice_start_date,omitempty" db:"invoice_start_date"`
 	InvoiceEndDate   time.Time `json:"invoice_end_date,omitempty" db:"invoice_end_date"`
+	InvoiceStatus   time.Time `json:"invoice_status,omitempty" db:"invoice_status"`
+	InvoicePaymentStatus   time.Time `json:"invoice_payment_status,omitempty" db:"invoice_payment_status"`
 }
 
 // ValidateInvoice ...

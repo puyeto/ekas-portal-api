@@ -20,8 +20,8 @@ func (dao *InvoiceDAO) GetInvoice(rs app.RequestScope, id int32) (*models.Invoic
 	return &dis, err
 }
 
-// GetInvoices ...
-func (dao *InvoiceDAO) GetInvoices(rs app.RequestScope, offset, limit int) ([]models.Invoices, error) {
+// ListInvoices ...
+func (dao *InvoiceDAO) ListInvoices(rs app.RequestScope, offset, limit, uid, vid int) ([]models.Invoices, error) {
 	dis := []models.Invoices{}
 	err := rs.Tx().Select().OrderBy("invoice_id").Offset(int64(offset)).Limit(int64(limit)).All(&dis)
 	return dis, err
@@ -34,7 +34,7 @@ func (dao *InvoiceDAO) AddInvoices(rs app.RequestScope, dis *models.Invoices) er
 }
 
 // CountInvoices returns the number of the invoice records in the database.
-func (dao *InvoiceDAO) CountInvoices(rs app.RequestScope) (int, error) {
+func (dao *InvoiceDAO) CountInvoices(rs app.RequestScope, uid, vid int) (int, error) {
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("invoices").Row(&count)
 	return count, err
