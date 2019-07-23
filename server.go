@@ -113,5 +113,14 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	certificateDAO := daos.NewCertificateDAO()
 	apis.ServeCertificateResource(rg, services.NewCertificateService(certificateDAO))
 
+	discountDAO := daos.NewDiscountDAO()
+	apis.ServeDiscountResource(rg, services.NewDiscountService(discountDAO))
+
+	pricingDAO := daos.NewPricingDAO()
+	apis.ServePricingResource(rg, services.NewPricingService(pricingDAO))
+
+	invoiceDAO := daos.NewInvoiceDAO()
+	apis.ServeInvoiceResource(rg, services.NewInvoiceService(invoiceDAO))
+
 	return router
 }

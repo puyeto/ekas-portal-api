@@ -99,6 +99,8 @@ type VehicleDetails struct {
 	NotificationEmail string    `json:"notification_email" db:"notification_email"`
 	NotificationNO    string    `json:"notification_no" db:"notification_no"`
 	VehicleStatus     int8      `json:"status" db:"vehicle_status"`
+	InvoicingStatus   int8      `json:"invoicing_status,omitempty" db:"invoicing_status"`
+	InvoiceDueDate    time.Time `json:"invoice_due_date,omitempty" db:"invoice_due_date"`
 	CreatedOn         time.Time `json:"created_on" db:"created_on"`
 }
 
