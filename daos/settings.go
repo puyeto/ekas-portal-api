@@ -115,7 +115,10 @@ func (dao *SettingDAO) CountKeys(rs app.RequestScope) (int, error) {
 // QueryKeys retrieves the keys records with the specified offset and limit from the database.
 func (dao *SettingDAO) QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error) {
 	keys := []models.LicenseKeys{}
-	err := rs.Tx().Select().Offset(int64(offset)).Limit(int64(limit)).All(&keys)
+	err := rs.Tx().Select("key_string", "assign_to", "license_keys.status", "COALESCE(setting_users.setting_id, 0) AS setting_id", "COALESCE(company_name, '') AS company_name", "COALESCE(company_contacts, '') AS company_contacts").
+		LeftJoin("setting_users", dbx.NewExp("setting_users.user_id = license_keys.assign_to")).
+		LeftJoin("settings", dbx.NewExp("settings.setting_id = setting_users.setting_id")).
+		Offset(int64(offset)).Limit(int64(limit)).All(&keys)
 	return keys, err
 }
 

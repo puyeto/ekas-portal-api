@@ -19,9 +19,12 @@ func (s Settings) ValidateSettings() error {
 
 // LicenseKeys List keys
 type LicenseKeys struct {
-	KeyString string `json:"key_string" db:"pk,key_string"`
-	AssignTo  int    `json:"assign_to"`
-	Status    int    `json:"status,omitempty"`
+	KeyString       string `json:"key_string" db:"pk,key_string"`
+	AssignTo        int    `json:"assign_to"`
+	Status          int8   `json:"status,omitempty"`
+	SettingID       int    `json:"setting_id,omitempty"`
+	CompanyName     string `json:"company_name,omitempty"`
+	CompanyContacts string `json:"company_contacts,omitempty"`
 }
 
 // ValidateLicenseKeys ...
