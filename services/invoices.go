@@ -63,7 +63,7 @@ func (s *InvoiceService) newInvoice(rs app.RequestScope, model *models.Invoices)
 		return nil, err
 	}
 
-	if vehicle.InvoicingStatus == 0 {
+	if vehicle.AutoInvoicing == 0 {
 		return nil, errors.New("Automatic invoicing of this vehicle is disabled")
 	}
 

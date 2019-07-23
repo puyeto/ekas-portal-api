@@ -24,14 +24,14 @@ type (
 	}
 )
 
-// ServeVehicleRecord sets up the routing of vehicleRecord endpoints and the corresponding handlers.
+// ServeVehicleRecordResource sets up the routing of vehicleRecord endpoints and the corresponding handlers.
 func ServeVehicleRecordResource(rg *routing.RouteGroup, service vehicleRecordService) {
 	r := &vehicleRecordResource{service}
-	rg.Get("/vehicleRecords/<id>", r.get)
+	rg.Get("/vehicle/get/<id>", r.get)
 	rg.Get("/vehicles/list", r.query)
 	rg.Get("/vehicles/count", r.count)
-	rg.Put("/vehicleRecords/<id>", r.update)
-	rg.Delete("/vehicleRecords/<id>", r.delete)
+	rg.Put("/vehicle/update/<id>", r.update)
+	rg.Delete("/vehicle/delete/<id>", r.delete)
 }
 
 func (r *vehicleRecordResource) get(c *routing.Context) error {
