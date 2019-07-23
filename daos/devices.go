@@ -1,6 +1,7 @@
 package daos
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -76,17 +77,34 @@ func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit int) ([]models.De
 }
 
 // CountConfiguredDevices returns the number of the device configuration records in the database.
-func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope) (int, error) {
+func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, deviceid int) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(distinct device_id)").From("vehicle_configuration").Row(&count)
+	query := "SELECT COUNT(device_id) FROM vehicle_configuration"
+	if vehicleid > 0 && deviceid > 0 {
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
+	} else if vehicleid > 0 {
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
+	} else if deviceid > 0 {
+		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
+	}
+	q := rs.Tx().NewQuery(query)
+	err := q.Row(&count)
+
 	return count, err
 }
 
 // ConfiguredDevices retrieves the device records with the specified offset and limit from the database.
-func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit int) ([]models.DeviceConfiguration, error) {
+func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error) {
 	devices := []models.DeviceConfiguration{}
-	query := "SELECT DISTINCT device_id, data->'$.sim_imei' AS sim_imei FROM vehicle_configuration"
-	query += " LIMIT 0, 100"
+	query := "SELECT device_id, vehicle_id, data->'$.sim_imei' AS sim_imei, created_on FROM vehicle_configuration"
+	if vehicleid > 0 && deviceid > 0 {
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
+	} else if vehicleid > 0 {
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
+	} else if deviceid > 0 {
+		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
+	}
+	query += " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
 	q := rs.Tx().NewQuery(query)
 	err := q.All(&devices)
 

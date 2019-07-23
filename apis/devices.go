@@ -18,8 +18,8 @@ type (
 		Create(rs app.RequestScope, model *models.Devices) (*models.Devices, error)
 		Update(rs app.RequestScope, id int32, model *models.Devices) (*models.Devices, error)
 		Delete(rs app.RequestScope, id int32) (*models.Devices, error)
-		CountConfiguredDevices(rs app.RequestScope) (int, error)
-		ConfiguredDevices(rs app.RequestScope, offset, limit int) ([]models.DeviceConfiguration, error)
+		CountConfiguredDevices(rs app.RequestScope, vehicleid, deviceid int) (int, error)
+		ConfiguredDevices(rs app.RequestScope, offset, limit, vehicle_id, device_id int) ([]models.DeviceConfiguration, error)
 	}
 
 	// deviceResource defines the handlers for the CRUD APIs.
@@ -134,13 +134,23 @@ func (r *deviceResource) delete(c *routing.Context) error {
 }
 
 func (r *deviceResource) configuredDevices(c *routing.Context) error {
+	vehicleid, err := strconv.Atoi(c.Query("vehicle_id", "0"))
+	if err != nil {
+		return err
+	}
+
+	deviceid, err := strconv.Atoi(c.Query("device_id", "0"))
+	if err != nil {
+		return err
+	}
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.CountConfiguredDevices(rs)
+	count, err := r.service.CountConfiguredDevices(rs, vehicleid, deviceid)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.ConfiguredDevices(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.ConfiguredDevices(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), vehicleid, deviceid)
 	if err != nil {
 		return err
 	}
