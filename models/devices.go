@@ -31,9 +31,12 @@ func (m Devices) ValidateDevices() error {
 
 // DeviceConfiguration ...
 type DeviceConfiguration struct {
-	DeviceID   int32     `json:"device_id"`
-	DeviceName string    `json:"device_name,omitempty" db:"device_name"`
-	SIMImei    string    `json:"sim_imei" db:"sim_imei"`
-	VehicleID  string    `json:"vehicle_id" db:"vehicle_id"`
-	CreatedOn  time.Time `json:"created_on" db:"created_on"`
+	DeviceID            int32     `json:"device_id"`
+	DeviceName          string    `json:"device_name,omitempty" db:"device_name"`
+	SIMImei             string    `json:"sim_imei" db:"sim_imei"`
+	VehicleID           string    `json:"vehicle_id" db:"vehicle_id"`
+	CreatedOn           time.Time `json:"created_on" db:"created_on"`
+	ConfigurationStatus int8      `json:"status" db:"status"`
+	DeviceStatus        int8      `json:"device_status" db:"device_status"`
+	DeviceReason        string    `json:"device_reason" db:"reason"`
 }
