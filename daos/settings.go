@@ -1,7 +1,6 @@
 package daos
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -26,34 +25,8 @@ func (dao *SettingDAO) Get(rs app.RequestScope, id int) (*models.Settings, error
 }
 
 // Create saves a new setting record in the database.
-// The Setting.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *SettingDAO) Create(rs app.RequestScope, setting *models.Settings) error {
-	query := "INSERT INTO settings(company_name, company_contacts) VALUES"
-	query += "('" + setting.CompanyName + "', '" + setting.CompanyContacts + "')"
-
-	q := rs.Tx().NewQuery(query)
-	res, err := q.Execute()
-	if err != nil {
-		return err
-	}
-
-	id, err := res.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	setting.SettingID = int(id)
-
-	// insert settings-user
-	query = "INSERT INTO setting_users(setting_id, user_id) VALUES"
-	query += "('" + strconv.Itoa(int(id)) + "', '" + strconv.Itoa(int(setting.UserID)) + "')"
-
-	q = rs.Tx().NewQuery(query)
-	_, err = q.Execute()
-	if err != nil {
-		return err
-	}
-
+	return rs.Tx().Model(setting).Insert()
 	return nil
 }
 
@@ -115,9 +88,9 @@ func (dao *SettingDAO) CountKeys(rs app.RequestScope) (int, error) {
 // QueryKeys retrieves the keys records with the specified offset and limit from the database.
 func (dao *SettingDAO) QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error) {
 	keys := []models.LicenseKeys{}
-	err := rs.Tx().Select("key_string", "assign_to", "license_keys.status", "COALESCE(setting_users.setting_id, 0) AS setting_id", "COALESCE(company_name, '') AS company_name", "COALESCE(company_contacts, '') AS company_contacts").
-		LeftJoin("setting_users", dbx.NewExp("setting_users.user_id = license_keys.assign_to")).
-		LeftJoin("settings", dbx.NewExp("settings.setting_id = setting_users.setting_id")).
+	err := rs.Tx().Select("key_string", "assign_to", "license_keys.status", "COALESCE(company_users.company_id, 0) AS setting_id", "COALESCE(company_name, '') AS company_name", "COALESCE(company_contacts, '') AS company_contacts").
+		LeftJoin("company_users", dbx.NewExp("company_users.user_id = license_keys.assign_to")).
+		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 		Offset(int64(offset)).Limit(int64(limit)).All(&keys)
 	return keys, err
 }
@@ -138,7 +111,7 @@ func (dao *SettingDAO) AssignKey(rs app.RequestScope, model *models.LicenseKeys)
 	}
 
 	// check if a key has been assigned
-	if keydata.Status > 0 || keydata.AssignTo > 0 {
+	if keydata.Status > 0 {
 		return errors.New("Key Already Assigned")
 	}
 

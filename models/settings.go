@@ -5,15 +5,12 @@ import validation "github.com/go-ozzo/ozzo-validation"
 // Identity ..
 type Settings struct {
 	SettingID       int    `json:"setting_id" db:"pk,setting_id"`
-	CompanyName     string `json:"company_name" db:"company_name"`
-	CompanyContacts string `json:"company_contacts,omitempty"`
-	UserID          int32  `json:"user_id,omitempty"`
 }
 
 // ValidateSettings ...
 func (s Settings) ValidateSettings() error {
 	return validation.ValidateStruct(&s,
-		validation.Field(&s.CompanyName, validation.Required, validation.Length(3, 120)),
+		// validation.Field(&s.CompanyName, validation.Required, validation.Length(3, 120)),
 	)
 }
 

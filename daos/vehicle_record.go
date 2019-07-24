@@ -60,7 +60,7 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 	if uid > 0 {
 		err = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid}).OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	} else {
-		err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "vehicle_details.created_on").
+		err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "vehicle_details.created_on").
 			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
