@@ -40,7 +40,7 @@ func BadRequest(err string) *APIError {
 
 // NoContentFound creates a new API error representing a no content request (HTTP 204)
 func NoContentFound(err string) *APIError {
-	return NewAPIError(http.StatusNoContent, "NOCONTENT", Params{"error": err})
+	return NewAPIError(http.StatusNoContent, "NO_CONTENT", Params{"error": err})
 }
 
 // InvalidData converts a data validation error into an API error (HTTP 400)

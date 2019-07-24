@@ -50,10 +50,12 @@ func logAccess(c *routing.Context, logFunc access.LogFunc, start time.Time) {
 // You may need to customize this method by adding conversion logic for more error types.
 func convertError(c *routing.Context, err error) error {
 	if err == sql.ErrNoRows {
-		return errors.NotFound("the requested resource")
+		return errors.NotFound("the requested resource was not found")
 	}
-	fmt.Println(err)
 	if err == errors.New("sql: no rows in result set") {
+		return errors.NoContentFound("No result found")
+	}
+	if err.Error() == "sql: no rows in result set" {
 		return errors.NoContentFound("No result found")
 	}
 	switch err.(type) {

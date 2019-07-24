@@ -1,11 +1,11 @@
 package daos
 
 import (
-	"errors"
 	"strconv"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
+	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
@@ -126,6 +126,7 @@ func (dao *SettingDAO) QueryKeys(rs app.RequestScope, offset, limit int) ([]mode
 func (dao *SettingDAO) GetKey(rs app.RequestScope, key string) (*models.LicenseKeys, error) {
 	var model models.LicenseKeys
 	err := rs.Tx().Select().Model(key, &model)
+
 	return &model, err
 }
 
