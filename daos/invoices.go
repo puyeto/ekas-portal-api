@@ -54,7 +54,7 @@ func (dao *InvoiceDAO) GetDiscount(rs app.RequestScope, id int32) (*models.Disco
 	return &model, err
 }
 
-// GetDiscount ...
+// GetVehicle ...
 func (dao *InvoiceDAO) GetVehicle(rs app.RequestScope, id int32) (*models.VehicleDetails, error) {
 	var model models.VehicleDetails
 	err := rs.Tx().Select().Model(id, &model)

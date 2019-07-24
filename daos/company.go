@@ -23,7 +23,7 @@ func (dao *CompanyDAO) Get(rs app.RequestScope, id int) (*models.Companies, erro
 // Create saves a new company record in the database.
 // The Company.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *CompanyDAO) Create(rs app.RequestScope, company *models.Companies) error {
-	return rs.Tx().Model(company).Insert()
+	return rs.Tx().Model(company).Exclude("UserID").Insert()
 }
 
 // Update saves the changes to an company in the database.
@@ -32,7 +32,7 @@ func (dao *CompanyDAO) Update(rs app.RequestScope, id int, company *models.Compa
 		return err
 	}
 	company.CompanyID = id
-	return rs.Tx().Model(company).Exclude("Id").Update()
+	return rs.Tx().Model(company).Exclude("CompnayID, UserID").Update()
 }
 
 // Delete deletes an company with the specified ID from the database.
