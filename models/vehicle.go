@@ -33,7 +33,7 @@ type VehicleConfigDetails struct {
 	CreatedOn         string `json:"created_on,omitempty"`
 }
 
-// SearcDetails ...
+// SearchDetails ...
 type SearchDetails struct {
 	VehicleName string `json:"vehicle_name"`
 	Data        string `json:"vehicle_data,omitempty"`

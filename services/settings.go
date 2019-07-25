@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 )
@@ -19,10 +21,10 @@ type settingDAO interface {
 	Update(rs app.RequestScope, id int, setting *models.Settings) error
 	// Delete removes the setting with given ID from the storage.
 	Delete(rs app.RequestScope, id int) error
-	GenerateKey(rs app.RequestScope, keys []string) error
+	GenerateKey(rs app.RequestScope, keys []string, assignto int) error
 	CountKeys(rs app.RequestScope) (int, error)
 	QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error)
-	AssignKey(rs app.RequestScope, model *models.LicenseKeys) (error)
+	AssignKey(rs app.RequestScope, model *models.LicenseKeys) error
 	GetKey(rs app.RequestScope, key string) (*models.LicenseKeys, error)
 }
 
@@ -89,6 +91,10 @@ func (s *SettingService) GenerateKey(rs app.RequestScope, model *models.GenKeys)
 		return nil, err
 	}
 
+	if model.AssignTo == 0 {
+		return nil, errors.New("Assign To is required")
+	}
+
 	var letterBytes = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 	if model.Type == "NUMERIC" {
 		letterBytes = "0123456789"
@@ -103,7 +109,7 @@ func (s *SettingService) GenerateKey(rs app.RequestScope, model *models.GenKeys)
 	}
 
 	if len(keys) > 0 {
-		if err := s.dao.GenerateKey(rs, keys); err != nil {
+		if err := s.dao.GenerateKey(rs, keys, model.AssignTo); err != nil {
 			return nil, err
 		}
 	}
@@ -122,7 +128,7 @@ func (s *SettingService) QueryKeys(rs app.RequestScope, offset, limit int) ([]mo
 }
 
 // AssignKey assign generated keys
-func (s *SettingService) AssignKey(rs app.RequestScope, model *models.LicenseKeys) (error) {
+func (s *SettingService) AssignKey(rs app.RequestScope, model *models.LicenseKeys) error {
 	if err := model.ValidateLicenseKeys(); err != nil {
 		return err
 	}

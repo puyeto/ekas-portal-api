@@ -53,6 +53,7 @@ func (m AddDeviceDetails) ValidateAddDevices() error {
 	)
 }
 
+// AddServices ...
 type AddServices struct {
 	UserData                  UserData                  `json:"device_user_data"`
 	AddTrackingServiceDetails AddTrackingServiceDetails `json:"add_service"`

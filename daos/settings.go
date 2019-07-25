@@ -1,6 +1,7 @@
 package daos
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -63,10 +64,10 @@ func (dao *SettingDAO) Query(rs app.RequestScope, offset, limit int) ([]models.S
 }
 
 // GenerateKey ...
-func (dao *SettingDAO) GenerateKey(rs app.RequestScope, keys []string) error {
-	var query = "INSERT INTO license_keys(key_string) VALUES"
+func (dao *SettingDAO) GenerateKey(rs app.RequestScope, keys []string, assignto int) error {
+	var query = "INSERT INTO license_keys(key_string, assign_to) VALUES"
 	for _, key := range keys {
-		query += "('" + key + "'),"
+		query += "('" + key + "', '" + strconv.Itoa(assignto) + "'),"
 	}
 
 	//trim the last ,

@@ -44,7 +44,7 @@ func (s *PricingService) AddPricings(rs app.RequestScope, model *models.Pricings
 	return s.dao.GetPricing(rs, model.PricingID)
 }
 
-// Count returns the number of artists.
+// CountPricings returns the number of artists.
 func (s *PricingService) CountPricings(rs app.RequestScope) (int, error) {
 	return s.dao.CountPricings(rs)
 }

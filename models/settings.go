@@ -2,16 +2,15 @@ package models
 
 import validation "github.com/go-ozzo/ozzo-validation"
 
-// Identity ..
+// Settings ..
 type Settings struct {
-	SettingID       int    `json:"setting_id" db:"pk,setting_id"`
+	SettingID int `json:"setting_id" db:"pk,setting_id"`
 }
 
 // ValidateSettings ...
 func (s Settings) ValidateSettings() error {
-	return validation.ValidateStruct(&s,
-		// validation.Field(&s.CompanyName, validation.Required, validation.Length(3, 120)),
-	)
+	return validation.ValidateStruct(&s) // validation.Field(&s.CompanyName, validation.Required, validation.Length(3, 120)),
+
 }
 
 // LicenseKeys List keys
@@ -34,8 +33,9 @@ func (s LicenseKeys) ValidateLicenseKeys() error {
 
 // GenKeys generate keys
 type GenKeys struct {
-	Number int    `json:"number"`
-	Type   string `json:"type"`
+	Number   int    `json:"number"`
+	Type     string `json:"type"`
+	AssignTo int    `json:"assign_to"`
 }
 
 // ValidateGenKeys ...
@@ -43,5 +43,6 @@ func (s GenKeys) ValidateGenKeys() error {
 	return validation.ValidateStruct(&s,
 		validation.Field(&s.Number, validation.Required),
 		validation.Field(&s.Type, validation.Required),
+		validation.Field(&s.AssignTo, validation.Required),
 	)
 }

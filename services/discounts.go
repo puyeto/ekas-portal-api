@@ -44,7 +44,7 @@ func (s *DiscountService) AddDiscounts(rs app.RequestScope, model *models.Discou
 	return s.dao.GetDiscount(rs, model.DiscountID)
 }
 
-// Count returns the number of artists.
+// CountDiscounts returns the number of artists.
 func (s *DiscountService) CountDiscounts(rs app.RequestScope) (int, error) {
 	return s.dao.CountDiscounts(rs)
 }

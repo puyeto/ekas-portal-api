@@ -20,7 +20,7 @@ type deviceDAO interface {
 	// Delete removes the device with given ID from the storage.
 	Delete(rs app.RequestScope, id int32) error
 	CountConfiguredDevices(rs app.RequestScope, vehicleid, deviceid int) (int, error)
-	ConfiguredDevices(rs app.RequestScope, offset, limit, vehicle_id, device_id int) ([]models.DeviceConfiguration, error)
+	ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error)
 }
 
 // DeviceService provides services related with devices.
@@ -86,6 +86,6 @@ func (s *DeviceService) CountConfiguredDevices(rs app.RequestScope, vehicleid, d
 }
 
 // ConfiguredDevices ...
-func (s *DeviceService) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicle_id, device_id int) ([]models.DeviceConfiguration, error) {
-	return s.dao.ConfiguredDevices(rs, offset, limit, vehicle_id, device_id)
+func (s *DeviceService) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error) {
+	return s.dao.ConfiguredDevices(rs, offset, limit, vehicleid, deviceid)
 }
