@@ -89,9 +89,9 @@ func (dao *SettingDAO) CountKeys(rs app.RequestScope) (int, error) {
 // QueryKeys retrieves the keys records with the specified offset and limit from the database.
 func (dao *SettingDAO) QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error) {
 	keys := []models.LicenseKeys{}
-	err := rs.Tx().Select("key_string", "assign_to", "license_keys.status", "COALESCE(company_users.company_id, 0) AS setting_id", "COALESCE(company_name, '') AS company_name", "COALESCE(company_contacts, '') AS company_contacts").
-		LeftJoin("company_users", dbx.NewExp("company_users.user_id = license_keys.assign_to")).
-		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
+	err := rs.Tx().Select("key_string", "assign_to", "license_keys.status", "COALESCE(company_id, 0) AS company_id", "COALESCE(company_name, '') AS company_name", "COALESCE(company_contacts, '') AS company_contacts").
+		// LeftJoin("company_users", dbx.NewExp("company_users.user_id = license_keys.assign_to")).
+		LeftJoin("companies", dbx.NewExp("companies.company_id = license_keys.assign_to")).
 		Offset(int64(offset)).Limit(int64(limit)).All(&keys)
 	return keys, err
 }
@@ -125,4 +125,9 @@ func (dao *SettingDAO) AssignKey(rs app.RequestScope, model *models.LicenseKeys)
 	}
 
 	return nil
+}
+
+// UpdateKey saves the changes to keys in the database.
+func (dao *SettingDAO) UpdateKey(rs app.RequestScope, model *models.LicenseKeys) error {
+	return rs.Tx().Model(model).Exclude("KeyString", "CompanyID", "CompanyName", "CompanyContacts").Update()
 }

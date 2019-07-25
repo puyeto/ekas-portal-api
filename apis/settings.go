@@ -22,6 +22,8 @@ type (
 		CountKeys(rs app.RequestScope) (int, error)
 		QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error)
 		AssignKey(rs app.RequestScope, model *models.LicenseKeys) error
+		GetKey(rs app.RequestScope, key string) (*models.LicenseKeys, error)
+		UpdateKey(rs app.RequestScope, model *models.LicenseKeys) (*models.LicenseKeys, error)
 	}
 
 	// settingResource defines the handlers for the CRUD APIs.
@@ -39,6 +41,7 @@ func ServeSettingResource(rg *routing.RouteGroup, service settingService) {
 	rg.Put("/settings/<id>", r.update)
 	rg.Delete("/settings/<id>", r.delete)
 	rg.Post("/settings/generate-keys", r.generateKey)
+	rg.Put("/settings/keys/update", r.updateKey)
 	rg.Get("/setting/list-keys", r.queryKeys)
 	rg.Post("/setting/assign-key", r.assignKey)
 }
@@ -165,4 +168,24 @@ func (r *settingResource) assignKey(c *routing.Context) error {
 	}
 
 	return c.Write(http.StatusOK)
+}
+
+func (r *settingResource) updateKey(c *routing.Context) error {
+	rs := app.GetRequestScope(c)
+	var model models.LicenseKeys
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	_, err := r.service.GetKey(rs, model.KeyString)
+	if err != nil {
+		return err
+	}
+
+	response, err := r.service.UpdateKey(rs, &model)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(response)
 }

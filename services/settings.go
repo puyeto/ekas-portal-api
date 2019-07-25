@@ -26,6 +26,7 @@ type settingDAO interface {
 	QueryKeys(rs app.RequestScope, offset, limit int) ([]models.LicenseKeys, error)
 	AssignKey(rs app.RequestScope, model *models.LicenseKeys) error
 	GetKey(rs app.RequestScope, key string) (*models.LicenseKeys, error)
+	UpdateKey(rs app.RequestScope, model *models.LicenseKeys) error
 }
 
 // SettingService provides services related with settings.
@@ -138,4 +139,20 @@ func (s *SettingService) AssignKey(rs app.RequestScope, model *models.LicenseKey
 	}
 
 	return nil
+}
+
+// GetKey returns the keys with the specified the key string.
+func (s *SettingService) GetKey(rs app.RequestScope, key string) (*models.LicenseKeys, error) {
+	return s.dao.GetKey(rs, key)
+}
+
+// UpdateKey updates the keys.
+func (s *SettingService) UpdateKey(rs app.RequestScope, model *models.LicenseKeys) (*models.LicenseKeys, error) {
+	if err := model.ValidateLicenseKeys(); err != nil {
+		return nil, err
+	}
+	if err := s.dao.UpdateKey(rs, model); err != nil {
+		return nil, err
+	}
+	return s.dao.GetKey(rs, model.KeyString)
 }
