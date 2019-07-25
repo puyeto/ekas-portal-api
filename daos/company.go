@@ -54,6 +54,6 @@ func (dao *CompanyDAO) Count(rs app.RequestScope) (int, error) {
 // Query retrieves the company records with the specified offset and limit from the database.
 func (dao *CompanyDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Companies, error) {
 	companys := []models.Companies{}
-	err := rs.Tx().Select().OrderBy("company_id").Offset(int64(offset)).Limit(int64(limit)).All(&companys)
+	err := rs.Tx().Select().OrderBy("company_name ASC").Offset(int64(offset)).Limit(int64(limit)).All(&companys)
 	return companys, err
 }
