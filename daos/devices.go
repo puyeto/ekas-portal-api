@@ -81,11 +81,13 @@ func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, dev
 	var count int
 	query := "SELECT COUNT(device_id) FROM vehicle_configuration"
 	if vehicleid > 0 && deviceid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "' AND status=1"
 	} else if vehicleid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND status=1"
 	} else if deviceid > 0 {
-		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "' AND status=1"
+	} else {
+		query += " WHERE status=1 "
 	}
 	q := rs.Tx().NewQuery(query)
 	err := q.Row(&count)
@@ -96,16 +98,20 @@ func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, dev
 // ConfiguredDevices retrieves the device records with the specified offset and limit from the database.
 func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error) {
 	devices := []models.DeviceConfiguration{}
-	query := "SELECT vc.device_id, vehicle_id, data->'$.sim_imei' AS sim_imei, vc.created_on, vc.status AS status, "
+	query := "SELECT vc.device_id, vehicle_id, data->>'$.device_detail.registration_no' AS device_name, data->>'$.sim_imei' AS sim_imei, vc.created_on, vc.status AS status, "
+	query += " data->>'$.device_detail.chasis_no' AS chassis_no, data->>'$.device_detail.make_type' AS make_type, data->>'$.device_detail.device_type' AS device_type, "
+	query += " data->>'$.device_detail.serial_no' AS serial_no, data->>'$.device_detail.preset_speed' AS preset_speed, data->>'$.device_detail.set_frequency' AS set_frequency, "
 	query += " COALESCE(dd.status, 0) AS device_status, COALESCE(dd.status_reason, 'Device record does not exit') AS reason FROM vehicle_configuration AS vc"
 	query += " LEFT JOIN device_details AS dd ON (dd.device_id = vc.device_id)"
 
 	if vehicleid > 0 && deviceid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "' AND vc.status=1"
 	} else if vehicleid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND vc.status=1"
 	} else if deviceid > 0 {
-		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "' AND vc.status=1"
+	} else {
+		query += " WHERE vc.status=1 "
 	}
 	query += " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
 	q := rs.Tx().NewQuery(query)
