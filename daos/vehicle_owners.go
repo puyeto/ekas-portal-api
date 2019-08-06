@@ -13,10 +13,10 @@ import (
 // CreateVehicleOwner Add vehicle owner
 func (dao *VehicleDAO) CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error {
 	exists, _ := dao.VehicleOwnerExists(rs, vo.OwnerID)
-	if exists != 1 {
-		return rs.Tx().Model(vo).Insert("OwnerID", "UserID", "OwnerIDNo", "OwnerName", "OwnerEmail", "OwnerPhone")
+	if exists == 1 {
+		return dao.UpdateVehicleOwners(rs, vo)
 	}
-	return dao.UpdateVehicleOwners(rs, vo)
+	return rs.Tx().Model(vo).Insert("OwnerID", "UserID", "OwnerIDNo", "OwnerName", "OwnerEmail", "OwnerPhone")
 }
 
 // UpdateVehicleOwners ....

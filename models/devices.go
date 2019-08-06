@@ -45,4 +45,13 @@ type DeviceConfiguration struct {
 	DeviceReason        string    `json:"device_reason" db:"reason"`
 	PresetSpeed         string    `json:"preset_speed" db:"preset_speed"`
 	SetFrequency        string    `json:"set_frequency" db:"set_frequency"`
+	FittingDate         string    `json:"fitting_date" db:"fitting_date"`
+	ExpiryDate          string    `json:"expiry_date" db:"expiry_date"`
+	FittingCenter       string    `json:"fitting_center" db:"fitting_center"`
+	Certificate         string    `json:"certificate" db:"certificate"`
+	EmailAddress        string    `json:"agent_email_address" db:"email_address"`
+	AgentPhone          string    `json:"agent_phone" db:"agent_phone"`
+	AgentLocation       string    `json:"agent_location" db:"agent_location"`
+	OwnerName           string    `json:"owner_name" db:"owner_name"`
+	OwnerPhoneNumber    string    `json:"owner_phone_number" db:"owner_phone_number"`
 }
