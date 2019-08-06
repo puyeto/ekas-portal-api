@@ -1,8 +1,6 @@
 package daos
 
 import (
-	"strconv"
-
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
@@ -35,9 +33,9 @@ func (dao *VehicleDAO) UpdateFitter(rs app.RequestScope, fd *models.FitterDetail
 }
 
 // FitterExists check if fitter exists
-func (dao *VehicleDAO) FitterExists(rs app.RequestScope, id uint32) (int, error) {
+func (dao *VehicleDAO) FitterExists(rs app.RequestScope, id string) (int, error) {
 	var exists int
-	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM fitter_details WHERE fitting_id_no='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM fitter_details WHERE fitting_id_no='" + id + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
 	return exists, err
 }
