@@ -125,5 +125,8 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	companyDAO := daos.NewCompanyDAO()
 	apis.ServeCompanyResource(rg, services.NewCompanyService(companyDAO))
 
+	ownersDAO := daos.NewOwnerDAO()
+	apis.ServeOwnerResource(rg, services.NewOwnerService(ownersDAO))
+
 	return router
 }

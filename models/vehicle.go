@@ -104,21 +104,11 @@ type VehicleDetails struct {
 	CreatedOn         time.Time `json:"created_on" db:"created_on"`
 }
 
-// ValidateVehicleDetails validates the login fields.
+// ValidateVehicleDetails validates fields.
 func (v VehicleDetails) ValidateVehicleDetails() error {
 	return validation.ValidateStruct(&v,
 		validation.Field(&v.VehicleRegNo, validation.Required),
 	)
-}
-
-// VehicleOwner ...
-type VehicleOwner struct {
-	OwnerID    uint32 `json:"owner_id" db:"pk,owner_id"`
-	UserID     uint32 `json:"user_id" db:"user_id"`
-	OwnerIDNo  string `json:"owner_id_no" db:"owner_id_no"`
-	OwnerName  string `json:"owner_name" db:"owner_name"`
-	OwnerEmail string `json:"owner_email" db:"owner_email"`
-	OwnerPhone string `json:"owner_phone" db:"owner_phone"`
 }
 
 // FitterDetails ...
