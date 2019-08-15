@@ -305,6 +305,8 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
+	// Update Device Config
+
 	// Add Configuration Details
 	if model.ConfigID > 0 {
 		// update configuration status

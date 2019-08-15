@@ -72,7 +72,7 @@ func (dao *DeviceDAO) Count(rs app.RequestScope) (int, error) {
 // Query retrieves the device records with the specified offset and limit from the database.
 func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error) {
 	devices := []models.Devices{}
-	err := rs.Tx().Select().From("device_details").OrderBy("id").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+	err := rs.Tx().Select().From("device_details").OrderBy("device_id ASC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
 	return devices, err
 }
 
