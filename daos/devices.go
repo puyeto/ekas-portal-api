@@ -98,12 +98,12 @@ func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, dev
 // ConfiguredDevices retrieves the device records with the specified offset and limit from the database.
 func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error) {
 	devices := []models.DeviceConfiguration{}
-	query := "SELECT vc.device_id, vehicle_id, data->>'$.device_detail.registration_no' AS device_name, data->>'$.sim_imei' AS sim_imei, vc.created_on, vc.status AS status, "
-	query += " data->>'$.device_detail.chasis_no' AS chassis_no, data->>'$.device_detail.make_type' AS make_type, data->>'$.device_detail.device_type' AS device_type, "
-	query += " data->>'$.device_detail.serial_no' AS serial_no, data->>'$.device_detail.preset_speed' AS preset_speed, data->>'$.device_detail.set_frequency' AS set_frequency, "
-	query += " data->>'$.device_detail.fitting_date' AS fitting_date, DATE_ADD(data->>'$.device_detail.fitting_date', INTERVAL 1 YEAR) AS expiry_date, data->>'$.device_detail.fitting_center' AS fitting_center, "
-	query += " data->>'$.device_detail.certificate' AS certificate, data->>'$.device_detail.email_address' AS email_address, data->>'$.device_detail.agent_phone' AS agent_phone, "
-	query += " data->>'$.device_detail.agent_location' AS agent_location, data->>'$.device_detail.owner_name' AS owner_name, data->>'$.device_detail.owner_phone_number' AS owner_phone_number,"
+	query := "SELECT vc.device_id, vehicle_id, COALESCE(JSON_VALUE(data,'$.device_detail.registration_no')) AS device_name, JSON_VALUE(data, '$.sim_imei') AS sim_imei, vc.created_on, vc.status AS status, "
+	query += " JSON_VALUE(data, '$.device_detail.chasis_no') AS chassis_no, JSON_VALUE(data, '$.device_detail.make_type') AS make_type, JSON_VALUE(data, '$.device_detail.device_type') AS device_type, "
+	query += " JSON_VALUE(data, '$.device_detail.serial_no') AS serial_no, JSON_VALUE(data, '$.device_detail.preset_speed') AS preset_speed, JSON_VALUE(data, '$.device_detail.set_frequency') AS set_frequency, "
+	query += " JSON_VALUE(data, '$.device_detail.fitting_date') AS fitting_date, DATE_ADD(JSON_VALUE(data, '$.device_detail.fitting_date'), INTERVAL 1 YEAR) AS expiry_date, JSON_VALUE(data, '$.device_detail.fitting_center') AS fitting_center, "
+	query += " JSON_VALUE(data, '$.device_detail.certificate') AS certificate, JSON_VALUE(data, '$.device_detail.email_address') AS email_address, JSON_VALUE(data, '$.device_detail.agent_phone') AS agent_phone, "
+	query += " JSON_VALUE(data, '$.device_detail.agent_location') AS agent_location, JSON_VALUE(data, '$.device_detail.owner_name') AS owner_name, JSON_VALUE(data, '$.device_detail.owner_phone_number') AS owner_phone_number,"
 	query += " COALESCE(dd.status, 0) AS device_status, COALESCE(dd.status_reason, 'Device record does not exit') AS reason FROM vehicle_configuration AS vc"
 	query += " LEFT JOIN device_details AS dd ON (dd.device_id = vc.device_id)"
 
