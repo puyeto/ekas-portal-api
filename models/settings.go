@@ -4,7 +4,11 @@ import validation "github.com/go-ozzo/ozzo-validation"
 
 // Settings ..
 type Settings struct {
-	SettingID int `json:"setting_id" db:"pk,setting_id"`
+	SettingID         int     `json:"setting_id" db:"pk,setting_id"`
+	CertificatePrefix string  `json:"certificate_prefix" db:"certificate_prefix"`
+	DevicePrefix      int     `json:"device_prefix" db:"device_prefix"`
+	BillingPeriod     int8    `json:"billing_period" db:"billing_period"`
+	MonthlyAmount     float32 `json:"monthly_amount" db:"monthly_amount"`
 }
 
 // ValidateSettings ...
