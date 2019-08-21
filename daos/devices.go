@@ -81,11 +81,11 @@ func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, dev
 	var count int
 	query := "SELECT COUNT(device_id) FROM vehicle_configuration"
 	if vehicleid > 0 && deviceid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "' AND status=1"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
 	} else if vehicleid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND status=1"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
 	} else if deviceid > 0 {
-		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "' AND status=1"
+		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
 	} else {
 		query += " WHERE status=1 "
 	}
@@ -108,15 +108,15 @@ func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehi
 	query += " LEFT JOIN device_details AS dd ON (dd.device_id = vc.device_id)"
 
 	if vehicleid > 0 && deviceid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "' AND vc.status=1"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
 	} else if vehicleid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND vc.status=1"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
 	} else if deviceid > 0 {
-		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "' AND vc.status=1"
+		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
 	} else {
 		query += " WHERE vc.status=1 "
 	}
-	query += " LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
+	query += " ORDER BY conf_id DESC LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
 	q := rs.Tx().NewQuery(query)
 	err := q.All(&devices)
 

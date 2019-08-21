@@ -31,6 +31,7 @@ type vehicleDAO interface {
 	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
 	CountSearches(rs app.RequestScope, searchterm string) (int, error)
+	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid uint32) error
 }
 
 // VehicleService provides services related with vehicles.
@@ -305,7 +306,11 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	// Update Device Config
+	// Update Device Configuration status (is configured
+	did, _ := strconv.Atoi(model.GovernorDetails.DeviceID)
+	if err := s.dao.UpdatDeviceConfigurationStatus(rs, uint32(did)); err != nil {
+		return 0, err
+	}
 
 	// Add Configuration Details
 	if model.ConfigID > 0 {
