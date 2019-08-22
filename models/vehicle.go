@@ -232,3 +232,17 @@ type CurrentViolations struct {
 	OfflineTripDate     string    `json:"offline_trip_date,omitempty" db:"offline_trip_date"`
 	CreatedOn           time.Time `json:"created_on,omitempty" db:"created_on"`
 }
+
+// Reminders ...
+type Reminders struct {
+	ID     uint32 `json:"id" db:"id"`
+	Name   string `json:"name" db:"name"`
+	UserID uint32 `json:"user_id" db:"user_id"`
+}
+
+// ValidateReminders validates fields.
+func (r Reminders) ValidateReminders() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Name, validation.Required),
+	)
+}
