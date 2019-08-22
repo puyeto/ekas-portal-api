@@ -71,8 +71,10 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 }
 
 // CreateVehicle saves a new vehicle record in the database.
-func (dao *VehicleRecordDAO) CreateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
-	return rs.Tx().Model(v).Insert("VehicleID", "UserID", "VehicleStringID", "VehicleRegNo", "ChassisNo", "MakeType", "NotificationEmail", "NotificationNO")
+func (dao *VehicleRecordDAO) CreateVehicle(rs app.RequestScope, v *models.VehicleDetails) (uint32, error) {
+	err:= rs.Tx().Model(v).Exclude("CreatedOn", "InvoiceDueDate", "AutoInvoicing", "VehicleStatus").Insert()
+	return v.VehicleID, err
+
 }
 
 // UpdateVehicle ....

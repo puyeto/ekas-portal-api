@@ -89,25 +89,39 @@ type GovernorDetails struct {
 
 // VehicleDetails ...
 type VehicleDetails struct {
-	VehicleID         uint32    `json:"vehicle_id" db:"pk,vehicle_id"`
-	UserID            uint32    `json:"user_id" db:"user_id"`
-	CompanyName       string    `json:"company_name,omitempty"`
-	VehicleStringID   string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
-	VehicleRegNo      string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
-	ChassisNo         string    `json:"chassis_no" db:"chassis_no"`
-	MakeType          string    `json:"make_type" db:"make_type"`
-	NotificationEmail string    `json:"notification_email" db:"notification_email"`
-	NotificationNO    string    `json:"notification_no" db:"notification_no"`
-	VehicleStatus     int8      `json:"status" db:"vehicle_status"`
-	AutoInvoicing     int8      `json:"auto_invoicing,omitempty" db:"auto_invoicing"`
-	InvoiceDueDate    time.Time `json:"invoice_due_date,omitempty" db:"invoice_due_date"`
-	CreatedOn         time.Time `json:"created_on" db:"created_on"`
+	VehicleID              uint32    `json:"vehicle_id" db:"pk,vehicle_id"`
+	UserID                 uint32    `json:"user_id" db:"user_id"`
+	OwnerID                uint32    `json:"owner_id" db:"owner_id"`
+	CompanyID              uint32    `json:"company_id" db:"company_id"`
+	DeviceID               uint32    `json:"device_id" db:"device_id"`
+	CompanyName            string    `json:"company_name,omitempty"`
+	VehicleStringID        string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
+	VehicleRegNo           string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
+	ChassisNo              string    `json:"chassis_no" db:"chassis_no"`
+	MakeType               string    `json:"make_type" db:"make_type"`
+	NotificationEmail      string    `json:"notification_email,omitempty" db:"notification_email"`
+	NotificationNO         string    `json:"notification_no,omitempty" db:"notification_no"`
+	VehicleStatus          int8      `json:"status" db:"vehicle_status"`
+	AutoInvoicing          int8      `json:"auto_invoicing,omitempty" db:"auto_invoicing"`
+	InvoiceDueDate         time.Time `json:"invoice_due_date,omitempty" db:"invoice_due_date"`
+	CreatedOn              time.Time `json:"created_on" db:"created_on"`
+	Model                  string    `json:"model,omitempty" db:"model"`
+	ModelYear              string    `json:"model_year,omitempty" db:"model_year"`
+	Manufacturer           string    `json:"manufacturer,omitempty" db:"manufacturer"`
+	BodyStyle              string    `json:"body_style,omitempty" db:"body_style"`
+	BodyType               string    `json:"body_type,omitempty" db:"body_type"`
+	DeleteTripDetailsAfter string    `json:"delete_trip_details_after,omitempty" db:"delete_trip_details_after"`
+	DeleteTripsAfter       string    `json:"delete_trips_after,omitempty" db:"delete_trips_after"`
+	FuelType               string    `json:"fuel_type,omitempty" db:"fuel_type"`
+	DefaultTripType        string    `json:"default_trip_type,omitempty" db:"default_trip_type"`
 }
 
 // ValidateVehicleDetails validates fields.
 func (v VehicleDetails) ValidateVehicleDetails() error {
 	return validation.ValidateStruct(&v,
 		validation.Field(&v.VehicleRegNo, validation.Required),
+		validation.Field(&v.VehicleStringID, validation.Required),
+		validation.Field(&v.UserID, validation.Required),
 	)
 }
 

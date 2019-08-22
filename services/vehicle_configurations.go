@@ -281,7 +281,7 @@ func (s *VehicleService) CountViolations(rs app.RequestScope, deviceid string, r
 	return s.dao.CountViolations(rs, deviceid, reason)
 }
 
-// Create creates a new vehicle.
+// Create creates a new vehicle configuration.
 func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int, error) {
 	// if err := model.Validate(); err != nil {
 	//	return nil, err
