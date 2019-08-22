@@ -1,6 +1,8 @@
 package daos
 
 import (
+	"strconv"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
@@ -66,4 +68,31 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	}
 	return vehicleRecords, err
+}
+
+// CreateVehicle saves a new vehicle record in the database.
+func (dao *VehicleRecordDAO) CreateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
+	return rs.Tx().Model(v).Insert("VehicleID", "UserID", "VehicleStringID", "VehicleRegNo", "ChassisNo", "MakeType", "NotificationEmail", "NotificationNO")
+}
+
+// UpdateVehicle ....
+func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
+	_, err := rs.Tx().Update("vehicle_details", dbx.Params{
+		"user_id":            v.UserID,
+		"vehicle_string_id":  v.VehicleStringID,
+		"vehicle_reg_no":     v.VehicleRegNo,
+		"chassis_no":         v.ChassisNo,
+		"make_type":          v.MakeType,
+		"notification_email": v.NotificationEmail,
+		"notification_no":    v.NotificationNO},
+		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute()
+	return err
+}
+
+// VehicleExists ...
+func (dao *VehicleRecordDAO) VehicleExists(rs app.RequestScope, id uint32) (int, error) {
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	return exists, err
 }
