@@ -106,22 +106,23 @@ type VehicleDetails struct {
 	InvoiceDueDate         time.Time `json:"invoice_due_date,omitempty" db:"invoice_due_date"`
 	CreatedOn              time.Time `json:"created_on" db:"created_on"`
 	Model                  string    `json:"model,omitempty" db:"model"`
-	ModelYear              string    `json:"model_year,omitempty" db:"model_year"`
+	ModelYear              int16     `json:"model_year,omitempty" db:"model_year"`
 	Manufacturer           string    `json:"manufacturer,omitempty" db:"manufacturer"`
 	BodyStyle              string    `json:"body_style,omitempty" db:"body_style"`
 	BodyType               string    `json:"body_type,omitempty" db:"body_type"`
 	DeleteTripDetailsAfter string    `json:"delete_trip_details_after,omitempty" db:"delete_trip_details_after"`
 	DeleteTripsAfter       string    `json:"delete_trips_after,omitempty" db:"delete_trips_after"`
-	FuelType               string    `json:"fuel_type,omitempty" db:"fuel_type"`
-	DefaultTripType        string    `json:"default_trip_type,omitempty" db:"default_trip_type"`
+	FuelType               int       `json:"fuel_type,omitempty" db:"fuel_type"`
+	DefaultTripType        int       `json:"default_trip_type,omitempty" db:"default_trip_type"`
 }
 
 // ValidateVehicleDetails validates fields.
 func (v VehicleDetails) ValidateVehicleDetails() error {
 	return validation.ValidateStruct(&v,
 		validation.Field(&v.VehicleRegNo, validation.Required),
-		validation.Field(&v.VehicleStringID, validation.Required),
 		validation.Field(&v.UserID, validation.Required),
+		validation.Field(&v.ChassisNo, validation.Required),
+		validation.Field(&v.MakeType, validation.Required),
 	)
 }
 

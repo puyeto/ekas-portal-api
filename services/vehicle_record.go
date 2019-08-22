@@ -1,6 +1,8 @@
 package services
 
 import (
+	"strings"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 )
@@ -71,6 +73,10 @@ func (s *VehicleRecordService) Query(rs app.RequestScope, offset, limit int, uid
 func (s *VehicleRecordService) CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error) {
 	if err := model.ValidateVehicleDetails(); err != nil {
 		return 0, err
+	}
+	model.VehicleStringID = strings.ToLower(strings.Replace(model.VehicleRegNo, " ", "", -1))
+	if model.Manufacturer == "" {
+		model.Manufacturer = model.MakeType
 	}
 	return s.dao.CreateVehicle(rs, model)
 }
