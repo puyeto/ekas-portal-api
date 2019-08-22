@@ -43,6 +43,7 @@ type (
 func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	r := &vehicleResource{service}
 	rg.Post("/addvehicle", r.create)
+	rg.Post("/addvehicleconfiguration", r.create)
 	rg.Get("/getconfigdetailsbystrid/<id>", r.getConfigurationByStringID)
 	rg.Get("/gettripdata/<id>", r.getTripDataByDeviceID)
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)

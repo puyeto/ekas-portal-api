@@ -31,7 +31,8 @@ func (m Devices) ValidateDevices() error {
 
 // DeviceConfiguration ...
 type DeviceConfiguration struct {
-	DeviceID            int32     `json:"device_id"`
+	ConfigID            int32     `json:"conf_id" db:"pk,conf_id"`
+	DeviceID            int32     `json:"device_id" db:"device_id"`
 	DeviceName          string    `json:"device_name,omitempty" db:"device_name"`
 	ChassisNo           string    `json:"chassis_no,omitempty" db:"chassis_no"`
 	MakeType            string    `json:"make_type" db:"make_type"`

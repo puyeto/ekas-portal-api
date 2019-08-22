@@ -12,6 +12,7 @@ type (
 	// vehicleRecordService specifies the interface for the vehicleRecord service needed by vehicleRecordResource.
 	vehicleRecordService interface {
 		Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
+		CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
 		Query(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
 		Count(rs app.RequestScope, uid int) (int, error)
 		Update(rs app.RequestScope, id uint32, model *models.VehicleDetails) (*models.VehicleDetails, error)
@@ -28,6 +29,7 @@ type (
 func ServeVehicleRecordResource(rg *routing.RouteGroup, service vehicleRecordService) {
 	r := &vehicleRecordResource{service}
 	rg.Get("/vehicle/get/<id>", r.get)
+	rg.Post("/vehicle/create", r.createVehicle)
 	rg.Get("/vehicles/list", r.query)
 	rg.Get("/vehicles/count", r.count)
 	rg.Put("/vehicle/update/<id>", r.update)
@@ -41,6 +43,19 @@ func (r *vehicleRecordResource) get(c *routing.Context) error {
 	}
 
 	response, err := r.service.Get(app.GetRequestScope(c), uint32(id))
+	if err != nil {
+		return err
+	}
+
+	return c.Write(response)
+}
+
+func (r *vehicleRecordResource) createVehicle(c *routing.Context) error {
+	var model models.VehicleDetails
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+	response, err := r.service.CreateVehicle(app.GetRequestScope(c), &model)
 	if err != nil {
 		return err
 	}
