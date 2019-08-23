@@ -1,6 +1,8 @@
 package daos
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -74,6 +76,51 @@ func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit int) ([]models.De
 	devices := []models.Devices{}
 	err := rs.Tx().Select().From("device_details").OrderBy("device_id ASC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
 	return devices, err
+}
+
+// QueryPositions retrieves the device positions records with the specified offset and limit from the database.
+func (dao *DeviceDAO) QueryPositions(rs app.RequestScope, offset, limit int) ([]models.Devices, error) {
+	var devices []models.Devices
+	var d models.Devices
+	// row dbx.NullStringMap
+	q := rs.Tx().Select("id", "device_id", "device_details.vehicle_id", "vehicle_reg_no", "chassis_no", "make_type", "model", "model_year", "device_name", "device_serial_no", "device_model", "device_manufacturer", "configured", "status", "device_details.created_on").
+		From("device_details").
+		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = device_details.vehicle_id")).
+		Where(dbx.NewExp("device_details.vehicle_id > 0")).
+		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit))
+
+	// populate data row by row
+	rows, err := q.Rows()
+	for rows.Next() {
+		rows.ScanStruct(&d)
+		deviceid := strconv.Itoa(int(d.DeviceID))
+		d.Positions, _ = FetchCurrentPosition(deviceid, 0, 100)
+		devices = append(devices, d)
+	}
+
+	return devices, err
+}
+
+// FetchCurrentPosition ...
+func FetchCurrentPosition(deviceid string, start, stop int64) ([]models.DeviceData, error) {
+	var deviceData []models.DeviceData
+
+	keysList, err := app.ZRevRange("data:"+deviceid, start, stop)
+	if err != nil {
+		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	for i := 0; i < len(keysList); i++ {
+
+		if keysList[i] != "0" {
+			var deserializedValue models.DeviceData
+			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
+			deviceData = append(deviceData, deserializedValue)
+		}
+
+	}
+
+	return deviceData, err
 }
 
 // CountConfiguredDevices returns the number of the device configuration records in the database.

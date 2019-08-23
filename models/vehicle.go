@@ -93,7 +93,6 @@ type VehicleDetails struct {
 	UserID                 uint32    `json:"user_id" db:"user_id"`
 	OwnerID                uint32    `json:"owner_id" db:"owner_id"`
 	CompanyID              uint32    `json:"company_id" db:"company_id"`
-	DeviceID               uint32    `json:"device_id" db:"device_id"`
 	CompanyName            string    `json:"company_name,omitempty"`
 	VehicleStringID        string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
 	VehicleRegNo           string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
