@@ -93,7 +93,6 @@ type VehicleDetails struct {
 	UserID                 uint32    `json:"user_id" db:"user_id"`
 	OwnerID                uint32    `json:"owner_id" db:"owner_id"`
 	CompanyID              uint32    `json:"company_id" db:"company_id"`
-	DeviceID               uint32    `json:"device_id" db:"device_id"`
 	CompanyName            string    `json:"company_name,omitempty"`
 	VehicleStringID        string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
 	VehicleRegNo           string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
@@ -106,22 +105,23 @@ type VehicleDetails struct {
 	InvoiceDueDate         time.Time `json:"invoice_due_date,omitempty" db:"invoice_due_date"`
 	CreatedOn              time.Time `json:"created_on" db:"created_on"`
 	Model                  string    `json:"model,omitempty" db:"model"`
-	ModelYear              string    `json:"model_year,omitempty" db:"model_year"`
+	ModelYear              int16     `json:"model_year,omitempty" db:"model_year"`
 	Manufacturer           string    `json:"manufacturer,omitempty" db:"manufacturer"`
 	BodyStyle              string    `json:"body_style,omitempty" db:"body_style"`
 	BodyType               string    `json:"body_type,omitempty" db:"body_type"`
 	DeleteTripDetailsAfter string    `json:"delete_trip_details_after,omitempty" db:"delete_trip_details_after"`
 	DeleteTripsAfter       string    `json:"delete_trips_after,omitempty" db:"delete_trips_after"`
-	FuelType               string    `json:"fuel_type,omitempty" db:"fuel_type"`
-	DefaultTripType        string    `json:"default_trip_type,omitempty" db:"default_trip_type"`
+	FuelType               int       `json:"fuel_type,omitempty" db:"fuel_type"`
+	DefaultTripType        int       `json:"default_trip_type,omitempty" db:"default_trip_type"`
 }
 
 // ValidateVehicleDetails validates fields.
 func (v VehicleDetails) ValidateVehicleDetails() error {
 	return validation.ValidateStruct(&v,
 		validation.Field(&v.VehicleRegNo, validation.Required),
-		validation.Field(&v.VehicleStringID, validation.Required),
 		validation.Field(&v.UserID, validation.Required),
+		validation.Field(&v.ChassisNo, validation.Required),
+		validation.Field(&v.MakeType, validation.Required),
 	)
 }
 
@@ -230,4 +230,18 @@ type CurrentViolations struct {
 	OfflineTripSpeeds   string    `json:"offline_trip_speed,omitempty" db:"offline_trip_speed"`
 	OfflineTripDate     string    `json:"offline_trip_date,omitempty" db:"offline_trip_date"`
 	CreatedOn           time.Time `json:"created_on,omitempty" db:"created_on"`
+}
+
+// Reminders ...
+type Reminders struct {
+	ID     uint32 `json:"id" db:"id"`
+	Name   string `json:"name" db:"name"`
+	UserID uint32 `json:"user_id" db:"user_id"`
+}
+
+// ValidateReminders validates fields.
+func (r Reminders) ValidateReminders() error {
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.Name, validation.Required),
+	)
 }

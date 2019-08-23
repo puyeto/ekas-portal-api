@@ -14,6 +14,7 @@ type (
 	deviceService interface {
 		Get(rs app.RequestScope, id int32) (*models.Devices, error)
 		Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error)
+		QueryPositions(rs app.RequestScope, offset, limit int) ([]models.Devices, error)
 		Count(rs app.RequestScope) (int, error)
 		Create(rs app.RequestScope, model *models.Devices) (*models.Devices, error)
 		Update(rs app.RequestScope, id int32, model *models.Devices) (*models.Devices, error)
@@ -33,6 +34,7 @@ func ServeDeviceResource(rg *routing.RouteGroup, service deviceService) {
 	r := &deviceResource{service}
 	rg.Get("/device/<id>", r.get)
 	rg.Get("/devices/list", r.query)
+	rg.Get("/devices/positions", r.queryPositions)
 	rg.Get("/devices/count", r.count)
 	rg.Get("/devices/configured-devices", r.configuredDevices)
 	rg.Post("/devices/create", r.create)
@@ -62,6 +64,21 @@ func (r *deviceResource) query(c *routing.Context) error {
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
 	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = items
+	return c.Write(paginatedList)
+}
+
+func (r *deviceResource) queryPositions(c *routing.Context) error {
+	rs := app.GetRequestScope(c)
+	count, err := r.service.Count(rs)
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	items, err := r.service.QueryPositions(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
 	if err != nil {
 		return err
 	}

@@ -12,7 +12,7 @@ type VehicleOwner struct {
 	OwnerPhone string `json:"owner_phone" db:"owner_phone"`
 }
 
-// VehicleOwner validates fields.
+// ValidateVehicleOwner validates fields.
 func (v VehicleOwner) ValidateVehicleOwner() error {
 	return validation.ValidateStruct(&v,
 		validation.Field(&v.UserID, validation.Required),

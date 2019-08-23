@@ -1,6 +1,8 @@
 package services
 
 import (
+	"strings"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 )
@@ -19,6 +21,9 @@ type vehicleRecordDAO interface {
 	Delete(rs app.RequestScope, id uint32) error
 	// CreateVehicle create new vehicle
 	CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
+	CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
+	CountReminders(rs app.RequestScope, uid int) (int, error)
+	GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
 }
 
 // VehicleRecordService provides services related with vehicleRecords.
@@ -72,5 +77,28 @@ func (s *VehicleRecordService) CreateVehicle(rs app.RequestScope, model *models.
 	if err := model.ValidateVehicleDetails(); err != nil {
 		return 0, err
 	}
+	model.VehicleStringID = strings.ToLower(strings.Replace(model.VehicleRegNo, " ", "", -1))
+	if model.Manufacturer == "" {
+		model.Manufacturer = model.MakeType
+	}
 	return s.dao.CreateVehicle(rs, model)
+}
+
+// CreateReminder creates a new reminder.
+func (s *VehicleRecordService) CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error) {
+	if err := model.ValidateReminders(); err != nil {
+		return 0, err
+	}
+	
+	return s.dao.CreateReminder(rs, model)
+}
+
+// CountReminders returns the number of reminderRecords.
+func (s *VehicleRecordService) CountReminders(rs app.RequestScope, uid int) (int, error) {
+	return s.dao.CountReminders(rs, uid)
+}
+
+// GetReminder returns the reminderRecords with the specified offset and limit.
+func (s *VehicleRecordService) GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error) {
+	return s.dao.GetReminder(rs, offset, limit, uid)
 }

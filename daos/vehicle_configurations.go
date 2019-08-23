@@ -226,12 +226,12 @@ func (dao *VehicleDAO) UpdateConfigurationStatus(rs app.RequestScope, configid u
 }
 
 // UpdatDeviceConfigurationStatus ...
-func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid uint32) error {
+func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid uint32, vehicleid uint32) error {
 	t := time.Now()
 	currentDate := t.Format("2006-01-02 15:04:05")
 
 	_, err := rs.Tx().Update("device_details", dbx.Params{
-		"configuration_date": currentDate, "configured": 1},
+		"configuration_date": currentDate, "configured": 1, "vehicle_id" : vehicleid},
 		dbx.HashExp{"device_id": deviceid}).Execute()
 	return err
 }
