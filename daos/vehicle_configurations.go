@@ -34,15 +34,6 @@ func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*mo
 	return &vdetails, err
 }
 
-// GetTripDataByDeviceID ...
-func (dao *VehicleDAO) GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
-	tdetails := []models.TripData{}
-	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed", "longitude", "latitude").
-		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
-		Where(dbx.HashExp{"device_id": deviceid}).All(&tdetails)
-	return tdetails, err
-}
-
 // GetOverspeedByDeviceID ...
 func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
 	tdetails := []models.TripData{}
@@ -231,7 +222,7 @@ func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, devic
 	currentDate := t.Format("2006-01-02 15:04:05")
 
 	_, err := rs.Tx().Update("device_details", dbx.Params{
-		"configuration_date": currentDate, "configured": 1, "vehicle_id" : vehicleid},
+		"configuration_date": currentDate, "configured": 1, "vehicle_id": vehicleid},
 		dbx.HashExp{"device_id": deviceid}).Execute()
 	return err
 }
