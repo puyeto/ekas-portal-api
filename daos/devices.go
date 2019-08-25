@@ -78,23 +78,49 @@ func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit int) ([]models.De
 	return devices, err
 }
 
+// CountQueryPositions returns the number of the device position records in the database.
+func (dao *DeviceDAO) CountQueryPositions(rs app.RequestScope, uid uint32) (int, error) {
+	var count int
+	var err error
+	if uid > 0 {
+		err = rs.Tx().Select("COUNT(device_id)").From("device_details").
+			LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = device_details.vehicle_id")).
+			Where(dbx.NewExp("device_details.vehicle_id > 0")).
+			Where(dbx.HashExp{"vehicle_details.user_id": uid}).Row(&count)
+	} else {
+		err = rs.Tx().Select("COUNT(device_id)").From("device_details").
+			LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = device_details.vehicle_id")).
+			Where(dbx.NewExp("device_details.vehicle_id > 0")).Row(&count)
+	}
+	return count, err
+}
+
 // QueryPositions retrieves the device positions records with the specified offset and limit from the database.
-func (dao *DeviceDAO) QueryPositions(rs app.RequestScope, offset, limit int) ([]models.Devices, error) {
+func (dao *DeviceDAO) QueryPositions(rs app.RequestScope, offset, limit int, uid uint32, start, stop int64) ([]models.Devices, error) {
 	var devices []models.Devices
 	var d models.Devices
-	// row dbx.NullStringMap
-	q := rs.Tx().Select("id", "device_id", "device_details.vehicle_id", "vehicle_reg_no", "chassis_no", "make_type", "model", "model_year", "device_name", "device_serial_no", "device_model", "device_manufacturer", "configured", "status", "device_details.created_on").
-		From("device_details").
-		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = device_details.vehicle_id")).
-		Where(dbx.NewExp("device_details.vehicle_id > 0")).
-		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit))
+	var q *dbx.SelectQuery
+	if uid > 0 {
+		q = rs.Tx().Select("id", "device_id", "device_details.vehicle_id", "vehicle_reg_no", "chassis_no", "make_type", "model", "model_year", "device_name", "device_serial_no", "device_model", "device_manufacturer", "configured", "status", "device_details.created_on").
+			From("device_details").
+			LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = device_details.vehicle_id")).
+			Where(dbx.NewExp("device_details.vehicle_id > 0")).
+			Where(dbx.HashExp{"vehicle_details.user_id": uid}).
+			OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit))
+	} else {
+		q = rs.Tx().Select("id", "device_id", "device_details.vehicle_id", "vehicle_reg_no", "chassis_no", "make_type", "model", "model_year", "device_name", "device_serial_no", "device_model", "device_manufacturer", "configured", "status", "device_details.created_on").
+			From("device_details").
+			LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = device_details.vehicle_id")).
+			Where(dbx.NewExp("device_details.vehicle_id > 0")).
+			OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit))
+	}
 
 	// populate data row by row
 	rows, err := q.Rows()
 	for rows.Next() {
 		rows.ScanStruct(&d)
 		deviceid := strconv.Itoa(int(d.DeviceID))
-		d.Positions, _ = FetchCurrentPosition(deviceid, 0, 100)
+		d.Positions, _ = FetchCurrentPosition(deviceid, start, stop)
 		devices = append(devices, d)
 	}
 
