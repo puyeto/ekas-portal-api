@@ -23,7 +23,7 @@ func (dao *CompanyDAO) Get(rs app.RequestScope, id int) (*models.Companies, erro
 // Create saves a new company record in the database.
 // The Company.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *CompanyDAO) Create(rs app.RequestScope, company *models.Companies) error {
-	return rs.Tx().Model(company).Exclude("UserID").Insert()
+	return rs.Tx().Model(company).Exclude().Insert()
 }
 
 // Update saves the changes to an company in the database.
@@ -32,7 +32,7 @@ func (dao *CompanyDAO) Update(rs app.RequestScope, id int, company *models.Compa
 		return err
 	}
 	company.CompanyID = id
-	return rs.Tx().Model(company).Exclude("CompnayID, UserID").Update()
+	return rs.Tx().Model(company).Exclude("CompanyID").Update()
 }
 
 // Delete deletes an company with the specified ID from the database.
@@ -56,4 +56,12 @@ func (dao *CompanyDAO) Query(rs app.RequestScope, offset, limit int) ([]models.C
 	companys := []models.Companies{}
 	err := rs.Tx().Select().OrderBy("company_name ASC").Offset(int64(offset)).Limit(int64(limit)).All(&companys)
 	return companys, err
+}
+
+// IsExistCompanyName Check if company name exists.
+func (dao *CompanyDAO) IsExistCompanyName(rs app.RequestScope, companyname string) (int, error) {
+	var companyid int
+	q := rs.Tx().NewQuery("SELECT company_id FROM companies WHERE company_name='" + companyname + "' LIMIT 1")
+	err := q.Row(&companyid)
+	return companyid, err
 }

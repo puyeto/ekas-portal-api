@@ -10,7 +10,10 @@ type Companies struct {
 	CompanyContactName string `json:"company_contact_name"`
 	CompanyEmail       string `json:"company_email"`
 	CompanyLocation    string `json:"company_location"`
-	UserID             int32  `json:"user_id,omitempty"`
+	UserID             int32  `json:"user_id" db:"updated_by"`
+	ContactID          int32  `json:"contact_id,omitempty" db:"contact_id"`
+	CompanyPhone       string `json:"company_phone"`
+	BusinessRegNo      string `json:"business_reg_no"`
 }
 
 // ValidateCompanies validates user data fields.
