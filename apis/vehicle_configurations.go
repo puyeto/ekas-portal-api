@@ -2,6 +2,7 @@ package apis
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/ekas-portal-api/app"
@@ -13,11 +14,11 @@ type (
 	// vehicleService specifies the interface for the vehicle service needed by vehicleResource.
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-		GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
+		GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error)
 		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from int64, to int64) ([]models.DeviceData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
-		CountRedisTripRecords(rs app.RequestScope, deviceid string) int
+		CountRedisTripRecords(deviceid string) int
 		CountRedisTripRecordsBtwDates(rs app.RequestScope, deviceid string, from int64, to int64) int
 		CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
@@ -45,7 +46,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Post("/addvehicle", r.create)
 	rg.Post("/addvehicleconfiguration", r.create)
 	rg.Get("/getconfigdetailsbystrid/<id>", r.getConfigurationByStringID)
-	rg.Get("/gettripdata/<id>", r.getTripDataByDeviceID)
+	rg.Get("/device/data/<id>", r.getTripDataByDeviceID)
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)
 	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
@@ -85,17 +86,17 @@ func (r *vehicleResource) create(c *routing.Context) error {
 // getTripDataByDeviceID ...
 func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 	deviceid := c.Param("id")
+	perpage, _ := strconv.Atoi(c.Query("per_page", "99"))
 
-	rs := app.GetRequestScope(c)
-	count := r.service.CountRedisTripRecords(rs, deviceid)
-	paginatedList := getPaginatedListFromRequest(c, count)
+	// count := r.service.CountRedisTripRecords(deviceid)
+	paginatedList := getPaginatedListFromRequest(c, perpage)
 	offset := paginatedList.Offset()
 	limit := paginatedList.Limit()
 	if offset > 0 {
 		limit = offset + paginatedList.Limit()
 	}
 
-	response, err := r.service.GetTripDataByDeviceID(rs, deviceid, offset, limit)
+	response, err := r.service.GetTripDataByDeviceID(deviceid, offset, limit)
 	if err != nil {
 		return err
 	}

@@ -14,7 +14,8 @@ type (
 	deviceService interface {
 		Get(rs app.RequestScope, id int32) (*models.Devices, error)
 		Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error)
-		QueryPositions(rs app.RequestScope, offset, limit int) ([]models.Devices, error)
+		QueryPositions(rs app.RequestScope, offset, limit int, uid uint32, start, stop int64) ([]models.Devices, error)
+		CountQueryPositions(rs app.RequestScope, uid uint32) (int, error)
 		Count(rs app.RequestScope) (int, error)
 		Create(rs app.RequestScope, model *models.Devices) (*models.Devices, error)
 		Update(rs app.RequestScope, id int32, model *models.Devices) (*models.Devices, error)
@@ -72,13 +73,28 @@ func (r *deviceResource) query(c *routing.Context) error {
 }
 
 func (r *deviceResource) queryPositions(c *routing.Context) error {
+	uid, err := strconv.Atoi(c.Query("uid", "0"))
+	if err != nil {
+		return err
+	}
+
+	start, err := strconv.Atoi(c.Query("start", "0"))
+	if err != nil {
+		return err
+	}
+
+	stop, err := strconv.Atoi(c.Query("stop", "99"))
+	if err != nil {
+		return err
+	}
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
+	count, err := r.service.CountQueryPositions(rs, uint32(uid))
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.QueryPositions(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.QueryPositions(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uint32(uid), int64(start), int64(stop))
 	if err != nil {
 		return err
 	}

@@ -15,7 +15,6 @@ import (
 // vehicleDAO specifies the interface of the vehicle DAO needed by VehicleService.
 type vehicleDAO interface {
 	GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-	GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error)
 	ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error)
@@ -50,12 +49,10 @@ func (s *VehicleService) GetVehicleByStrID(rs app.RequestScope, strid string) (*
 }
 
 // GetTripDataByDeviceID ...
-func (s *VehicleService) GetTripDataByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error) {
-	// return s.dao.GetTripDataByDeviceID(rs, deviceid, offset, limit)
-	// define slice of Identification
+func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error) {
 	var deviceData []models.DeviceData
 
-	keysList, err := app.ZRevRange("data:"+deviceid, int64(offset), int64(limit))
+	keysList, err := app.ZRevRange("data:"+deviceid, int64(offset), int64(limit-1))
 	if err != nil {
 		fmt.Println("Getting Keys Failed : " + err.Error())
 	}
@@ -99,7 +96,7 @@ func (s *VehicleService) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid
 }
 
 // CountRedisTripRecords ...
-func (s *VehicleService) CountRedisTripRecords(rs app.RequestScope, deviceid string) int {
+func (s *VehicleService) CountRedisTripRecords(deviceid string) int {
 	ListLength := app.ZCount("data:"+deviceid, "-inf", "+inf")
 	return int(ListLength)
 }

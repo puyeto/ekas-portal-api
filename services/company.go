@@ -19,6 +19,7 @@ type companyDAO interface {
 	Update(rs app.RequestScope, id int, company *models.Companies) error
 	// Delete removes the company with given ID from the storage.
 	Delete(rs app.RequestScope, id int) error
+	IsExistCompanyName(rs app.RequestScope, companyname string) (int, error)
 }
 
 // CompanyService provides services related with companys.
@@ -41,9 +42,22 @@ func (s *CompanyService) Create(rs app.RequestScope, model *models.Companies) (*
 	if err := model.ValidateCompanies(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Create(rs, model); err != nil {
+
+	companyid, err := s.dao.IsExistCompanyName(rs, model.CompanyName)
+	if err != nil {
 		return nil, err
 	}
+
+	if companyid > 0 {
+		if err := s.dao.Update(rs, companyid, model); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := s.dao.Create(rs, model); err != nil {
+			return nil, err
+		}
+	}
+
 	return s.dao.Get(rs, model.CompanyID)
 }
 
