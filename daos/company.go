@@ -3,6 +3,7 @@ package daos
 import (
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // CompanyDAO persists company data in database
@@ -16,14 +17,32 @@ func NewCompanyDAO() *CompanyDAO {
 // Get reads the company with the specified ID from the database.
 func (dao *CompanyDAO) Get(rs app.RequestScope, id int) (*models.Companies, error) {
 	var company models.Companies
-	err := rs.Tx().Select().Model(id, &company)
+	err := rs.Tx().Select("company_id", "company_name", "company_contacts", "company_contact_name", "company_email", "company_location", "updated_by", "contact_id", "COALESCE(company_phone, '') AS company_phone", "COALESCE(business_reg_no, '') AS business_reg_no").
+		Model(id, &company)
+	return &company, err
+}
+
+// GetCompanyUser Get company details associated with a user
+func (dao *CompanyDAO) GetCompanyUser(rs app.RequestScope, userid int) (*models.Companies, error) {
+	var company models.Companies
+	err := rs.Tx().Select("companies.company_id", "company_name", "company_contacts", "company_contact_name", "company_email", "company_location", "user_id AS user", "contact_id", "COALESCE(company_phone, '') AS company_phone", "COALESCE(business_reg_no, '') AS business_reg_no").
+		From("companies").LeftJoin("company_users", dbx.NewExp("company_users.company_id = companies.company_id")).
+		Where(dbx.HashExp{"user_id": userid}).One(&company)
 	return &company, err
 }
 
 // Create saves a new company record in the database.
 // The Company.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *CompanyDAO) Create(rs app.RequestScope, company *models.Companies) error {
-	return rs.Tx().Model(company).Exclude().Insert()
+	return rs.Tx().Model(company).Exclude("User").Insert()
+}
+
+// CreateCompanyUser create user relationship to company.
+func (dao *CompanyDAO) CreateCompanyUser(rs app.RequestScope, companyid int32, userid int32) error {
+	_, err := rs.Tx().Insert("company_users", dbx.Params{
+		"user_id":    userid,
+		"company_id": companyid}).Execute()
+	return err
 }
 
 // Update saves the changes to an company in the database.
@@ -31,8 +50,8 @@ func (dao *CompanyDAO) Update(rs app.RequestScope, id int, company *models.Compa
 	if _, err := dao.Get(rs, id); err != nil {
 		return err
 	}
-	company.CompanyID = id
-	return rs.Tx().Model(company).Exclude("CompanyID").Update()
+	company.CompanyID = int32(id)
+	return rs.Tx().Model(company).Exclude("CompanyID", "User").Update()
 }
 
 // Delete deletes an company with the specified ID from the database.

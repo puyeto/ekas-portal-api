@@ -12,6 +12,7 @@ type (
 	// companyService specifies the interface for the company service needed by companyResource.
 	companyService interface {
 		Get(rs app.RequestScope, id int) (*models.Companies, error)
+		GetCompanyUser(rs app.RequestScope, userid int) (*models.Companies, error)
 		Query(rs app.RequestScope, offset, limit int) ([]models.Companies, error)
 		Count(rs app.RequestScope) (int, error)
 		Create(rs app.RequestScope, model *models.Companies) (*models.Companies, error)
@@ -29,6 +30,7 @@ type (
 func ServeCompanyResource(rg *routing.RouteGroup, service companyService) {
 	r := &companyResource{service}
 	rg.Get("/companies/get/<id>", r.get)
+	rg.Get("/companies/user/<id>", r.getCompanyUser)
 	rg.Get("/companies/list", r.query)
 	rg.Post("/companies/create", r.create)
 	rg.Put("/companies/update/<id>", r.update)
@@ -42,6 +44,21 @@ func (r *companyResource) get(c *routing.Context) error {
 	}
 
 	response, err := r.service.Get(app.GetRequestScope(c), id)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(response)
+}
+
+// get company Details of a user
+func (r *companyResource) getCompanyUser(c *routing.Context) error {
+	userid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	response, err := r.service.GetCompanyUser(app.GetRequestScope(c), userid)
 	if err != nil {
 		return err
 	}

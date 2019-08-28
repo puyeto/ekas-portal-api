@@ -9,12 +9,15 @@ import (
 type companyDAO interface {
 	// Get returns the company with the specified company ID.
 	Get(rs app.RequestScope, id int) (*models.Companies, error)
+	// Get company details associated with a user
+	GetCompanyUser(rs app.RequestScope, userid int) (*models.Companies, error)
 	// Count returns the number of companys.
 	Count(rs app.RequestScope) (int, error)
 	// Query returns the list of companys with the given offset and limit.
 	Query(rs app.RequestScope, offset, limit int) ([]models.Companies, error)
 	// Create saves a new company in the storage.
 	Create(rs app.RequestScope, company *models.Companies) error
+	CreateCompanyUser(rs app.RequestScope, companyid int32, userid int32) error
 	// Update updates the company with given ID in the storage.
 	Update(rs app.RequestScope, id int, company *models.Companies) error
 	// Delete removes the company with given ID from the storage.
@@ -37,6 +40,11 @@ func (s *CompanyService) Get(rs app.RequestScope, id int) (*models.Companies, er
 	return s.dao.Get(rs, id)
 }
 
+// GetCompanyUser Get company details associated with a user
+func (s *CompanyService) GetCompanyUser(rs app.RequestScope, userid int) (*models.Companies, error) {
+	return s.dao.GetCompanyUser(rs, userid)
+}
+
 // Create creates a new company.
 func (s *CompanyService) Create(rs app.RequestScope, model *models.Companies) (*models.Companies, error) {
 	if err := model.ValidateCompanies(); err != nil {
@@ -56,9 +64,15 @@ func (s *CompanyService) Create(rs app.RequestScope, model *models.Companies) (*
 		if err := s.dao.Create(rs, model); err != nil {
 			return nil, err
 		}
+
+		if model.CompanyID > 0 {
+			if err = s.dao.CreateCompanyUser(rs, model.CompanyID, model.UserID); err != nil {
+				return nil, err
+			}
+		}
 	}
 
-	return s.dao.Get(rs, model.CompanyID)
+	return s.dao.Get(rs, int(model.CompanyID))
 }
 
 // Update updates the company with the specified ID.
