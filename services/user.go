@@ -29,12 +29,16 @@ type userDAO interface {
 	Delete(rs app.RequestScope, id int32) error
 	CreateNewEmailVerification(rs app.RequestScope, con *models.ConfirmationEmailDetails) error
 	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
+	// List users
+	Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
+	Count(rs app.RequestScope) (int, error)
 }
 
 // UserService provides services related with users.
 type UserService struct {
 	dao userDAO
 }
+
 
 // NewUserService creates a new userService with the given user DAO.
 func NewUserService(dao userDAO) *UserService {
@@ -46,6 +50,16 @@ func New() models.AdminUserDetails {
 	u := models.AdminUserDetails{}
 	u.NewSalt()
 	return u
+}
+
+// Count returns the number of users.
+func (s *UserService) Count(rs app.RequestScope) (int, error) {
+	return s.dao.Count(rs)
+}
+
+// Query returns users with the specified offset and limit.
+func (s *UserService) Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error) {
+	return s.dao.Query(rs, offset, limit)
 }
 
 // GetUser returns the user with the specified the user ID.

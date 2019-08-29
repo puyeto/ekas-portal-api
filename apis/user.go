@@ -18,6 +18,8 @@ type (
 		Login(rs app.RequestScope, usr *models.Credential) (*models.AdminUserDetails, error)
 		SubmitUserRole(rs app.RequestScope, usr *models.AdminUserRoles) (*models.AdminUserRoles, error)
 		Delete(rs app.RequestScope, id int32) error
+		Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
+		Count(rs app.RequestScope) (int, error)
 	}
 
 	// userResource defines the handlers for the CRUD APIs.
@@ -32,8 +34,24 @@ func ServeUserResource(rg *routing.RouteGroup, service userService) {
 	rg.Get("/user/<id>", r.getuser)
 	rg.Post("/user/role", r.submitroles)
 	rg.Delete("/user/delete/<id>", r.delete)
+	rg.Get("/users/list", r.query)
 	rg.Post("/register", r.register)
 	rg.Post("/login", r.login)
+}
+
+func (r *userResource) query(c *routing.Context) error {
+	rs := app.GetRequestScope(c)
+	count, err := r.service.Count(rs)
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = items
+	return c.Write(paginatedList)
 }
 
 func (r *userResource) getuser(c *routing.Context) error {

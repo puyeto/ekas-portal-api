@@ -44,6 +44,17 @@ type AdminUserDetails struct {
 	RoleName         string `json:"role_name,omitempty" db:"role_name"`
 }
 
+type AuthUsers struct {
+	UserID    uint32 `json:"user_id" db:"pk,user_id"`
+	FirstName string `json:"first_name" db:"first_name"`
+	LastName  string `json:"last_name" db:"last_name"`
+	Email     string `json:"email" db:"email"`
+	Password  string `json:"user_password,omitempty" db:"password"`
+	Status    int8   `json:"status,omitempty"`
+	RoleID    int32  `json:"role,omitempty" db:"role_id"`
+	RoleName  string `json:"role_name,omitempty" db:"role_name"`
+}
+
 // ListUserDetails list users structure
 type ListUserDetails struct {
 	UserDetails AdminUserDetails `json:"user_details,omitempty" db:"user_details"`

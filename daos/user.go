@@ -14,6 +14,22 @@ func NewUserDAO() *UserDAO {
 	return &UserDAO{}
 }
 
+// Count returns the number of the company records in the database.
+func (dao *UserDAO) Count(rs app.RequestScope) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(*)").From("auth_users").Row(&count)
+	return count, err
+}
+
+// Query retrieves the company records with the specified offset and limit from the database.
+func (dao *UserDAO) Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error) {
+	users := []models.AuthUsers{}
+	err := rs.Tx().Select("auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS status", "auth_user_role AS role_id", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name").
+		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
+		OrderBy("auth_user_id ASC").Offset(int64(offset)).Limit(int64(limit)).All(&users)
+	return users, err
+}
+
 // GetUser reads the full user details with the specified ID from the database.
 func (dao *UserDAO) GetUser(rs app.RequestScope, id int32) (*models.ListUserDetails, error) {
 	usr := &models.ListUserDetails{}
