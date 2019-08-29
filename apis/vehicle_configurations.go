@@ -14,6 +14,7 @@ type (
 	// vehicleService specifies the interface for the vehicle service needed by vehicleResource.
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
+		GetConfigurationDetails(rs app.RequestScope, id int) (*models.VehicleConfigDetails, error)
 		GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error)
 		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from int64, to int64) ([]models.DeviceData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
@@ -57,6 +58,20 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getoffline/<id>", r.getOffline)
 	rg.Get("/search/<term>", r.searchVehicle)
 	rg.Get("/unavailable", r.getUnavailable)
+	rg.Get("/configuration/details", r.getConfigurationDetails)
+	
+}
+
+func (r *vehicleResource) getConfigurationDetails(c *routing.Context) error {
+	// id := strings.ToLower(c.Param("id"))
+	id, _ := strconv.Atoi(c.Query("vid", "0"))
+
+	response, err := r.service.GetConfigurationDetails(app.GetRequestScope(c), id)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(response)
 }
 
 func (r *vehicleResource) getConfigurationByStringID(c *routing.Context) error {
