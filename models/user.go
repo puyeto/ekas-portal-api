@@ -44,15 +44,31 @@ type AdminUserDetails struct {
 	RoleName         string `json:"role_name,omitempty" db:"role_name"`
 }
 
+// AuthUsers ...
 type AuthUsers struct {
-	UserID    uint32 `json:"user_id" db:"pk,user_id"`
-	FirstName string `json:"first_name" db:"first_name"`
-	LastName  string `json:"last_name" db:"last_name"`
-	Email     string `json:"email" db:"email"`
-	Password  string `json:"user_password,omitempty" db:"password"`
-	Status    int8   `json:"status,omitempty"`
-	RoleID    int32  `json:"role,omitempty" db:"role_id"`
-	RoleName  string `json:"role_name,omitempty" db:"role_name"`
+	UserID      uint32 `json:"user_id" db:"pk,auth_user_id"`
+	FirstName   string `json:"first_name" db:"first_name"`
+	LastName    string `json:"last_name" db:"last_name"`
+	Email       string `json:"email" db:"auth_user_email"`
+	Password    string `json:"user_password,omitempty" db:"password"`
+	Status      int8   `json:"status,omitempty" db:"auth_user_status"`
+	RoleID      int32  `json:"role,omitempty" db:"auth_user_role"`
+	RoleName    string `json:"role_name" db:"role_name"`
+	CompanyID   int    `json:"company_id" db:"company_id"`
+	CompanyName string `json:"company_name" db:"company_name"`
+}
+
+// ValidateAuthUsers validates fields.
+func (a AuthUsers) ValidateAuthUsers() error {
+	return validation.ValidateStruct(&a,
+		validation.Field(&a.Email, validation.Required, is.Email),
+		validation.Field(&a.FirstName, validation.Required),
+		validation.Field(&a.LastName, validation.Required),
+		validation.Field(&a.Status, validation.Required),
+		validation.Field(&a.UserID, validation.Required),
+		validation.Field(&a.RoleID, validation.Required),
+		validation.Field(&a.CompanyID, validation.Required),
+	)
 }
 
 // ListUserDetails list users structure

@@ -1,6 +1,8 @@
 package daos
 
 import (
+	"strconv"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
@@ -24,29 +26,54 @@ func (dao *UserDAO) Count(rs app.RequestScope) (int, error) {
 // Query retrieves the company records with the specified offset and limit from the database.
 func (dao *UserDAO) Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error) {
 	users := []models.AuthUsers{}
-	err := rs.Tx().Select("auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS status", "auth_user_role AS role_id", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name").
+	err := rs.Tx().Select("auth_user_id", "auth_user_email", "auth_user_status", "auth_user_role", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
 		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
+		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
+		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 		OrderBy("auth_user_id ASC").Offset(int64(offset)).Limit(int64(limit)).All(&users)
 	return users, err
 }
 
 // GetUser reads the full user details with the specified ID from the database.
-func (dao *UserDAO) GetUser(rs app.RequestScope, id int32) (*models.ListUserDetails, error) {
-	usr := &models.ListUserDetails{}
-	err := rs.Tx().Select("first_name", "last_name", "user_id", "mobile_number", "email", "username", "is_verified").
-		From("user_details").Model(id, &usr.UserDetails)
+func (dao *UserDAO) GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error) {
+	usr := &models.AuthUsers{}
+	err := rs.Tx().Select("auth_user_id", "auth_user_email", "auth_user_status", "auth_user_role", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
+		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
+		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
+		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).Model(id, &usr)
 	if err != nil {
 		return nil, err
 	}
 
-	var rls []models.AdminUserRoles
-	//rs.Tx().Select().Where(dbx.HashExp{"user_id": id}).All(&rls)
-	rs.Tx().Select().From("user_roles").
-		LeftJoin("roles", dbx.NewExp("roles.role_id = user_roles.role_id")).
-		Where(dbx.HashExp{"user_id": id}).All(&rls)
-	usr.Roles = rls
-
 	return usr, err
+}
+
+// Update ....
+func (dao *UserDAO) Update(rs app.RequestScope, a *models.AuthUsers) error {
+	_, err := rs.Tx().Update("auth_users", dbx.Params{
+		"auth_user_email":  a.Email,
+		"auth_user_role":   a.RoleID,
+		"auth_user_status": a.Status,
+		"first_name":       a.FirstName,
+		"last_name":        a.LastName},
+		dbx.HashExp{"auth_user_id": a.UserID}).Execute()
+	return err
+}
+
+// CreateCompanyUser create user relationship to company.
+func (dao *UserDAO) CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error {
+	_, err := rs.Tx().Insert("company_users", dbx.Params{
+		"user_id":    userid,
+		"company_id": companyid}).Execute()
+	return err
+}
+
+// IfCompanyUserExists check if company and user exists (company_users)
+func (dao *UserDAO) IfCompanyUserExists(rs app.RequestScope, companyid int32, userid uint32) (int, error) {
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM company_users WHERE user_id='" + strconv.Itoa(int(userid)) + "' AND company_id='" + strconv.Itoa(int(companyid)) + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	return exists, err
 }
 
 // // GetUserByEmail reads the user with the specified email from the database.
