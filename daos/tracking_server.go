@@ -2,6 +2,7 @@ package daos
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/ekas-portal-api/app"
 	dbx "github.com/go-ozzo/ozzo-dbx"
@@ -16,11 +17,16 @@ func NewTrackingServerDAO() *TrackingServerDAO {
 }
 
 // GetTrackingServerUserLoginIDByEmail ...
-func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, error) {
-	var uid uint32
-	q := rs.Tx().NewQuery("SELECT auth_user_id FROM auth_users WHERE auth_user_email='" + email + "' LIMIT 1")
-	err := q.Row(&uid)
-	return uid, err
+func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, error) {
+	var res struct {
+		AuthUserID   uint32
+		AuthUserRole int
+	}
+
+	q := rs.Tx().NewQuery("SELECT auth_user_id, auth_user_role FROM auth_users WHERE auth_user_email='" + email + "' LIMIT 1")
+	err := q.One(&res)
+	fmt.Println(res)
+	return res.AuthUserID, res.AuthUserRole, err
 }
 
 // SaveTrackingServerLoginDetails saves a new user record in the database.

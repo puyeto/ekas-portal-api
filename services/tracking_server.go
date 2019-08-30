@@ -15,7 +15,7 @@ type trackingServerDAO interface {
 	// Login to tracking server.
 	SaveTrackingServerLoginDetails(rs app.RequestScope, id uint32, email string, hash string, status int8, data interface{}) error
 	TrackingServerUserEmailExists(rs app.RequestScope, email string) (int, error)
-	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, error)
+	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, error)
 }
 
 // TrackingServerService ---
@@ -55,6 +55,7 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	var status = int8(data["status"].(float64))
 	data["user_email"] = model.Email
 	data["user_id"] = id
+	data["user_role"] = 10005
 
 	exists, err := s.dao.TrackingServerUserEmailExists(rs, model.Email)
 	if err != nil {
@@ -62,8 +63,9 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	}
 
 	if exists == 1 {
-		id, err := s.dao.GetTrackingServerUserLoginIDByEmail(rs, model.Email)
-		data["user_id"] = id
+		uid, role, err := s.dao.GetTrackingServerUserLoginIDByEmail(rs, model.Email)
+		data["user_id"] = uid
+		data["user_role"] = role
 		if err != nil {
 			return nil, err
 		}

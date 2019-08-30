@@ -17,7 +17,7 @@ import (
 // userDAO specifies the interface of the user DAO needed by userService.
 type userDAO interface {
 	// GetUser returns the user with the specified user ID.
-	GetUser(rs app.RequestScope, id int32) (*models.ListUserDetails, error)
+	GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error)
 	// GetUserByEmail returns the user with the specified user email.
 	// GetUserByEmail(rs app.RequestScope, email string) (*models.UserDetails, error)
 	GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error)
@@ -29,6 +29,12 @@ type userDAO interface {
 	Delete(rs app.RequestScope, id int32) error
 	CreateNewEmailVerification(rs app.RequestScope, con *models.ConfirmationEmailDetails) error
 	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
+	// List users
+	Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
+	Count(rs app.RequestScope) (int, error)
+	Update(rs app.RequestScope, model *models.AuthUsers) error
+	CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
+	IfCompanyUserExists(rs app.RequestScope, companyid int32, userid uint32) (int, error)
 }
 
 // UserService provides services related with users.
@@ -48,9 +54,44 @@ func New() models.AdminUserDetails {
 	return u
 }
 
+// Count returns the number of users.
+func (u *UserService) Count(rs app.RequestScope) (int, error) {
+	return u.dao.Count(rs)
+}
+
+// Query returns users with the specified offset and limit.
+func (u *UserService) Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error) {
+	return u.dao.Query(rs, offset, limit)
+}
+
 // GetUser returns the user with the specified the user ID.
-func (u *UserService) GetUser(rs app.RequestScope, id int32) (*models.ListUserDetails, error) {
+func (u *UserService) GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error) {
 	return u.dao.GetUser(rs, id)
+}
+
+// Update update auth user details
+func (u *UserService) Update(rs app.RequestScope, model *models.AuthUsers) (*models.AuthUsers, error) {
+	if err := model.ValidateAuthUsers(); err != nil {
+		return nil, err
+	}
+	if err := u.dao.Update(rs, model); err != nil {
+		return nil, err
+	}
+
+	if model.CompanyID > 0 && model.UserID > 0 {
+		// check if company and user exists (company_users)
+		exists, err := u.dao.IfCompanyUserExists(rs, int32(model.CompanyID), model.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		if exists != 1 {
+			if err := u.dao.CreateCompanyUser(rs, int32(model.CompanyID), model.UserID); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return model, nil
 }
 
 // GetUserByEmail returns the user with the specified the user email.
