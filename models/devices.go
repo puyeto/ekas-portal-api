@@ -12,6 +12,8 @@ type Devices struct {
 	DeviceID           int32        `json:"device_id" db:"device_id"`
 	VehicleID          uint32       `json:"vehicle_id" db:"vehicle_id"`
 	DeviceName         string       `json:"device_name" db:"device_name"`
+	CompanyID          int          `json:"company_id" db:"company_id"`
+	CompanyName        string       `json:"company_name,omitempty" db:"company_name"`
 	DeviceSerialNo     string       `json:"device_serial_no,omitempty" db:"device_serial_no"`
 	DeviceModelNo      string       `json:"device_model_no,omitempty" db:"device_model"`
 	DeviceManufacturer string       `json:"device_manufacturer,omitempty" db:"device_manufacturer"`
