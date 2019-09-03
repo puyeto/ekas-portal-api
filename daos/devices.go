@@ -65,16 +65,40 @@ func (dao *DeviceDAO) Delete(rs app.RequestScope, id int32) error {
 }
 
 // Count returns the number of the device records in the database.
-func (dao *DeviceDAO) Count(rs app.RequestScope) (int, error) {
+func (dao *DeviceDAO) Count(rs app.RequestScope, cid int) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(*)").From("device_details").Row(&count)
+	var err error
+
+	if cid == 0 {
+		err = rs.Tx().Select("COUNT(*)").From("device_details").Row(&count)
+	} else {
+		err = rs.Tx().Select("COUNT(*)").From("device_details").Where(dbx.HashExp{"company_id": cid}).Row(&count)
+	}
+
 	return count, err
 }
 
 // Query retrieves the device records with the specified offset and limit from the database.
-func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error) {
+func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit, cid int) ([]models.Devices, error) {
 	devices := []models.Devices{}
-	err := rs.Tx().Select().From("device_details").OrderBy("device_id ASC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+	var err error
+
+	if cid == 0 {
+		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
+			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
+			"status", "configured", "configuration_date", "status_reason", "created_on").
+			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
+			From("device_details").OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+
+	} else {
+		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
+			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
+			"status", "configured", "configuration_date", "status_reason", "created_on").
+			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
+			From("device_details").Where(dbx.HashExp{"device_details.company_id": cid}).
+			OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+	}
+
 	return devices, err
 }
 
@@ -101,7 +125,9 @@ func (dao *DeviceDAO) QueryPositions(rs app.RequestScope, offset, limit int, uid
 	var d models.Devices
 	var q *dbx.SelectQuery
 	if uid > 0 {
-		q = rs.Tx().Select("id", "device_id", "device_details.vehicle_id", "vehicle_reg_no", "chassis_no", "make_type", "model", "model_year", "device_name", "device_serial_no", "device_model", "device_manufacturer", "configured", "status", "device_details.created_on").
+		q = rs.Tx().Select("id", "device_id", "device_details.vehicle_id", "vehicle_reg_no",
+			"chassis_no", "make_type", "model", "model_year", "device_name", "device_serial_no",
+			"device_model", "device_manufacturer", "configured", "status", "device_details.created_on").
 			From("device_details").
 			LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = device_details.vehicle_id")).
 			Where(dbx.NewExp("device_details.vehicle_id > 0")).
@@ -171,7 +197,7 @@ func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, dev
 // ConfiguredDevices retrieves the device records with the specified offset and limit from the database.
 func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error) {
 	devices := []models.DeviceConfiguration{}
-	query := "SELECT conf_id, vc.device_id, vehicle_id, COALESCE(JSON_VALUE(data,'$.device_detail.registration_no')) AS device_name, JSON_VALUE(data, '$.sim_imei') AS sim_imei, vc.created_on, vc.status AS status, "
+	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, COALESCE(JSON_VALUE(data,'$.device_detail.registration_no')) AS device_name, JSON_VALUE(data, '$.sim_imei') AS sim_imei, vc.created_on, vc.status AS status, "
 	query += " JSON_VALUE(data, '$.device_detail.chasis_no') AS chassis_no, JSON_VALUE(data, '$.device_detail.make_type') AS make_type, JSON_VALUE(data, '$.device_detail.device_type') AS device_type, "
 	query += " JSON_VALUE(data, '$.device_detail.serial_no') AS serial_no, JSON_VALUE(data, '$.device_detail.preset_speed') AS preset_speed, JSON_VALUE(data, '$.device_detail.set_frequency') AS set_frequency, "
 	query += " JSON_VALUE(data, '$.device_detail.fitting_date') AS fitting_date, DATE_ADD(JSON_VALUE(data, '$.device_detail.fitting_date'), INTERVAL 1 YEAR) AS expiry_date, JSON_VALUE(data, '$.device_detail.fitting_center') AS fitting_center, "

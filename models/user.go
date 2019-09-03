@@ -64,7 +64,6 @@ func (a AuthUsers) ValidateAuthUsers() error {
 		validation.Field(&a.Email, validation.Required, is.Email),
 		validation.Field(&a.FirstName, validation.Required),
 		validation.Field(&a.LastName, validation.Required),
-		validation.Field(&a.Status, validation.Required),
 		validation.Field(&a.UserID, validation.Required),
 		validation.Field(&a.RoleID, validation.Required),
 		validation.Field(&a.CompanyID, validation.Required),

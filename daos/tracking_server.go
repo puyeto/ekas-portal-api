@@ -17,16 +17,22 @@ func NewTrackingServerDAO() *TrackingServerDAO {
 }
 
 // GetTrackingServerUserLoginIDByEmail ...
-func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, error) {
+func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, int, error) {
 	var res struct {
 		AuthUserID   uint32
 		AuthUserRole int
+		CompanyID    int
 	}
 
-	q := rs.Tx().NewQuery("SELECT auth_user_id, auth_user_role FROM auth_users WHERE auth_user_email='" + email + "' LIMIT 1")
-	err := q.One(&res)
+	err := rs.Tx().Select("auth_user_id", "auth_user_role", "COALESCE(company_id, '0') AS company_id").
+		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
+		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
+		Where(dbx.HashExp{"auth_user_email": email}).Limit(1).One(&res)
+
+	// q := rs.Tx().NewQuery("SELECT auth_user_id, auth_user_role FROM auth_users WHERE auth_user_email='" + email + "' LIMIT 1")
+	// err := q.One(&res)
 	fmt.Println(res)
-	return res.AuthUserID, res.AuthUserRole, err
+	return res.AuthUserID, res.AuthUserRole, res.CompanyID, err
 }
 
 // SaveTrackingServerLoginDetails saves a new user record in the database.

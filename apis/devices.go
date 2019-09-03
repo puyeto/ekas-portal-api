@@ -13,10 +13,10 @@ type (
 	// deviceService specifies the interface for the device service needed by deviceResource.
 	deviceService interface {
 		Get(rs app.RequestScope, id int32) (*models.Devices, error)
-		Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error)
+		Query(rs app.RequestScope, offset, limit, cid int) ([]models.Devices, error)
 		QueryPositions(rs app.RequestScope, offset, limit int, uid uint32, start, stop int64) ([]models.Devices, error)
 		CountQueryPositions(rs app.RequestScope, uid uint32) (int, error)
-		Count(rs app.RequestScope) (int, error)
+		Count(rs app.RequestScope, cid int) (int, error)
 		Create(rs app.RequestScope, model *models.Devices) (*models.Devices, error)
 		Update(rs app.RequestScope, id int32, model *models.Devices) (*models.Devices, error)
 		Delete(rs app.RequestScope, id int32) (*models.Devices, error)
@@ -58,13 +58,16 @@ func (r *deviceResource) get(c *routing.Context) error {
 }
 
 func (r *deviceResource) query(c *routing.Context) error {
+	// get company id from query string
+	cid, _ := strconv.Atoi(c.Query("cid", "0"))
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
+	count, err := r.service.Count(rs, cid)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), cid)
 	if err != nil {
 		return err
 	}
@@ -103,7 +106,10 @@ func (r *deviceResource) queryPositions(c *routing.Context) error {
 }
 
 func (r *deviceResource) count(c *routing.Context) error {
-	response, err := r.service.Count(app.GetRequestScope(c))
+	// get company id from query string
+	cid, _ := strconv.Atoi(c.Query("cid", "0"))
+
+	response, err := r.service.Count(app.GetRequestScope(c), cid)
 	if err != nil {
 		return err
 	}
