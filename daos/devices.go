@@ -65,21 +65,40 @@ func (dao *DeviceDAO) Delete(rs app.RequestScope, id int32) error {
 }
 
 // Count returns the number of the device records in the database.
-func (dao *DeviceDAO) Count(rs app.RequestScope) (int, error) {
+func (dao *DeviceDAO) Count(rs app.RequestScope, cid int) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(*)").From("device_details").Row(&count)
+	var err error
+
+	if cid == 0 {
+		err = rs.Tx().Select("COUNT(*)").From("device_details").Row(&count)
+	} else {
+		err = rs.Tx().Select("COUNT(*)").From("device_details").Where(dbx.HashExp{"company_id": cid}).Row(&count)
+	}
+
 	return count, err
 }
 
 // Query retrieves the device records with the specified offset and limit from the database.
-func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error) {
+func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit, cid int) ([]models.Devices, error) {
 	devices := []models.Devices{}
-	err := rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
-		"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
-		"status", "configured", "configuration_date", "status_reason", "created_on").
-		LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
-		From("device_details").
-		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+	var err error
+
+	if cid == 0 {
+		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
+			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
+			"status", "configured", "configuration_date", "status_reason", "created_on").
+			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
+			From("device_details").OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+
+	} else {
+		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
+			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
+			"status", "configured", "configuration_date", "status_reason", "created_on").
+			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
+			From("device_details").Where(dbx.HashExp{"device_details.company_id": cid}).
+			OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
+	}
+
 	return devices, err
 }
 

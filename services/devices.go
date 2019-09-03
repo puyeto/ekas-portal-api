@@ -10,9 +10,9 @@ type deviceDAO interface {
 	// Get returns the device with the specified device ID.
 	Get(rs app.RequestScope, id int32) (*models.Devices, error)
 	// Count returns the number of devices.
-	Count(rs app.RequestScope) (int, error)
+	Count(rs app.RequestScope, cid int) (int, error)
 	// Query returns the list of devices with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error)
+	Query(rs app.RequestScope, offset, limit, cid int) ([]models.Devices, error)
 	// QueryPositions returns the list of devices with their positions
 	QueryPositions(rs app.RequestScope, offset, limit int, uid uint32, start, stop int64) ([]models.Devices, error)
 	CountQueryPositions(rs app.RequestScope, uid uint32) (int, error)
@@ -74,8 +74,8 @@ func (s *DeviceService) Delete(rs app.RequestScope, id int32) (*models.Devices, 
 }
 
 // Count returns the number of devices.
-func (s *DeviceService) Count(rs app.RequestScope) (int, error) {
-	return s.dao.Count(rs)
+func (s *DeviceService) Count(rs app.RequestScope, cid int) (int, error) {
+	return s.dao.Count(rs, cid)
 }
 
 // CountQueryPositions returns the number of devices positions.
@@ -84,8 +84,8 @@ func (s *DeviceService) CountQueryPositions(rs app.RequestScope, uid uint32) (in
 }
 
 // Query returns the devices with the specified offset and limit.
-func (s *DeviceService) Query(rs app.RequestScope, offset, limit int) ([]models.Devices, error) {
-	return s.dao.Query(rs, offset, limit)
+func (s *DeviceService) Query(rs app.RequestScope, offset, limit, cid int) ([]models.Devices, error) {
+	return s.dao.Query(rs, offset, limit, cid)
 }
 
 // QueryPositions returns the device positions with the specified offset and limit.

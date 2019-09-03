@@ -81,7 +81,7 @@ func (dao *CompanyDAO) Query(rs app.RequestScope, offset, limit int) ([]models.C
 // IsExistCompanyName Check if company name exists.
 func (dao *CompanyDAO) IsExistCompanyName(rs app.RequestScope, companyname string) (int, error) {
 	var companyid int
-	q := rs.Tx().NewQuery("SELECT company_id FROM companies WHERE company_name='" + companyname + "' LIMIT 1")
-	err := q.Row(&companyid)
-	return companyid, err
+	q := rs.Tx().NewQuery("SELECT COALESCE(company_id, 0) AS company_id FROM companies WHERE company_name='" + companyname + "' LIMIT 1")
+	q.Row(&companyid)
+	return companyid, nil
 }
