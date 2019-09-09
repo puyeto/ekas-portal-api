@@ -1,5 +1,5 @@
 # FROM golang:latest
-FROM golang:1.11-alpine AS build-env
+FROM golang:1.10.3 AS build-env
 
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
@@ -14,7 +14,6 @@ ENV CGO_ENABLED=0
 ADD . /go/src/github.com/ekas-portal-api
 
 # Go get the project deps
-RUN apk --update add git
 RUN go get github.com/ekas-portal-api
 
 # Set the working environment.
