@@ -33,7 +33,7 @@ RUN go build
 
 FROM alpine:latest
 WORKDIR /app/
-COPY --from=builder /go/src/github.com/ekas-portal-api/ekas-portal-api /app/ekas-portal-api
+COPY --from=build-env /go/src/github.com/ekas-portal-api/ekas-portal-api /app/ekas-portal-api
 
 ENTRYPOINT ./ekas-portal-api
 
