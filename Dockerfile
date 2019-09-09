@@ -17,10 +17,6 @@ ADD . /go/src/github.com/ekas-portal-api
 RUN apk --update add git
 RUN go get github.com/ekas-portal-api
 
-RUN mkdir -p /go/config
-ADD ./config/app.yaml /go/config
-ADD ./config/errors.yaml /go/config
-
 # Set the working environment.
 ENV GO_ENV production
 
@@ -32,8 +28,10 @@ RUN go build
 # ENTRYPOINT /go/bin/ekas-portal-api
 
 FROM alpine:latest
-WORKDIR /app/
-COPY --from=build-env /go/src/github.com/ekas-portal-api/ekas-portal-api /app/ekas-portal-api
+WORKDIR /go/
+COPY --from=build-env /go/src/github.com/ekas-portal-api/ekas-portal-api /go/ekas-portal-api
+COPY --from=build-env /go/src/github.com/ekas-portal-api/config/app.yaml /go/config
+COPY --from=build-env /go/src/github.com/ekas-portal-api/config/errors.yaml /go/config
 
 ENTRYPOINT ./ekas-portal-api
 
