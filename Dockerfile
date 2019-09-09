@@ -4,6 +4,12 @@ FROM golang:1.10.3 as builder
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
 
+WORKDIR /go/src/github.com/ekas-portal-api
+
+ENV GOOS=linux
+ENV GOARCH=386
+ENV CGO_ENABLED=0
+
 # Copy the project in to the container
 ADD . /go/src/github.com/ekas-portal-api
 
