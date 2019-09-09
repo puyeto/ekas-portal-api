@@ -14,6 +14,7 @@ ENV CGO_ENABLED=0
 ADD . /go/src/github.com/ekas-portal-api
 
 # Go get the project deps
+RUN apk --update add git
 RUN go get github.com/ekas-portal-api
 
 RUN mkdir -p /go/config
