@@ -1,5 +1,5 @@
 # FROM golang:latest
-FROM golang:1.10.3 as builder
+FROM golang:1.10.3 AS build-env
 
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
@@ -16,23 +16,21 @@ ADD . /go/src/github.com/ekas-portal-api
 # Go get the project deps
 RUN go get github.com/ekas-portal-api
 
+# Set the working environment.
+ENV GO_ENV production
+
 # Go install the project
 # RUN go install github.com/ekas-portal-api
 RUN go build
-
-RUN mkdir -p /go/config
-ADD ./config/app.yaml /go/config
-ADD ./config/errors.yaml /go/config
-
-# Set the working environment.
-ENV GO_ENV production
 
 # Run the ekas-portal-api command by default when the container starts.
 # ENTRYPOINT /go/bin/ekas-portal-api
 
 FROM alpine:latest
-WORKDIR /app/
-COPY --from=builder /go/src/github.com/ekas-portal-api/ekas-portal-api /app/ekas-portal-api
+WORKDIR /go/
+COPY --from=build-env /go/src/github.com/ekas-portal-api/ekas-portal-api /go/ekas-portal-api
+COPY --from=build-env /go/src/github.com/ekas-portal-api/config/app.yaml /go/config
+COPY --from=build-env /go/src/github.com/ekas-portal-api/config/errors.yaml /go/config
 
 ENTRYPOINT ./ekas-portal-api
 
