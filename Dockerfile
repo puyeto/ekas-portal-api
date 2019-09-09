@@ -29,8 +29,8 @@ RUN go build
 FROM alpine:latest
 WORKDIR /go/
 COPY --from=build-env /go/src/github.com/ekas-portal-api/ekas-portal-api /go/ekas-portal-api
-COPY --from=build-env /go/src/github.com/ekas-portal-api/config/app.yaml /go/config
-COPY --from=build-env /go/src/github.com/ekas-portal-api/config/errors.yaml /go/config
+COPY --from=build-env /go/src/github.com/ekas-portal-api/config/app.yaml /go/config/app.yaml
+COPY --from=build-env /go/src/github.com/ekas-portal-api/config/errors.yaml /go/config/errors.yaml
 
 ENTRYPOINT ./ekas-portal-api
 
