@@ -4,6 +4,10 @@ FROM golang:1.10.3 AS build-env
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
 
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
+# Create appuser
+RUN adduser -D -g '' appuser
+
 WORKDIR /go/src/github.com/ekas-portal-api
 
 ENV GOOS=linux
@@ -28,9 +32,15 @@ RUN go build
 
 FROM alpine:latest
 WORKDIR /go/
+
+COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build-env /etc/passwd /etc/passwd
 COPY --from=build-env /go/src/github.com/ekas-portal-api/ekas-portal-api /go/ekas-portal-api
 COPY --from=build-env /go/src/github.com/ekas-portal-api/config/app.yaml /go/config/app.yaml
 COPY --from=build-env /go/src/github.com/ekas-portal-api/config/errors.yaml /go/config/errors.yaml
+
+# Use an unprivileged user.
+USER appuser
 
 ENTRYPOINT ./ekas-portal-api
 

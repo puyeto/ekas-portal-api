@@ -5,7 +5,7 @@
 local_dsn: "ruser:Safcom_2012@tcp(157.230.0.138:3306)/ekas_portal?parseTime=true"
 # local_dsn: "root:safcom2012@tcp(35.184.65.222:3306)/ekas_portal?parseTime=true"
 server_dns: "ruser:Safcom_2012@tcp(157.230.0.138:3306)/ekas_portal?parseTime=true"
-tracking_server_url: "http://157.230.0.138/api/"
+tracking_server_url: "https://tracking.ekastech.com/api/"
 server_port: "8081"
 
 # These are secret keys used for JWT signing and verification.
