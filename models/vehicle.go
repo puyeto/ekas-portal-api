@@ -54,7 +54,7 @@ type DeviceDetails struct {
 	FittingDate       string `json:"fitting_date"`
 	FittingTime       string `json:"fitting_time"`
 	FittingCenter     string `json:"fitting_center"`
-	AgentID           string `json:"agent_id"`
+	AgentID           int    `json:"agent_id"`
 	AgentLocation     string `json:"agent_location"`
 	EmailAddress      string `json:"email_address"`
 	AgentPhone        string `json:"agent_phone"`
@@ -129,7 +129,7 @@ func (v VehicleDetails) ValidateVehicleDetails() error {
 type FitterDetails struct {
 	FitterID          uint32 `json:"fitting_id" db:"pk,fitting_id"`
 	UserID            uint32 `json:"user_id" db:"user_id"`
-	FitterIDNo        string `json:"fitting_id_no" db:"fitting_id_no"`
+	FitterIDNo        int    `json:"fitting_id_no" db:"fitting_id_no"`
 	FittingCenterName string `json:"fitting_center_name" db:"fitting_center_name"`
 	FitterLocation    string `json:"fitter_location" db:"fitter_location"`
 	FitterEmail       string `json:"fitter_email,omitempty" db:"fitter_email"`
