@@ -1,5 +1,5 @@
 # FROM golang:latest
-FROM golang:1.10.3 AS build-env
+FROM golang:alpine AS build-env
 
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
