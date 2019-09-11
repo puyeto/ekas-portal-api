@@ -14,7 +14,7 @@ func (dao *VehicleDAO) CreateVehicleOwner(rs app.RequestScope, vo *models.Vehicl
 	if exists == 1 {
 		return dao.UpdateVehicleOwners(rs, vo)
 	}
-	return rs.Tx().Model(vo).Insert("OwnerID", "UserID", "OwnerIDNo", "OwnerName", "OwnerEmail", "OwnerPhone")
+	return rs.Tx().Model(vo).Exclude("OwnerID").Insert("UserID", "OwnerIDNo", "OwnerName", "OwnerEmail", "OwnerPhone")
 }
 
 // UpdateVehicleOwners ....
