@@ -3,6 +3,7 @@ package daos
 import (
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // OwnerDAO persists owner data in database
@@ -46,15 +47,23 @@ func (dao *OwnerDAO) Delete(rs app.RequestScope, id uint32) error {
 }
 
 // Count returns the number of the owner records in the database.
-func (dao *OwnerDAO) Count(rs app.RequestScope) (int, error) {
+func (dao *OwnerDAO) Count(rs app.RequestScope, uid int) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(*)").From("vehicle_owner").Row(&count)
+	q := rs.Tx().Select("COUNT(*)").From("vehicle_owner")
+	if uid > 0 {
+		q = rs.Tx().Select("COUNT(*)").From("vehicle_owner").Where(dbx.HashExp{"user_id": uid})
+	}
+	err := q.Row(&count)
 	return count, err
 }
 
 // Query retrieves the owner records with the specified offset and limit from the database.
-func (dao *OwnerDAO) Query(rs app.RequestScope, offset, limit int) ([]models.VehicleOwner, error) {
+func (dao *OwnerDAO) Query(rs app.RequestScope, offset, limit, uid int) ([]models.VehicleOwner, error) {
 	owners := []models.VehicleOwner{}
-	err := rs.Tx().Select().OrderBy("owner_id").Offset(int64(offset)).Limit(int64(limit)).All(&owners)
+	q := rs.Tx().Select()
+	if uid > 0 {
+		q = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid})
+	}
+	err:= q.OrderBy("owner_id").Offset(int64(offset)).Limit(int64(limit)).All(&owners)
 	return owners, err
 }
