@@ -3,7 +3,7 @@ services:
   api:
     image: omollo/ekas-portal-api-prod
     deploy:
-      replicas: 1
+      replicas: 2
       resources:
         limits:
           cpus: "0.3"
