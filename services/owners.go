@@ -10,9 +10,9 @@ type ownerDAO interface {
 	// Get returns the owner with the specified owner ID.
 	Get(rs app.RequestScope, id uint32) (*models.VehicleOwner, error)
 	// Count returns the number of owners.
-	Count(rs app.RequestScope) (int, error)
+	Count(rs app.RequestScope, uid int) (int, error)
 	// Query returns the list of owners with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int) ([]models.VehicleOwner, error)
+	Query(rs app.RequestScope, offset, limit, uid int) ([]models.VehicleOwner, error)
 	// Create saves a new owner in the storage.
 	Create(rs app.RequestScope, owner *models.VehicleOwner) error
 	// Update updates the owner with given ID in the storage.
@@ -69,11 +69,11 @@ func (s *OwnerService) Delete(rs app.RequestScope, id uint32) (*models.VehicleOw
 }
 
 // Count returns the number of owners.
-func (s *OwnerService) Count(rs app.RequestScope) (int, error) {
-	return s.dao.Count(rs)
+func (s *OwnerService) Count(rs app.RequestScope, uid int) (int, error) {
+	return s.dao.Count(rs, uid)
 }
 
 // Query returns the owners with the specified offset and limit.
-func (s *OwnerService) Query(rs app.RequestScope, offset, limit int) ([]models.VehicleOwner, error) {
-	return s.dao.Query(rs, offset, limit)
+func (s *OwnerService) Query(rs app.RequestScope, offset, limit, uid int) ([]models.VehicleOwner, error) {
+	return s.dao.Query(rs, offset, limit, uid)
 }

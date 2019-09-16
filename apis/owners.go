@@ -12,8 +12,8 @@ type (
 	// ownerService specifies the interface for the owner service needed by ownerResource.
 	ownerService interface {
 		Get(rs app.RequestScope, id uint32) (*models.VehicleOwner, error)
-		Query(rs app.RequestScope, offset, limit int) ([]models.VehicleOwner, error)
-		Count(rs app.RequestScope) (int, error)
+		Query(rs app.RequestScope, offset, limit, uid int) ([]models.VehicleOwner, error)
+		Count(rs app.RequestScope, uid int) (int, error)
 		Create(rs app.RequestScope, model *models.VehicleOwner) (*models.VehicleOwner, error)
 		Update(rs app.RequestScope, id uint32, model *models.VehicleOwner) (*models.VehicleOwner, error)
 		Delete(rs app.RequestScope, id uint32) (*models.VehicleOwner, error)
@@ -50,13 +50,16 @@ func (r *ownerResource) get(c *routing.Context) error {
 }
 
 func (r *ownerResource) query(c *routing.Context) error {
+	// get company id from query string
+	uid, _ := strconv.Atoi(c.Query("uid", "0"))
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
+	count, err := r.service.Count(rs, uid)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uid)
 	if err != nil {
 		return err
 	}
