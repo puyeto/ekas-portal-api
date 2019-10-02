@@ -14,7 +14,7 @@ type (
 	// vehicleService specifies the interface for the vehicle service needed by vehicleResource.
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-		GetConfigurationDetails(rs app.RequestScope, id int) (*models.VehicleConfigDetails, error)
+		GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error)
 		GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error)
 		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from int64, to int64) ([]models.DeviceData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
@@ -59,14 +59,16 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/search/<term>", r.searchVehicle)
 	rg.Get("/unavailable", r.getUnavailable)
 	rg.Get("/configuration/details", r.getConfigurationDetails)
-	
+
 }
 
 func (r *vehicleResource) getConfigurationDetails(c *routing.Context) error {
 	// id := strings.ToLower(c.Param("id"))
-	id, _ := strconv.Atoi(c.Query("vid", "0"))
+	// get vehicle and deviceid from query string
+	vid, _ := strconv.Atoi(c.Query("vid", "0"))
+	did, _ := strconv.Atoi(c.Query("did", "0"))
 
-	response, err := r.service.GetConfigurationDetails(app.GetRequestScope(c), id)
+	response, err := r.service.GetConfigurationDetails(app.GetRequestScope(c), vid, did)
 	if err != nil {
 		return err
 	}
