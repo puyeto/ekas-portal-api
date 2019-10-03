@@ -127,6 +127,9 @@ func AddDevicesTrackingServer(rs app.RequestScope, model *models.AddDeviceDetail
 		"device_model":        {model.DeviceModel},
 		"registration_number": {model.RegistrationNumber},
 		"object_owner":        {model.ObjectOwner},
+		"device_icons_type":   {"icon"},
+		"icon_stopped":        {"green"},
+		"icon_offline":        {"orange"},
 	}
 	URL := app.Config.TrackingServerURL + "add_device?" + p.Encode()
 
@@ -170,6 +173,9 @@ func (s *TrackingServerService) TrackingServerEditDevices(rs app.RequestScope, m
 		"device_model":        {model.DeviceModel},
 		"registration_number": {model.RegistrationNumber},
 		"object_owner":        {model.ObjectOwner},
+		"device_icons_type":   {"icon"},
+		"icon_stopped":        {"green"},
+		"icon_offline":        {"orange"},
 	}
 	URL := app.Config.TrackingServerURL + "edit_device?" + p.Encode()
 

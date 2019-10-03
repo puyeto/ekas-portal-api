@@ -207,11 +207,11 @@ func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehi
 	query += " LEFT JOIN device_details AS dd ON (dd.device_id = vc.device_id)"
 
 	if vehicleid > 0 && deviceid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE vc.vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
 	} else if vehicleid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
+		query += " WHERE vc.vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
 	} else if deviceid > 0 {
-		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE vc.device_id = '" + strconv.Itoa(deviceid) + "'"
 	} else {
 		query += " WHERE vc.status=1 "
 	}
