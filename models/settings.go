@@ -9,6 +9,7 @@ type Settings struct {
 	DevicePrefix      int     `json:"device_prefix" db:"device_prefix"`
 	BillingPeriod     int8    `json:"billing_period" db:"billing_period"`
 	MonthlyAmount     float32 `json:"monthly_amount" db:"monthly_amount"`
+	InfoMessage string `json:"info_message" db:"info_message"`
 }
 
 // ValidateSettings ...
