@@ -39,6 +39,7 @@ func ServeUserResource(rg *routing.RouteGroup, service userService) {
 	rg.Post("/register", r.register)
 	rg.Post("/login", r.login)
 	rg.Put("/users/update", r.update)
+	rg.Get("/ping", r.healthCheck)
 }
 
 func (r *userResource) query(c *routing.Context) error {
@@ -142,4 +143,11 @@ func (r *userResource) update(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+func (r *userResource) healthCheck(c *routing.Context) error {
+	return c.Write(map[string]interface{}{
+		"status":  200,
+		"message": "Health check successfull",
+	})
 }
