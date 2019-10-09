@@ -83,8 +83,8 @@ func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, of
 	err := rs.Tx().Select("DISTINCT(vehicle_id) AS vehicle_name", "data").
 		From("vehicle_configuration").Offset(int64(offset)).Limit(int64(limit)).
 		// InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
-		Where(dbx.Like("vehicle_string_id", searchterm)).
-		Where(dbx.And(dbx.NewExp("status=1"))).
+		Where(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_string_id", searchterm))).
+		// Where(dbx.And(dbx.NewExp("status=1"))).
 		All(&tdetails)
 	return tdetails, err
 }
@@ -103,8 +103,8 @@ func (dao *VehicleDAO) CountSearches(rs app.RequestScope, searchterm string) (in
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("vehicle_configuration").
 		InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
-		Where(dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)).
-		Where(dbx.And(dbx.NewExp("status=1"))).
+		Where(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm))).
+		// Where(dbx.And(dbx.NewExp("status=1"))).
 		Row(&count)
 	return count, err
 }
