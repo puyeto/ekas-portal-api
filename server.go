@@ -47,8 +47,17 @@ func main() {
 
 	// start the server
 	address := fmt.Sprintf(":%v", app.Config.ServerPort)
-	logger.Infof("server %v is started at %v\n", app.Version, address)
-	panic(http.ListenAndServe(address, nil))
+	httsaddress := fmt.Sprintf(":%v", app.Config.ServerPort+1)
+	logger.Infof("server %v is started at %v\n", app.Version, address, httsaddress)
+	// panic(http.ListenAndServeTLS(address, "server.rsa.crt", "server.rsa.key", nil))
+
+	//  Start HTTP
+	go func() {
+		panic(http.ListenAndServe(address, nil))
+	}()
+
+	//  Start HTTPS
+	panic(http.ListenAndServeTLS(httsaddress, "server.rsa.crt", "server.rsa.key", nil))
 }
 
 func getDNS() string {
