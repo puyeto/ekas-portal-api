@@ -38,6 +38,8 @@ COPY --from=build-env /etc/passwd /etc/passwd
 COPY --from=build-env /go/src/github.com/ekas-portal-api/ekas-portal-api /go/ekas-portal-api
 COPY --from=build-env /go/src/github.com/ekas-portal-api/config/app.yaml /go/config/app.yaml
 COPY --from=build-env /go/src/github.com/ekas-portal-api/config/errors.yaml /go/config/errors.yaml
+COPY --from=build-env /go/src/github.com/ekas-portal-api/server.rsa.crt /go/server.rsa.crt
+COPY --from=build-env /go/src/github.com/ekas-portal-api/server.rsa.key /go/server.rsa.key
 
 # Use an unprivileged user.
 USER appuser
