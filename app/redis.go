@@ -11,13 +11,13 @@ import (
 
 var (
 	redisClient *redis.Client
-	dockerURL   = "157.230.0.138:7001"
+	dockerURL   = "167.99.15.200:6379"
 )
 
 // InitializeRedis ...
 func InitializeRedis() error {
 	if os.Getenv("GO_ENV") != "production" {
-		dockerURL = "157.230.0.138:7001"
+		dockerURL = "167.99.15.200:6379"
 	}
 
 	redisClient = redis.NewClient(&redis.Options{
