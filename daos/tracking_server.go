@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ekas-portal-api/app"
+	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
@@ -53,6 +54,26 @@ func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope
 	}
 
 	return nil
+}
+
+// GetUserByEmail reads the user with the specified email from the database.
+func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error) {
+	usr := &models.AdminUserDetails{}
+	err := rs.Tx().Select("first_name", "last_name", "auth_user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role_id", "role_name").
+		From("auth_users").
+		LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
+		Where(dbx.HashExp{"auth_user_email": email}).One(&usr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return usr, nil
+}
+
+// CreateLoginSession creates a new one-time-use login token
+func (dao *TrackingServerDAO) CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error {
+	return rs.Tx().Model(ls).Exclude().Insert()
 }
 
 // TrackingServerUserEmailExists check if a tracker server auth user exists

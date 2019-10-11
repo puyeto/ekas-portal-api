@@ -2,12 +2,18 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
+	"github.com/go-ozzo/ozzo-routing/auth"
 )
 
 // trackingServerDAO specifies the interface of the trackingServer DAO needed by TrackingServerService.
@@ -16,6 +22,8 @@ type trackingServerDAO interface {
 	SaveTrackingServerLoginDetails(rs app.RequestScope, id uint32, email string, hash string, status int8, data interface{}) error
 	TrackingServerUserEmailExists(rs app.RequestScope, email string) (int, error)
 	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, int, error)
+	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
+	GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error)
 }
 
 // TrackingServerService ---
@@ -36,7 +44,12 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
 	res, err := http.Get(URL)
 	if err != nil {
-		return nil, err
+		// return nil, err
+		c := models.Credential{
+			Email:    model.Email,
+			Password: model.Password,
+		}
+		return s.Login(rs, &c)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -79,6 +92,53 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	}
 
 	return data, nil
+}
+
+// Login a user  from portal
+func (s *TrackingServerService) Login(rs app.RequestScope, c *models.Credential) (*models.AdminUserDetails, error) {
+	if err := c.ValidateCredential(); err != nil {
+		return nil, err
+	}
+
+	res, err := s.dao.GetUserByEmail(rs, c.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if &res == nil {
+		return nil, errors.New("no user found")
+	}
+
+	reset(res)
+
+	token, err := auth.NewJWT(jwt.MapClaims{
+		"id":  strconv.Itoa(int(res.UserID)),
+		"exp": time.Now().Add(time.Hour * 72).Unix(),
+	}, app.Config.JWTSigningKey)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	res.Token = token
+
+	s.storeLoginSession(rs, res)
+
+	return res, nil
+}
+
+// storeLoginSession ...
+func (s *TrackingServerService) storeLoginSession(rs app.RequestScope, ud *models.AdminUserDetails) error {
+	r := &http.Request{}
+	log.Println(r)
+	loginSession := models.UserLoginSessions{
+		SessionID: app.GenerateNewID(),
+		UserID:    ud.UserID,
+		UserAgent: r.UserAgent(),
+		IP:        models.GetRemoteIP(r),
+		Token:     ud.Token,
+	}
+
+	return s.dao.CreateLoginSession(rs, &loginSession)
 }
 
 // TrackingServerUserDevices - Get user devices from  the tracking server
