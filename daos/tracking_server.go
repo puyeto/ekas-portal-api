@@ -59,10 +59,24 @@ func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope
 // GetUserByEmail reads the user with the specified email from the database.
 func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error) {
 	usr := &models.AdminUserDetails{}
-	err := rs.Tx().Select("first_name", "last_name", "auth_user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role_id", "role_name").
+	err := rs.Tx().Select("first_name", "last_name", "auth_user_id AS user_id", "auth_user_email AS email", "auth_user_hash AS token", "auth_user_status AS is_verified", "auth_user_role AS role_id", "role_name").
 		From("auth_users").
 		LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		Where(dbx.HashExp{"auth_user_email": email}).One(&usr)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return usr, nil
+}
+
+// GetUserByUserHash reads the user with the specified email from the database.
+func (dao *TrackingServerDAO) GetUserByUserHash(rs app.RequestScope, userhash string) (*models.AdminUserDetails, error) {
+	usr := &models.AdminUserDetails{}
+	err := rs.Tx().Select("first_name", "last_name", "auth_user_id AS user_id", "auth_user_email AS email").
+		From("auth_users").
+		Where(dbx.HashExp{"auth_user_hash": userhash}).One(&usr)
 
 	if err != nil {
 		return nil, err
@@ -82,4 +96,26 @@ func (dao *TrackingServerDAO) TrackingServerUserEmailExists(rs app.RequestScope,
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM auth_users WHERE auth_user_email='" + email + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
 	return exists, err
+}
+
+// QueryVehicelsFromPortal retrieves the vehicleRecord records with the specified offset and limit from the database.
+func (dao *TrackingServerDAO) QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error) {
+	vehicleRecords := []models.VehicleDetails{}
+	var err error
+	if uid > 0 {
+		// err = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid}).OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_details.user_id", "COALESCE(device_id, 0) AS device_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
+			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
+			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
+			LeftJoin("vehicle_configuration", dbx.And(dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"), dbx.NewExp("vehicle_configuration.status=1"))).
+			Where(dbx.HashExp{"vehicle_details.user_id": uid}).
+			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+	} else {
+		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_details.user_id", "COALESCE(device_id, 0) AS device_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
+			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
+			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
+			LeftJoin("vehicle_configuration", dbx.And(dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"), dbx.NewExp("vehicle_configuration.status=1"))).
+			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+	}
+	return vehicleRecords, err
 }

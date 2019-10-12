@@ -3,17 +3,14 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
-	"github.com/go-ozzo/ozzo-routing/auth"
 )
 
 // trackingServerDAO specifies the interface of the trackingServer DAO needed by TrackingServerService.
@@ -24,6 +21,8 @@ type trackingServerDAO interface {
 	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, int, error)
 	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
 	GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error)
+	QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
+	GetUserByUserHash(rs app.RequestScope, userhash string) (*models.AdminUserDetails, error)
 }
 
 // TrackingServerService ---
@@ -111,15 +110,13 @@ func (s *TrackingServerService) Login(rs app.RequestScope, c *models.Credential)
 
 	reset(res)
 
-	token, err := auth.NewJWT(jwt.MapClaims{
-		"id":  strconv.Itoa(int(res.UserID)),
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
-	}, app.Config.JWTSigningKey)
-	if err != nil {
-		return nil, errors.New(err.Error())
-	}
-
-	res.Token = token
+	// token, err := auth.NewJWT(jwt.MapClaims{
+	// 	"id":  strconv.Itoa(int(res.UserID)),
+	// 	"exp": time.Now().Add(time.Hour * 72).Unix(),
+	// }, app.Config.JWTSigningKey)
+	// if err != nil {
+	// 	return nil, errors.New(err.Error())
+	// }
 
 	s.storeLoginSession(rs, res)
 
@@ -146,7 +143,20 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 	URL := app.Config.TrackingServerURL + "get_devices/?lang=" + model.Lang + "&user_api_hash=" + model.UserHash
 	res, err := http.Get(URL)
 	if err != nil {
-		return nil, err
+
+		res, err := s.dao.GetUserByUserHash(rs, model.UserHash)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(res)
+		userid := res.UserID
+		if res.Email == "ntsa.ekastech.com" {
+			userid = 0
+		}
+		// get user id by UserHash
+		vList, err := s.QueryVehicelsFromPortal(rs, 0, 100, int(userid))
+
+		return vList, err
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -162,6 +172,11 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 	// fmt.Printf("Results: %v\n", data)
 
 	return data, nil
+}
+
+// Query returns the vehicleRecords with the specified offset and limit.
+func (s *TrackingServerService) QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error) {
+	return s.dao.QueryVehicelsFromPortal(rs, offset, limit, uid)
 }
 
 // TrackingServerAddDevices - add user devices from  the tracking server
