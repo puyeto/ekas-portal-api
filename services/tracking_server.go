@@ -3,7 +3,6 @@ package services
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -148,7 +147,6 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(res)
 		userid := res.UserID
 		if res.Email == "ntsa.ekastech.com" {
 			userid = 0
