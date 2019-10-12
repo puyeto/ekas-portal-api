@@ -132,39 +132,54 @@ func (s *TrackingServerService) storeLoginSession(rs app.RequestScope, ud *model
 }
 
 // TrackingServerUserDevices - Get user devices from  the tracking server
-func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, model *models.UserData) (interface{}, error) {
-	URL := app.Config.TrackingServerURL + "get_devices/?lang=" + model.Lang + "&user_api_hash=" + model.UserHash
-	res, err := http.Get(URL)
-	if err != nil {
-
-		res, err := s.dao.GetUserByUserHash(rs, model.UserHash)
-		if err != nil {
-			return nil, err
-		}
-		userid := res.UserID
-		if res.Email == "ntsa.ekastech.com" {
-			userid = 0
-		}
-		// get user id by UserHash
-		vList, err := s.QueryVehicelsFromPortal(rs, 0, 100, int(userid))
-
-		return vList, err
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
+func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, model *models.UserData) ([]models.VehicleDetails, error) {
+	res, err := s.dao.GetUserByUserHash(rs, model.UserHash)
 	if err != nil {
 		return nil, err
 	}
-
-	var data interface{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		return nil, err
+	userid := res.UserID
+	if res.Email == "ntsa.ekastech.com" {
+		userid = 0
 	}
-	// fmt.Printf("Results: %v\n", data)
+	// get user id by UserHash
+	vList, err := s.QueryVehicelsFromPortal(rs, 0, 100, int(userid))
 
-	return data, nil
+	return vList, err
 }
+
+// func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, model *models.UserData) (interface{}, error) {
+// 	URL := app.Config.TrackingServerURL + "get_devices/?lang=" + model.Lang + "&user_api_hash=" + model.UserHash
+// 	res, err := http.Get(URL)
+// 	if err != nil {
+
+// 		res, err := s.dao.GetUserByUserHash(rs, model.UserHash)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		userid := res.UserID
+// 		if res.Email == "ntsa.ekastech.com" {
+// 			userid = 0
+// 		}
+// 		// get user id by UserHash
+// 		vList, err := s.QueryVehicelsFromPortal(rs, 0, 100, int(userid))
+
+// 		return vList, err
+// 	}
+
+// 	body, err := ioutil.ReadAll(res.Body)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	var data interface{}
+// 	err = json.Unmarshal(body, &data)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	// fmt.Printf("Results: %v\n", data)
+
+// 	return data, nil
+// }
 
 // QueryVehicelsFromPortal returns the vehicleRecords with the specified offset and limit.
 func (s *TrackingServerService) QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error) {

@@ -12,7 +12,7 @@ type (
 	// trackingServerService specifies the interface for the trackingServer service needed by trackingServerResource.
 	trackingServerService interface {
 		TrackingServerLogin(rs app.RequestScope, model *models.TrackingServerAuth) (models.AdminUserDetails, error)
-		TrackingServerUserDevices(rs app.RequestScope, model *models.UserData) (interface{}, error)
+		TrackingServerUserDevices(rs app.RequestScope, model *models.UserData) ([]models.VehicleDetails, error)
 		TrackingServerAddDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error)
 		TrackingServerEditDevices(rs app.RequestScope, model *models.AddDeviceDetails, lang string, userhash string) (interface{}, error)
 	}
