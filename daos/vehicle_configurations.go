@@ -84,8 +84,7 @@ func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, of
 		From("vehicle_configuration").Offset(int64(offset)).Limit(int64(limit)).
 		// InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
 		Where(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_string_id", searchterm))).
-		// Where(dbx.And(dbx.NewExp("status=1"))).
-		All(&tdetails)
+		OrderBy("conf_id DESC").All(&tdetails)
 	return tdetails, err
 }
 

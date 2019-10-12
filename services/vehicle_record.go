@@ -53,13 +53,8 @@ func (s *VehicleRecordService) Update(rs app.RequestScope, id uint32, model *mod
 }
 
 // Delete deletes the vehicleRecord with the specified ID.
-func (s *VehicleRecordService) Delete(rs app.RequestScope, id uint32) (*models.VehicleDetails, error) {
-	vehicleRecord, err := s.dao.Get(rs, id)
-	if err != nil {
-		return nil, err
-	}
-	err = s.dao.Delete(rs, id)
-	return vehicleRecord, err
+func (s *VehicleRecordService) Delete(rs app.RequestScope, id uint32) error {
+	return s.dao.Delete(rs, id)
 }
 
 // Count returns the number of vehicleRecords.
@@ -89,7 +84,7 @@ func (s *VehicleRecordService) CreateReminder(rs app.RequestScope, model *models
 	if err := model.ValidateReminders(); err != nil {
 		return 0, err
 	}
-	
+
 	return s.dao.CreateReminder(rs, model)
 }
 

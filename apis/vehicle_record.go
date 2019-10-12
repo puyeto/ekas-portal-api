@@ -16,7 +16,7 @@ type (
 		Query(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
 		Count(rs app.RequestScope, uid int) (int, error)
 		Update(rs app.RequestScope, id uint32, model *models.VehicleDetails) (*models.VehicleDetails, error)
-		Delete(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
+		Delete(rs app.RequestScope, id uint32) error
 		CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 		CountReminders(rs app.RequestScope, uid int) (int, error)
 		GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
@@ -119,12 +119,14 @@ func (r *vehicleRecordResource) delete(c *routing.Context) error {
 		return err
 	}
 
-	response, err := r.service.Delete(app.GetRequestScope(c), uint32(id))
+	err = r.service.Delete(app.GetRequestScope(c), uint32(id))
 	if err != nil {
 		return err
 	}
 
-	return c.Write(response)
+	return c.Write(map[string]int{
+		"deleted_id": id,
+	})
 }
 
 func (r *vehicleRecordResource) count(c *routing.Context) error {
