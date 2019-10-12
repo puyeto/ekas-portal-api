@@ -43,10 +43,9 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	res, err := http.Get(URL)
 	if err != nil {
 		// return nil, err
-		c := models.Credential{
-			Email:    model.Email,
-			Password: model.Password,
-		}
+		c := models.Credential{}
+		c.Email = model.Email
+		c.Password = model.Password
 		return s.Login(rs, &c)
 	}
 
@@ -107,7 +106,7 @@ func (s *TrackingServerService) Login(rs app.RequestScope, c *models.Credential)
 		return nil, errors.New("no user found")
 	}
 
-	reset(res)
+	// reset(res)
 
 	// token, err := auth.NewJWT(jwt.MapClaims{
 	// 	"id":  strconv.Itoa(int(res.UserID)),
@@ -172,7 +171,7 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 	return data, nil
 }
 
-// Query returns the vehicleRecords with the specified offset and limit.
+// QueryVehicelsFromPortal returns the vehicleRecords with the specified offset and limit.
 func (s *TrackingServerService) QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error) {
 	return s.dao.QueryVehicelsFromPortal(rs, offset, limit, uid)
 }
