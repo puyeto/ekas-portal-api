@@ -104,15 +104,17 @@ func (dao *TrackingServerDAO) QueryVehicelsFromPortal(rs app.RequestScope, offse
 	var err error
 	if uid > 0 {
 		// err = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid}).OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
-		err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
+		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_details.user_id", "COALESCE(device_id, 0) AS device_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
 			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
+			LeftJoin("vehicle_configuration", dbx.And(dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"), dbx.NewExp("vehicle_configuration.status=1"))).
 			Where(dbx.HashExp{"vehicle_details.user_id": uid}).
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	} else {
-		err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
+		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_details.user_id", "COALESCE(device_id, 0) AS device_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
 			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
+			LeftJoin("vehicle_configuration", dbx.And(dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"), dbx.NewExp("vehicle_configuration.status=1"))).
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	}
 	return vehicleRecords, err
