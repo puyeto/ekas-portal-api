@@ -138,9 +138,10 @@ func (s *TrackingServerService) TrackingServerUserDevices(rs app.RequestScope, m
 		return nil, err
 	}
 	userid := res.UserID
-	if res.Email == "ntsa.ekastech.com" {
+	if res.Email == "ntsa@ekastech.com" {
 		userid = 0
 	}
+
 	// get user id by UserHash
 	vList, err := s.QueryVehicelsFromPortal(rs, 0, 100, int(userid))
 
