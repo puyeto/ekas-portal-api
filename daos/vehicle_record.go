@@ -34,11 +34,14 @@ func (dao *VehicleRecordDAO) Update(rs app.RequestScope, id uint32, vehicleRecor
 
 // Delete deletes an vehicleRecord with the specified ID from the database.
 func (dao *VehicleRecordDAO) Delete(rs app.RequestScope, id uint32) error {
-	vehicleRecord, err := dao.Get(rs, id)
+	// Delete configuration data
+	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_id": id}).Execute()
 	if err != nil {
 		return err
 	}
-	return rs.Tx().Model(vehicleRecord).Delete()
+
+	_, err = rs.Tx().Delete("vehicle_details", dbx.HashExp{"vehicle_id": id}).Execute()
+	return nil
 }
 
 // Count returns the number of the vehicleRecord records in the database.
