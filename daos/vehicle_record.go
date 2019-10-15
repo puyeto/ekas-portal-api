@@ -19,7 +19,10 @@ func NewVehicleRecordDAO() *VehicleRecordDAO {
 // Get reads the vehicleRecord with the specified ID from the database.
 func (dao *VehicleRecordDAO) Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error) {
 	var vehicleRecord models.VehicleDetails
-	err := rs.Tx().Select().Model(id, &vehicleRecord)
+
+	err := rs.Tx().Select("vehicle_id", "user_id", "owner_id", "company_id", "vehicle_string_id", "vehicle_reg_no",
+		"chassis_no", "make_type", "notification_email", "notification_no", "auto_invoicing", "invoice_due_date",
+		"created_on", "COALESCE(model, '')", "model_year", "COALESCE(manufacturer,'')").Model(id, &vehicleRecord)
 	return &vehicleRecord, err
 }
 
