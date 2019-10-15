@@ -13,8 +13,8 @@ type (
 	vehicleRecordService interface {
 		Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
 		CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
-		Query(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
-		Count(rs app.RequestScope, uid int) (int, error)
+		Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error)
+		Count(rs app.RequestScope, uid int, typ string) (int, error)
 		Update(rs app.RequestScope, id uint32, model *models.VehicleDetails) (*models.VehicleDetails, error)
 		Delete(rs app.RequestScope, id uint32) error
 		CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
@@ -74,13 +74,15 @@ func (r *vehicleRecordResource) query(c *routing.Context) error {
 		return err
 	}
 
+	typ := c.Query("type", "")
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs, uid)
+	count, err := r.service.Count(rs, uid, typ)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uid)
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uid, typ)
 	if err != nil {
 		return err
 	}
@@ -130,12 +132,13 @@ func (r *vehicleRecordResource) delete(c *routing.Context) error {
 }
 
 func (r *vehicleRecordResource) count(c *routing.Context) error {
+	typ := c.Query("uid", "0")
 	uid, err := strconv.Atoi(c.Query("uid", "0"))
 	if err != nil {
 		return err
 	}
 
-	response, err := r.service.Count(app.GetRequestScope(c), uid)
+	response, err := r.service.Count(app.GetRequestScope(c), uid, typ)
 	if err != nil {
 		return err
 	}
