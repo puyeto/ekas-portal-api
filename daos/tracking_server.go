@@ -59,7 +59,7 @@ func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope
 // GetUserByEmail reads the user with the specified email from the database.
 func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) (models.AdminUserDetails, error) {
 	usr := models.AdminUserDetails{}
-	err := rs.Tx().Select("first_name", "last_name", "auth_user_id AS user_id", "auth_user_email AS email", "auth_user_hash AS token", "auth_user_status AS is_verified", "auth_user_role AS role_id", "role_name").
+	err := rs.Tx().Select("COALESCE(first_name,'')", "COALESCE(last_name,'')", "auth_user_id AS user_id", "auth_user_email AS email", "auth_user_hash AS token", "auth_user_status AS is_verified", "auth_user_role AS role_id", "role_name").
 		From("auth_users").
 		LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		Where(dbx.HashExp{"auth_user_email": email}).One(&usr)
@@ -70,7 +70,7 @@ func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) 
 // GetUserByUserHash reads the user with the specified email from the database.
 func (dao *TrackingServerDAO) GetUserByUserHash(rs app.RequestScope, userhash string) (models.AdminUserDetails, error) {
 	usr := models.AdminUserDetails{}
-	err := rs.Tx().Select("first_name", "last_name", "auth_user_id AS user_id", "auth_user_email AS email").
+	err := rs.Tx().Select("COALESCE(first_name, '')", "COALESCE(last_name, '')", "auth_user_id AS user_id", "auth_user_email AS email").
 		From("auth_users").
 		Where(dbx.HashExp{"auth_user_hash": userhash}).One(&usr)
 
