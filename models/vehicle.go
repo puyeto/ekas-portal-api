@@ -193,7 +193,7 @@ type DeviceData struct {
 	Longitude                      int32     `json:"longitude,omitempty"`             // 4 byte
 	Latitude                       int32     `json:"latitude,omitempty"`              // 4 byte
 	Altitude                       int32     `json:"altitude,omitempty"`              // 4 byte
-	GroundSpeed                    uint32    `json:"ground_speed,omitempty"`          // 4 byte
+	GroundSpeed                    float32    `json:"ground_speed,omitempty"`          // 4 byte
 	SpeedDirection                 int       `json:"speed_direction,omitempty"`       // 2 byte
 	UTCTimeSeconds                 int       `json:"utc_time_seconds,omitempty"`      // 1 byte
 	UTCTimeMinutes                 int       `json:"utc_time_minutes,omitempty"`      // 1 byte

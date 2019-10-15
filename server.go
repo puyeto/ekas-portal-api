@@ -37,13 +37,18 @@ func main() {
 	db := app.InitializeDB(dns)
 	db.LogFunc = logger.Infof
 
+	// connect to second database
+	seconddns := getDNSForSecondDB()
+	seconddb := app.InitializeSecondDB(seconddns)
+	seconddb.LogFunc = logger.Infof
+
 	err := app.InitializeRedis()
 	if err != nil {
 		logger.Error(err)
 	}
 
 	// wire up API routing
-	http.Handle("/", buildRouter(logger, db))
+	http.Handle("/", buildRouter(logger, db, seconddb))
 
 	// start the server
 	address := fmt.Sprintf(":%v", app.Config.ServerPort)
@@ -68,7 +73,15 @@ func getDNS() string {
 	return app.Config.LocalDSN
 }
 
-func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
+func getDNSForSecondDB() string {
+	if os.Getenv("GO_ENV") == "production" {
+		return app.Config.SecondServerDSN
+	}
+
+	return app.Config.SecondLocalDSN
+}
+
+func buildRouter(logger *logrus.Logger, db *dbx.DB, seconddb *dbx.DB) *routing.Router {
 	router := routing.New()
 
 	router.To("GET,HEAD", "/ping", func(c *routing.Context) error {

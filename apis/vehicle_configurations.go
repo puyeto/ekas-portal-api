@@ -33,6 +33,7 @@ type (
 		CountSearches(rs app.RequestScope, searchterm string) (int, error)
 		GetUnavailableDevices(rs app.RequestScope) ([]models.DeviceData, error)
 		GetOfflineViolations(rs app.RequestScope, deviceid string) ([]models.DeviceData, error)
+		CountTripDataByDeviceID(deviceid string) (int, error)
 	}
 
 	// vehicleResource defines the handlers for the CRUD APIs.
@@ -103,20 +104,16 @@ func (r *vehicleResource) create(c *routing.Context) error {
 // getTripDataByDeviceID ...
 func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 	deviceid := c.Param("id")
-	perpage, _ := strconv.Atoi(c.Query("per_page", "99"))
 
-	// count := r.service.CountRedisTripRecords(deviceid)
-	paginatedList := getPaginatedListFromRequest(c, perpage)
-	offset := paginatedList.Offset()
-	limit := paginatedList.Limit()
-	if offset > 0 {
-		limit = offset + paginatedList.Limit()
-	}
+	// rs := app.GetRequestScope(c)
+	count, _ := r.service.CountTripDataByDeviceID(deviceid)
+	paginatedList := getPaginatedListFromRequest(c, count)
 
-	response, err := r.service.GetTripDataByDeviceID(deviceid, offset, limit)
+	response, err := r.service.GetTripDataByDeviceID(deviceid, paginatedList.Offset(), paginatedList.Limit())
 	if err != nil {
 		return err
 	}
+
 	paginatedList.Items = response
 	return c.Write(paginatedList)
 }

@@ -244,3 +244,19 @@ func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, devic
 		dbx.HashExp{"device_id": deviceid}).Execute()
 	return err
 }
+
+// CountTripDataByDeviceID returns the number of trip records in the database.
+func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
+	var count int
+	err := app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
+		Row(&count)
+	return count, err
+}
+
+// GetTripDataByDeviceID ...
+func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error) {
+	ddetails := []models.DeviceData{}
+	err := app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
+		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
+	return ddetails, err
+}

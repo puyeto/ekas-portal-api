@@ -25,6 +25,9 @@ type appConfig struct {
 	// the data source name (DSN) for connecting to the database. required.
 	LocalDSN  string `mapstructure:"local_dsn"`
 	ServerDSN string `mapstructure:"server_dns"`
+	SecondLocalDSN  string `mapstructure:"second_local_dsn"`
+	SecondServerDSN string `mapstructure:"second_server_dns"`
+
 	// the signing method for JWT. Defaults to "HS256"
 	JWTSigningMethod string `mapstructure:"jwt_signing_method"`
 	// JWT signing key. required.
