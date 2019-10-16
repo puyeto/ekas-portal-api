@@ -16,11 +16,11 @@ type (
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
 		GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error)
 		GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error)
-		FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from int64, to int64) ([]models.DeviceData, error)
+		GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 		CountRedisTripRecords(deviceid string) int
-		CountRedisTripRecordsBtwDates(rs app.RequestScope, deviceid string, from int64, to int64) int
+
 		CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
@@ -34,6 +34,7 @@ type (
 		GetUnavailableDevices(rs app.RequestScope) ([]models.DeviceData, error)
 		GetOfflineViolations(rs app.RequestScope, deviceid string) ([]models.DeviceData, error)
 		CountTripDataByDeviceID(deviceid string) (int, error)
+		CountTripRecordsBtwDates(deviceid string, from int64, to int64) (int, error)
 	}
 
 	// vehicleResource defines the handlers for the CRUD APIs.
@@ -49,10 +50,10 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Post("/addvehicleconfiguration", r.create)
 	rg.Get("/getconfigdetailsbystrid/<id>", r.getConfigurationByStringID)
 	rg.Get("/device/data/<id>", r.getTripDataByDeviceID)
+	rg.Get("/device/data-range/<id>", r.getTripDataByDeviceIDBtwDates)
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)
 	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
-	rg.Post("/gettripdatabtwdates", r.getTripDataByDeviceIDBtwDates)
 	rg.Get("/listrecentviolations", r.listRecentViolations)
 	rg.Get("/currentviolation", r.getCurrentViolations)
 	rg.Get("/listviolations", r.listAllViolations)
@@ -121,15 +122,16 @@ func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 // getTripDataByDeviceID ...
 func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) error {
 	var model models.TripBetweenDates
-	if err := c.Read(&model); err != nil {
-		return err
-	}
+	model.DeviceID = c.Param("id")
+	start, _ := strconv.Atoi(c.Query("start", "0"))
+	model.From = int64(start)
+	stop, _ := strconv.Atoi(c.Query("stop", "0"))
+	model.To = int64(stop)
 
-	rs := app.GetRequestScope(c)
-	count := r.service.CountRedisTripRecordsBtwDates(rs, model.DeviceID, model.From, model.To)
+	count, _ := r.service.CountTripRecordsBtwDates(model.DeviceID, model.From, model.To)
 	paginatedList := getPaginatedListFromRequest(c, count)
 
-	response, err := r.service.FetchAllTripsBetweenDates(rs, model.DeviceID, paginatedList.Offset(), paginatedList.Limit(), model.From, model.To)
+	response, err := r.service.GetTripDataByDeviceIDBtwDates(model.DeviceID, paginatedList.Offset(), paginatedList.Limit(), model.From, model.To)
 	if err != nil {
 		return err
 	}
