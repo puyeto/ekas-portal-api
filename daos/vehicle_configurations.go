@@ -248,7 +248,15 @@ func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, devic
 // CountTripDataByDeviceID returns the number of trip records in the database.
 func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 	var count int
-	err := app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
+	var cnt int
+
+	// check if table exist
+	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
+	if cnt == 0 {
+		return 0, nil
+	}
+
+	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
 		Row(&count)
 	return count, err
 }
@@ -256,7 +264,14 @@ func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 // GetTripDataByDeviceID ...
 func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error) {
 	ddetails := []models.DeviceData{}
-	err := app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
+	var cnt int
+	// check if table exist
+	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
+	if cnt == 0 {
+		return ddetails, nil
+	}
+
+	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
 		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
 	return ddetails, err
 }

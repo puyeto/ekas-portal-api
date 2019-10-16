@@ -63,26 +63,9 @@ func (s *VehicleService) CountTripDataByDeviceID(deviceid string) (int, error) {
 
 // GetTripDataByDeviceID ...
 func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error) {
-	// var deviceData []models.DeviceData
 
 	return s.dao.GetTripDataByDeviceID(deviceid, offset, limit)
 
-	// keysList, err := app.ZRevRange("data:"+deviceid, int64(offset), int64(limit-1))
-	// if err != nil {
-	// 	fmt.Println("Getting Keys Failed : " + err.Error())
-	// }
-
-	// for i := 0; i < len(keysList); i++ {
-
-	// 	if keysList[i] != "0" {
-	// 		var deserializedValue models.DeviceData
-	// 		json.Unmarshal([]byte(keysList[i]), &deserializedValue)
-	// 		deviceData = append(deviceData, deserializedValue)
-	// 	}
-
-	// }
-
-	// return deviceData, err
 }
 
 // FetchAllTripsBetweenDates ...
