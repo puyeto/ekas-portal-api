@@ -130,26 +130,6 @@ func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string, rea
 	return count, err
 }
 
-// CountTripRecordsBtwDates returns the number of trip records between dates in the database.
-func (dao *VehicleDAO) CountTripRecordsBtwDates(rs app.RequestScope, deviceid string, from string, to string) (int, error) {
-	// formatedFrom := from.Format("2006-01-02 15:04:05")
-	// formatedTo := to.Format("2006-01-02 15:04:05")
-	var count int
-	err := rs.Tx().Select("COUNT(*)").From("trip_data").
-		Where(dbx.And(dbx.Between("data_date", from, to), dbx.HashExp{"device_id": deviceid})).
-		Row(&count)
-	return count, err
-}
-
-// FetchAllTripsBetweenDates ...
-func (dao *VehicleDAO) FetchAllTripsBetweenDates(rs app.RequestScope, deviceid string, offset, limit int, from string, to string) ([]models.TripData, error) {
-	tdetails := []models.TripData{}
-	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed", "longitude", "latitude").
-		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
-		Where(dbx.And(dbx.Between("data_date", from, to), dbx.HashExp{"device_id": deviceid})).All(&tdetails)
-	return tdetails, err
-}
-
 // ListRecentViolations ...
 func (dao *VehicleDAO) ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error) {
 	tdetails := []models.CurrentViolations{}
@@ -253,7 +233,7 @@ func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 	// check if table exist
 	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
 	if cnt == 0 {
-		return 0, nil
+		return count, nil
 	}
 
 	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
@@ -274,4 +254,37 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int)
 	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
 		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
 	return ddetails, err
+}
+
+// CountTripRecordsBtwDates returns the number of trip records between dates in the database.
+func (dao *VehicleDAO) CountTripRecordsBtwDates(deviceid string, from, to int64) (int, error) {
+	var count int
+	var cnt int
+	// check if table exist
+	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
+	if cnt == 0 {
+		return count, nil
+	}
+
+	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
+		Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).
+		Row(&count)
+	return count, err
+}
+
+// GetTripDataByDeviceIDBtwDates ...
+func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error) {
+	tdetails := []models.DeviceData{}
+	var cnt int
+
+	// check if table exist
+	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
+	if cnt == 0 {
+		return tdetails, nil
+	}
+
+	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
+		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
+		Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).All(&tdetails)
+	return tdetails, err
 }

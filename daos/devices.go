@@ -35,6 +35,7 @@ func (dao *DeviceDAO) Create(rs app.RequestScope, device *models.Devices) error 
 		"device_serial_no":    strings.ToUpper(device.DeviceSerialNo),
 		"device_model":        strings.ToUpper(device.DeviceModelNo),
 		"device_manufacturer": strings.ToUpper(device.DeviceManufacturer),
+		"sim_serial_no":         device.SimSerialNo,
 		"configured":          device.Configured,
 		"note":                device.Note}).Execute()
 	if err != nil {
