@@ -19,7 +19,8 @@ type Devices struct {
 	DeviceManufacturer string       `json:"device_manufacturer,omitempty" db:"device_manufacturer"`
 	Configured         int8         `json:"configured,omitempty" db:"configured"`
 	Status             int8         `json:"status,omitempty" db:"status"`
-	SimSerialNo     string       `json:"sim_serial_no,omitempty" db:"sim_serial_no"`
+	SimSerialNo        string       `json:"sim_serial_no,omitempty" db:"sim_serial_no"`
+	SimNumber          string       `json:"sim_number,omitempty" db:"sim_number"`
 	Note               string       `json:"note,omitempty" db:"note"`
 	CreatedOn          time.Time    `json:"created_on,omitempty" db:"created_on"`
 	VehicleRegNno      string       `json:"vehicle_reg_no,omitempty" db:"vehicle_reg_no"`
