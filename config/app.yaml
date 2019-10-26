@@ -7,7 +7,7 @@ local_dsn: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal?parseTime=t
 server_dns: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal?parseTime=true"
 second_local_dsn: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal_data?parseTime=true"
 second_server_dns: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal_data?parseTime=true"
-tracking_server_url: "http://157.230.0.138/api/"
+tracking_server_url: "http://157.230.203.114/api/"
 server_port: "8081"
 
 # These are secret keys used for JWT signing and verification.
