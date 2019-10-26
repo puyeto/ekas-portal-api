@@ -8,7 +8,7 @@ pipeline {
                 parallel {
                     stage('Express Image') {
                         steps {
-                            sh 'docker build -f Dockerfile \
+                            sh 'docker build . -f Dockerfile \
                             -t omollo/ekas-portal-api-prod:latest .'
                         }
                     }                    
