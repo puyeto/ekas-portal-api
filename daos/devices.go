@@ -42,7 +42,6 @@ func (dao *DeviceDAO) Create(rs app.RequestScope, device *models.Devices) error 
 	if err != nil {
 		return err
 	}
-
 	id, err := res.LastInsertId()
 	device.ID = int32(id)
 	return err
