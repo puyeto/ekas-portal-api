@@ -53,7 +53,7 @@ func (dao *DeviceDAO) Update(rs app.RequestScope, id int32, device *models.Devic
 	if _, err := dao.Get(rs, id); err != nil {
 		return err
 	}
-	device.DeviceID = id
+	device.ID = id
 	return rs.Tx().Model(device).Exclude("Id").Update()
 }
 
@@ -178,15 +178,15 @@ func FetchCurrentPosition(deviceid string, start, stop int64) ([]models.DeviceDa
 }
 
 // CountConfiguredDevices returns the number of the device configuration records in the database.
-func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, deviceid int) (int, error) {
+func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid int, deviceid int64) (int, error) {
 	var count int
 	query := "SELECT COUNT(device_id) FROM vehicle_configuration"
 	if vehicleid > 0 && deviceid > 0 {
-		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.FormatInt(deviceid, 10) + "'"
 	} else if vehicleid > 0 {
 		query += " WHERE vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
 	} else if deviceid > 0 {
-		query += " WHERE device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE device_id = '" + strconv.FormatInt(deviceid, 10) + "'"
 	} else {
 		query += " WHERE status=1 "
 	}
@@ -197,7 +197,7 @@ func (dao *DeviceDAO) CountConfiguredDevices(rs app.RequestScope, vehicleid, dev
 }
 
 // ConfiguredDevices retrieves the device records with the specified offset and limit from the database.
-func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error) {
+func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid int, deviceid int64) ([]models.DeviceConfiguration, error) {
 	devices := []models.DeviceConfiguration{}
 	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, COALESCE(JSON_VALUE(data,'$.device_detail.registration_no')) AS device_name, JSON_VALUE(data, '$.sim_imei') AS sim_imei, vc.created_on, vc.status AS status, "
 	query += " JSON_VALUE(data, '$.device_detail.chasis_no') AS chassis_no, JSON_VALUE(data, '$.device_detail.make_type') AS make_type, JSON_VALUE(data, '$.device_detail.device_type') AS device_type, "
@@ -209,11 +209,11 @@ func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehi
 	query += " LEFT JOIN device_details AS dd ON (dd.device_id = vc.device_id)"
 
 	if vehicleid > 0 && deviceid > 0 {
-		query += " WHERE vc.vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE vc.vehicle_id = '" + strconv.Itoa(vehicleid) + "' AND device_id = '" + strconv.FormatInt(deviceid, 10) + "'"
 	} else if vehicleid > 0 {
 		query += " WHERE vc.vehicle_id = '" + strconv.Itoa(vehicleid) + "'"
 	} else if deviceid > 0 {
-		query += " WHERE vc.device_id = '" + strconv.Itoa(deviceid) + "'"
+		query += " WHERE vc.device_id = '" + strconv.FormatInt(deviceid, 10) + "'"
 	} else {
 		query += " WHERE vc.status=1 "
 	}

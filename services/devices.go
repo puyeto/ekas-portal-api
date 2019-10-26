@@ -22,8 +22,8 @@ type deviceDAO interface {
 	Update(rs app.RequestScope, id int32, device *models.Devices) error
 	// Delete removes the device with given ID from the storage.
 	Delete(rs app.RequestScope, id int32) error
-	CountConfiguredDevices(rs app.RequestScope, vehicleid, deviceid int) (int, error)
-	ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error)
+	CountConfiguredDevices(rs app.RequestScope, vehicleid int, deviceid int64) (int, error)
+	ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid int, deviceid int64) ([]models.DeviceConfiguration, error)
 }
 
 // DeviceService provides services related with devices.
@@ -94,11 +94,11 @@ func (s *DeviceService) QueryPositions(rs app.RequestScope, offset, limit int, u
 }
 
 // CountConfiguredDevices ...
-func (s *DeviceService) CountConfiguredDevices(rs app.RequestScope, vehicleid, deviceid int) (int, error) {
+func (s *DeviceService) CountConfiguredDevices(rs app.RequestScope, vehicleid int, deviceid int64) (int, error) {
 	return s.dao.CountConfiguredDevices(rs, vehicleid, deviceid)
 }
 
 // ConfiguredDevices ...
-func (s *DeviceService) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid, deviceid int) ([]models.DeviceConfiguration, error) {
+func (s *DeviceService) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid int, deviceid int64) ([]models.DeviceConfiguration, error) {
 	return s.dao.ConfiguredDevices(rs, offset, limit, vehicleid, deviceid)
 }

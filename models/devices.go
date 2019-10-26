@@ -9,7 +9,7 @@ import (
 // Devices ..,
 type Devices struct {
 	ID                 int32        `json:"id" db:"id"`
-	DeviceID           int32        `json:"device_id" db:"device_id"`
+	DeviceID           int64        `json:"device_id" db:"device_id"`
 	VehicleID          uint32       `json:"vehicle_id" db:"vehicle_id"`
 	DeviceName         string       `json:"device_name" db:"device_name"`
 	CompanyID          int          `json:"company_id" db:"company_id"`
