@@ -20,8 +20,8 @@ type (
 		Create(rs app.RequestScope, model *models.Devices) (*models.Devices, error)
 		Update(rs app.RequestScope, id int32, model *models.Devices) (*models.Devices, error)
 		Delete(rs app.RequestScope, id int32) (*models.Devices, error)
-		CountConfiguredDevices(rs app.RequestScope, vehicleid, deviceid int) (int, error)
-		ConfiguredDevices(rs app.RequestScope, offset, limit, vehicle_id, device_id int) ([]models.DeviceConfiguration, error)
+		CountConfiguredDevices(rs app.RequestScope, vehicleid int, deviceid int64) (int, error)
+		ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid int, deviceid int64) ([]models.DeviceConfiguration, error)
 	}
 
 	// deviceResource defines the handlers for the CRUD APIs.
@@ -178,7 +178,7 @@ func (r *deviceResource) configuredDevices(c *routing.Context) error {
 		return err
 	}
 
-	deviceid, err := strconv.Atoi(c.Query("device_id", "0"))
+	deviceid, err := strconv.ParseInt(c.Query("device_id", "0"), 10, 64)
 	if err != nil {
 		return err
 	}
