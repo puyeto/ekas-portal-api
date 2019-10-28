@@ -20,10 +20,10 @@ type vehicleDAO interface {
 	GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error)
 	ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error)
 	// Create saves a new vehicle in the storage.
-	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) error
-	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) error
+	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) (uint32, error)
+	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) (uint32, error)
 	CreateFitter(rs app.RequestScope, fd *models.FitterDetails) error
-	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error
+	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error
 	UpdateConfigurationStatus(rs app.RequestScope, configid uint32, status int8) error
 	CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 	CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
@@ -261,7 +261,8 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 
 	// Add vehicle owner
 	vm := NewOwner(model.DeviceDetails, model.OwnerID, userid)
-	if err := s.dao.CreateVehicleOwner(rs, vm); err != nil {
+	ownerid, err := s.dao.CreateVehicleOwner(rs, vm)
+	if err != nil {
 		return 0, err
 	}
 
@@ -273,7 +274,8 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 
 	// Add Vehicle
 	vd := NewVehicle(model.DeviceDetails, model.VehicleID, userid)
-	if err := s.dao.CreateVehicle(rs, vd); err != nil {
+	vehid, err := s.dao.CreateVehicle(rs, vd)
+	if err != nil {
 		return 0, err
 	}
 
@@ -284,19 +286,19 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	}
 
 	// Add Configuration Details
-	if model.ConfigID > 0 {
-		// update configuration status
-		if err := s.dao.UpdateConfigurationStatus(rs, model.ConfigID, 0); err != nil {
-			return 0, err
-		}
-	}
-	if err := s.dao.CreateConfiguration(rs, model, vm.OwnerID, model.FitterID, vd.VehicleID); err != nil {
+	// if model.ConfigID > 0 {
+	// 	// update configuration status
+	// 	if err := s.dao.UpdateConfigurationStatus(rs, model.ConfigID, 0); err != nil {
+	// 		return 0, err
+	// 	}
+	// }
+	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, vehid, vd.VehicleStringID); err != nil {
 		return 0, err
 	}
 
 	// Add vehicle to tracking server
 	tsv := NewTrackingServerVehicle(model)
-	_, err := AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
+	_, err = AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
 	if err != nil {
 		return 0, err
 	}
