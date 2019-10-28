@@ -93,7 +93,7 @@ type VehicleDetails struct {
 	UserID                 uint32    `json:"user_id" db:"user_id"`
 	OwnerID                uint32    `json:"owner_id" db:"owner_id"`
 	CompanyID              uint32    `json:"company_id" db:"company_id"`
-	DeviceID              uint32    `json:"device_id" db:"device_id"`
+	DeviceID               uint32    `json:"device_id" db:"device_id"`
 	CompanyName            string    `json:"company_name,omitempty"`
 	VehicleStringID        string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
 	VehicleRegNo           string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
@@ -102,6 +102,7 @@ type VehicleDetails struct {
 	NotificationEmail      string    `json:"notification_email,omitempty" db:"notification_email"`
 	NotificationNO         string    `json:"notification_no,omitempty" db:"notification_no"`
 	VehicleStatus          int8      `json:"status" db:"vehicle_status"`
+	NTSAShow               int8      `json:"ntsa_show" db:"send_to_ntsa"`
 	AutoInvoicing          int8      `json:"auto_invoicing,omitempty" db:"auto_invoicing"`
 	InvoiceDueDate         time.Time `json:"invoice_due_date,omitempty" db:"invoice_due_date"`
 	CreatedOn              time.Time `json:"created_on" db:"created_on"`
@@ -193,7 +194,7 @@ type DeviceData struct {
 	Longitude                      int32     `json:"longitude,omitempty"`             // 4 byte
 	Latitude                       int32     `json:"latitude,omitempty"`              // 4 byte
 	Altitude                       int32     `json:"altitude,omitempty"`              // 4 byte
-	GroundSpeed                    float32    `json:"ground_speed,omitempty"`          // 4 byte
+	GroundSpeed                    float32   `json:"ground_speed,omitempty"`          // 4 byte
 	SpeedDirection                 int       `json:"speed_direction,omitempty"`       // 2 byte
 	UTCTimeSeconds                 int       `json:"utc_time_seconds,omitempty"`      // 1 byte
 	UTCTimeMinutes                 int       `json:"utc_time_minutes,omitempty"`      // 1 byte

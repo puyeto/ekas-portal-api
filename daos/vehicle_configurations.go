@@ -159,18 +159,24 @@ func (dao *VehicleDAO) ListRecentViolations(rs app.RequestScope, offset, limit i
 // ----------------------------Add / Update Vehicle------------------------------------
 
 // CreateVehicle saves a new vehicle record in the database.
-func (dao *VehicleDAO) CreateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
-	exists, _ := dao.VehicleExists(rs, v.VehicleID)
+func (dao *VehicleDAO) CreateVehicle(rs app.RequestScope, v *models.VehicleDetails) (uint32, error) {
+	exists, _ := dao.VehicleExistsByStringID(rs, v.VehicleStringID)
 	if exists == 1 {
-		return dao.UpdateVehicle(rs, v)
+		vehid, err := dao.UpdateVehicle(rs, v)
+		return vehid, err
 	}
 
-	return rs.Tx().Model(v).Insert("VehicleID", "UserID", "VehicleStringID", "VehicleRegNo", "ChassisNo", "MakeType", "NotificationEmail", "NotificationNO")
+	err := rs.Tx().Model(v).Insert("VehicleID", "UserID", "VehicleStringID", "VehicleRegNo", "ChassisNo", "MakeType", "NotificationEmail", "NotificationNO")
+	return v.VehicleID, err
 }
 
 // UpdateVehicle ....
-func (dao *VehicleDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
-	_, err := rs.Tx().Update("vehicle_details", dbx.Params{
+func (dao *VehicleDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetails) (uint32, error) {
+	var vehID uint32
+	q := rs.Tx().NewQuery("SELECT vehicle_id FROM vehicle_details WHERE vehicle_string_id='" + v.VehicleStringID + "' LIMIT 1")
+	err := q.Row(&vehID)
+
+	_, err = rs.Tx().Update("vehicle_details", dbx.Params{
 		"user_id":            v.UserID,
 		"vehicle_string_id":  v.VehicleStringID,
 		"vehicle_reg_no":     v.VehicleRegNo,
@@ -178,11 +184,11 @@ func (dao *VehicleDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetai
 		"make_type":          v.MakeType,
 		"notification_email": v.NotificationEmail,
 		"notification_no":    v.NotificationNO},
-		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute()
-	return err
+		dbx.HashExp{"vehicle_id": vehID}).Execute()
+	return vehID, err
 }
 
-// VehicleExists ...
+// VehicleExists check vehicle if exists by vehicle id...
 func (dao *VehicleDAO) VehicleExists(rs app.RequestScope, id uint32) (int, error) {
 	var exists int
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
@@ -190,12 +196,34 @@ func (dao *VehicleDAO) VehicleExists(rs app.RequestScope, id uint32) (int, error
 	return exists, err
 }
 
+// VehicleExistsByStringID Check vehicle if exists by string id...
+func (dao *VehicleDAO) VehicleExistsByStringID(rs app.RequestScope, strID string) (int, error) {
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_string_id='" + strID + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	return exists, err
+}
+
 // ----------------------Add / update config data----------------------
 
+// VehicleExistsConfigurationByStringID Check if vehicle exists under vehicle_configuration by vehicle string id...
+func (dao *VehicleDAO) VehicleExistsConfigurationByStringID(rs app.RequestScope, strID string) (int, error) {
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_string_id='" + strID + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	return exists, err
+}
+
 //CreateConfiguration Add configuartion details to db
-func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error {
+func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error {
+	// Delete Previous Configuration
+	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehstringid}).Execute()
+	if err != nil {
+		return err
+	}
+
 	a, _ := json.Marshal(cd)
-	_, err := rs.Tx().Insert("vehicle_configuration", dbx.Params{
+	_, err = rs.Tx().Insert("vehicle_configuration", dbx.Params{
 		"user_id":           cd.UserID,
 		"device_id":         cd.GovernorDetails.DeviceID,
 		"vehicle_id":        vehicleid,
