@@ -25,6 +25,9 @@ type VehicleConfigDetails struct {
 	ConfigID          uint32 `json:"conf_id"`
 	DeviceID          uint32 `json:"device_id,omitempty"`
 	VehicleID         uint32 `json:"vehicle_id,omitempty"`
+	UserID            uint32 `json:"user_id" db:"user_id"`
+	VehicleStatus     int8   `json:"vehicle_status" db:"vehicle_status"`
+	NTSAShow          int8   `json:"ntsa_show" db:"send_to_ntsa"`
 	OwnerID           uint32 `json:"owner_id,omitempty"`
 	FitterID          uint32 `json:"fitter_id,omitempty"`
 	NotificationEmail string `json:"notification_email,omitempty"`

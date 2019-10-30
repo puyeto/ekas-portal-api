@@ -15,7 +15,7 @@ type (
 		CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
 		Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error)
 		Count(rs app.RequestScope, uid int, typ string) (int, error)
-		Update(rs app.RequestScope, id uint32, model *models.VehicleDetails) (*models.VehicleDetails, error)
+		Update(rs app.RequestScope, model *models.VehicleDetails) error
 		Delete(rs app.RequestScope, id uint32) error
 		CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 		CountReminders(rs app.RequestScope, uid int) (int, error)
@@ -35,7 +35,7 @@ func ServeVehicleRecordResource(rg *routing.RouteGroup, service vehicleRecordSer
 	rg.Post("/vehicle/create", r.createVehicle)
 	rg.Get("/vehicles/list", r.query)
 	rg.Get("/vehicles/count", r.count)
-	rg.Put("/vehicle/update/<id>", r.update)
+	rg.Put("/vehicle/update", r.update)
 	rg.Delete("/vehicle/delete/<id>", r.delete)
 	rg.Post("/vehicle/reminders", r.createReminder)
 	rg.Get("/vehicle/reminders", r.getReminder)
@@ -91,28 +91,19 @@ func (r *vehicleRecordResource) query(c *routing.Context) error {
 }
 
 func (r *vehicleRecordResource) update(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	var model models.VehicleDetails
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	err := r.service.Update(app.GetRequestScope(c), &model)
 	if err != nil {
 		return err
 	}
 
-	rs := app.GetRequestScope(c)
-
-	model, err := r.service.Get(rs, uint32(id))
-	if err != nil {
-		return err
-	}
-
-	if err := c.Read(model); err != nil {
-		return err
-	}
-
-	response, err := r.service.Update(rs, uint32(id), model)
-	if err != nil {
-		return err
-	}
-
-	return c.Write(response)
+	return c.Write(map[string]uint32{
+		"updated_id": model.VehicleID,
+	})
 }
 
 func (r *vehicleRecordResource) delete(c *routing.Context) error {

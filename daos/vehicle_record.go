@@ -26,15 +26,6 @@ func (dao *VehicleRecordDAO) Get(rs app.RequestScope, id uint32) (*models.Vehicl
 	return &vehicleRecord, err
 }
 
-// Update saves the changes to an vehicleRecord in the database.
-func (dao *VehicleRecordDAO) Update(rs app.RequestScope, id uint32, vehicleRecord *models.VehicleDetails) error {
-	if _, err := dao.Get(rs, id); err != nil {
-		return err
-	}
-	vehicleRecord.VehicleID = id
-	return rs.Tx().Model(vehicleRecord).Exclude("Id").Update()
-}
-
 // Delete deletes an vehicleRecord with the specified ID from the database.
 func (dao *VehicleRecordDAO) Delete(rs app.RequestScope, id uint32) error {
 	// Delete configuration data
@@ -72,10 +63,11 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 	var err error
 	if uid > 0 {
 		// err = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid}).OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
-		err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
+		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
 			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-			Where(dbx.HashExp{"vehicle_details.user_id": uid}).
+			LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
+			Where(dbx.And(dbx.HashExp{"vehicle_details.user_id": uid}, dbx.NewExp("vehicle_configuration.device_id>0"))).
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	} else {
 		if typ == "ntsa" {
@@ -85,10 +77,12 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 				Where(dbx.HashExp{"send_to_ntsa": 1}).OrderBy("vehicle_details.created_on desc").
 				Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 		} else {
-			err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
+			err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on").
 				LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 				LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-				OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+				LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
+				Where(dbx.NewExp("vehicle_configuration.device_id>0")).OrderBy("vehicle_details.created_on desc").
+				Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 		}
 	}
 	return vehicleRecords, err
@@ -109,6 +103,8 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 		"vehicle_reg_no":     v.VehicleRegNo,
 		"chassis_no":         v.ChassisNo,
 		"make_type":          v.MakeType,
+		"vehicle_status":     v.VehicleStatus,
+		"send_to_ntsa":       v.NTSAShow,
 		"notification_email": v.NotificationEmail,
 		"notification_no":    v.NotificationNO},
 		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute()

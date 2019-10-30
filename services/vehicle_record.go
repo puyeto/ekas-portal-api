@@ -16,7 +16,7 @@ type vehicleRecordDAO interface {
 	// Query returns the list of vehicleRecords with the given offset and limit.
 	Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error)
 	// Update updates the vehicleRecord with given ID in the storage.
-	Update(rs app.RequestScope, id uint32, vehicleRecord *models.VehicleDetails) error
+	UpdateVehicle(rs app.RequestScope, vehicleRecord *models.VehicleDetails) error
 	// Delete removes the vehicleRecord with given ID from the storage.
 	Delete(rs app.RequestScope, id uint32) error
 	// CreateVehicle create new vehicle
@@ -42,14 +42,14 @@ func (s *VehicleRecordService) Get(rs app.RequestScope, id uint32) (*models.Vehi
 }
 
 // Update updates the vehicleRecord with the specified ID.
-func (s *VehicleRecordService) Update(rs app.RequestScope, id uint32, model *models.VehicleDetails) (*models.VehicleDetails, error) {
+func (s *VehicleRecordService) Update(rs app.RequestScope, model *models.VehicleDetails) error {
 	if err := model.ValidateVehicleDetails(); err != nil {
-		return nil, err
+		return err
 	}
-	if err := s.dao.Update(rs, id, model); err != nil {
-		return nil, err
+	if err := s.dao.UpdateVehicle(rs, model); err != nil {
+		return err
 	}
-	return s.dao.Get(rs, id)
+	return nil
 }
 
 // Delete deletes the vehicleRecord with the specified ID.
