@@ -24,11 +24,11 @@ func NewVehicleDAO() *VehicleDAO {
 // GetVehicleByStrID ...
 func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, vc.owner_id, fitter_id, notification_email, notification_no, data FROM vehicle_configuration AS vc "
-	query += " LEFT JOIN vehicle_details ON (vehicle_details.vehicle_id = vc.vehicle_id) "
+	query := "SELECT conf_id, vc.device_id, vd.user_id, vd.vehicle_id, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, fitter_id, notification_email, notification_no, data FROM vehicle_configuration AS vc "
+	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
 	query += " WHERE status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.VehicleID, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.Data)
 	return &vdetails, err
 }
 
@@ -84,7 +84,7 @@ func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, of
 		From("vehicle_configuration").Offset(int64(offset)).Limit(int64(limit)).
 		// InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
 		Where(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_string_id": searchterm})).
-		OrderBy("conf_id DESC").All(&tdetails)
+		OrderBy("vehicle_id DESC").All(&tdetails)
 	return tdetails, err
 }
 

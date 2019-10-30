@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"os"
 	"time"
 
 	"github.com/ekas-portal-api/models"
@@ -11,23 +10,22 @@ import (
 
 var (
 	redisClient *redis.Client
-	dockerURL   = "167.99.15.200:6379"
+	// redisURL    = "db-redis-cluster-do-user-4666162-0.db.ondigitalocean.com:25061"
+
 )
 
 // InitializeRedis ...
 func InitializeRedis() error {
-	if os.Getenv("GO_ENV") != "production" {
-		dockerURL = "167.99.15.200:6379"
-	}
+	// if os.Getenv("GO_ENV") != "production" {
+	// 	redisURL = "db-redis-cluster-do-user-4666162-0.db.ondigitalocean.com:25061"
+	// }
 
-	redisClient = redis.NewClient(&redis.Options{
-		Addr:        dockerURL,
-		PoolSize:    100,
-		MaxRetries:  2,
-		ReadTimeout: -1,
-		Password:    "",
-		DB:          0,
-	})
+	opt, _ := redis.ParseURL("rediss://default:wdbsxehbizfl5kbu@db-redis-cluster-do-user-4666162-0.db.ondigitalocean.com:25061/1")
+	opt.PoolSize = 100
+	opt.MaxRetries = 2
+	opt.ReadTimeout = -1
+
+	redisClient = redis.NewClient(opt)
 
 	ping, err := redisClient.Ping().Result()
 	if err == nil && len(ping) > 0 {
