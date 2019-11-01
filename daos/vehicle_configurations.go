@@ -83,7 +83,7 @@ func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, of
 	err := rs.Tx().Select("DISTINCT(vehicle_id) AS vehicle_name", "data").
 		From("vehicle_configuration").Offset(int64(offset)).Limit(int64(limit)).
 		// InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
-		Where(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_string_id": searchterm})).
+		Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_string_id": searchterm}), dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm}))).
 		OrderBy("vehicle_id DESC").All(&tdetails)
 	return tdetails, err
 }
@@ -279,8 +279,8 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int)
 		return ddetails, nil
 	}
 
-	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
-		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
+	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude", "date_time_stamp").From("data_" + deviceid).
+		OrderBy("date_time_stamp DESC").Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
 	return ddetails, err
 }
 
