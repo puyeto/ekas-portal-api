@@ -9,7 +9,7 @@ server_dns: "doadmin:vnz5itaj19jqco1n@tcp(db-mysql-cluster-do-user-4666162-0.db.
 second_local_dsn: "doadmin:vnz5itaj19jqco1n@tcp(db-mysql-cluster-do-user-4666162-0.db.ondigitalocean.com:25060)/ekas_portal_data?parseTime=true"
 second_server_dns: "doadmin:vnz5itaj19jqco1n@tcp(db-mysql-cluster-do-user-4666162-0.db.ondigitalocean.com:25060)/ekas_portal_data?parseTime=true"
 # second_server_dns: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal_data?parseTime=true"
-tracking_server_url: "http://157.230.203.114/api/"
+tracking_server_url: "https://tracking.ekastech.com/api/"
 server_port: "8081"
 
 # These are secret keys used for JWT signing and verification.
