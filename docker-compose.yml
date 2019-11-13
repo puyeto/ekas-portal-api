@@ -9,8 +9,8 @@ services:
           cpus: "0.3"
           memory: 500M
     ports:
-      - "8081:8081"
       - "8082:8082"
+      - "8081:8081"
     networks:
       - host
 networks:
