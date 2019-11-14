@@ -82,9 +82,9 @@ func main() {
 
 	// Create a Server instance to listen on port 8443 with the TLS config
 	server := &http.Server{
-		Addr:      ":8082",
-		TLSConfig: tlsConfig,
-		Handler:   buildRouter(logger, db, seconddb),
+		Addr: ":8082",
+		// TLSConfig: tlsConfig,
+		Handler: buildRouter(logger, db, seconddb),
 	}
 
 	// Listen to HTTPS connections with the server certificate and wait
