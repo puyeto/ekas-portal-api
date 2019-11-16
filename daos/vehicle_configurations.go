@@ -54,12 +54,27 @@ func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, d
 // GetOverspeedByDeviceID ...
 func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
 	tdetails := []models.TripData{}
-	err := rs.Tx().Select("trip_id", "device_id", "data_date", "speed").
+	err := app.SecondDBCon.Select("trip_id", "device_id", "data_date", "speed").From("data_" + deviceid).
 		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
-		// Where(dbx.HashExp{"device_id": deviceid, "speed>": 80}).
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>80"))).
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>84"))).
 		All(&tdetails)
 	return tdetails, err
+}
+
+// CountOverspeed returns the number of overspeed records in the database.
+func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
+	var cnt int
+	// check if table exist
+	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
+	if cnt == 0 {
+		return cnt, nil
+	}
+
+	var count int
+	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
+		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>84"))).
+		Row(&count)
+	return count, err
 }
 
 // GetViolationsByDeviceID ...
@@ -104,15 +119,6 @@ func (dao *VehicleDAO) CountSearches(rs app.RequestScope, searchterm string) (in
 		InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
 		Where(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm))).
 		// Where(dbx.And(dbx.NewExp("status=1"))).
-		Row(&count)
-	return count, err
-}
-
-// CountOverspeed returns the number of overspeed records in the database.
-func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
-	var count int
-	err := rs.Tx().Select("COUNT(*)").From("trip_data").
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>80"))).
 		Row(&count)
 	return count, err
 }
