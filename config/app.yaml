@@ -2,7 +2,7 @@
 # Make sure you override this in production with the environment variable: RESTFUL_DSN
 # dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
 # local_dsn: "root:@/ekas_portal?parseTime=true"
-local_dsn: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal_data?parseTime=true"
+local_dsn: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal?parseTime=true"
 # local_dsn: "doadmin:vnz5itaj19jqco1n@tcp(db-mysql-cluster-do-user-4666162-0.db.ondigitalocean.com:25060)/ekas_portal?parseTime=true"
 # server_dns: "doadmin:vnz5itaj19jqco1n@tcp(db-mysql-cluster-do-user-4666162-0.db.ondigitalocean.com:25060)/ekas_portal?parseTime=true"
 server_dns: "re-user:Tracker@2030@tcp(167.99.15.200:3306)/ekas_portal?parseTime=true"
