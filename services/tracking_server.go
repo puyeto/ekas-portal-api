@@ -3,7 +3,6 @@ package services
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -99,7 +98,10 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 // Login a user  from portal
 func (s *TrackingServerService) Login(rs app.RequestScope, email, password string) (models.AdminUserDetails, error) {
 
-	res, _ := s.dao.GetUserByEmail(rs, email)
+	res, err := s.dao.GetUserByEmail(rs, email)
+	if err != nil {
+		return res, err
+	}
 
 	// reset(res)
 
@@ -119,7 +121,6 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 // storeLoginSession ...
 func (s *TrackingServerService) storeLoginSession(rs app.RequestScope, ud *models.AdminUserDetails) error {
 	r := &http.Request{}
-	log.Println(r)
 	loginSession := models.UserLoginSessions{
 		SessionID: app.GenerateNewID(),
 		UserID:    ud.UserID,
