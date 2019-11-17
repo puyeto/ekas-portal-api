@@ -327,7 +327,7 @@ func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, li
 	}
 
 	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
-		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
-		Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).All(&tdetails)
+		Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).
+		OrderBy("date_time_stamp DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
 	return tdetails, err
 }
