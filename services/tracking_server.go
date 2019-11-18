@@ -100,7 +100,7 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 
 	res, err := s.dao.GetUserByEmail(rs, email)
 	if err != nil {
-		return res, err
+		// return res, err
 	}
 
 	// reset(res)
