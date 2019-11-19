@@ -118,6 +118,12 @@ type VehicleDetails struct {
 	DeleteTripsAfter       string    `json:"delete_trips_after,omitempty" db:"delete_trips_after"`
 	FuelType               int       `json:"fuel_type,omitempty" db:"fuel_type"`
 	DefaultTripType        int       `json:"default_trip_type,omitempty" db:"default_trip_type"`
+
+	LimiterType       string `json:"limiter_type,omitempty" db:"limiter_type"`
+	LimiterSerial     string `json:"limiter_serial,omitempty" db:"limiter_serial"`
+	VehicleOwner      string `json:"vehicle_owner,omitempty" db:"vehicle_owner"`
+	VehicleOwnerTel   string `json:"vehicle_owner_tel,omitempty" db:"vehicle_owner_tel"`
+	LocationOfFitting string `json:"fitting_location,omitempty" db:"fitting_location"`
 }
 
 // ValidateVehicleDetails validates fields.
@@ -255,6 +261,6 @@ func (r Reminders) ValidateReminders() error {
 type FilterVehicles struct {
 	MinTimeStamp string `json:"min"`
 	MaxTimeStamp string `json:"max"`
-	FilterStatus int8  `json:"status"`
-	FilterNTSA   int8  `json:"ntsa"`
+	FilterStatus int8   `json:"status"`
+	FilterNTSA   int8   `json:"ntsa"`
 }
