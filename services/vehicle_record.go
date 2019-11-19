@@ -13,8 +13,10 @@ type vehicleRecordDAO interface {
 	Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
 	// Count returns the number of vehicleRecords.
 	Count(rs app.RequestScope, uid int, typ string) (int, error)
+	CountFilter(rs app.RequestScope, m *models.FilterVehicles) (int, error)
 	// Query returns the list of vehicleRecords with the given offset and limit.
 	Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error)
+	QueryFilter(rs app.RequestScope, offset, limit int, m *models.FilterVehicles) ([]models.VehicleDetails, error)
 	// Update updates the vehicleRecord with given ID in the storage.
 	UpdateVehicle(rs app.RequestScope, vehicleRecord *models.VehicleDetails) error
 	// Delete removes the vehicleRecord with given ID from the storage.
@@ -62,9 +64,19 @@ func (s *VehicleRecordService) Count(rs app.RequestScope, uid int, typ string) (
 	return s.dao.Count(rs, uid, typ)
 }
 
+// Count returns the number of filtered vehicleRecords.
+func (s *VehicleRecordService) CountFilter(rs app.RequestScope, model *models.FilterVehicles) (int, error) {
+	return s.dao.CountFilter(rs, model)
+}
+
 // Query returns the vehicleRecords with the specified offset and limit.
 func (s *VehicleRecordService) Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error) {
 	return s.dao.Query(rs, offset, limit, uid, typ)
+}
+
+// QueryFilter returns the filtered vehicleRecords with the specified offset and limit.
+func (s *VehicleRecordService) QueryFilter(rs app.RequestScope, offset, limit int, model *models.FilterVehicles) ([]models.VehicleDetails, error) {
+	return s.dao.QueryFilter(rs, offset, limit, model)
 }
 
 // CreateVehicle creates a new vehicle.
