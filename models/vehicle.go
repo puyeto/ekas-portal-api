@@ -250,3 +250,11 @@ func (r Reminders) ValidateReminders() error {
 		validation.Field(&r.Name, validation.Required),
 	)
 }
+
+// FilterVehicles ...
+type FilterVehicles struct {
+	MinTimeStamp string `json:"min"`
+	MaxTimeStamp string `json:"max"`
+	FilterStatus int8  `json:"status"`
+	FilterNTSA   int8  `json:"ntsa"`
+}

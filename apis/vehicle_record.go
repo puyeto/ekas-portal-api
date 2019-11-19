@@ -14,7 +14,9 @@ type (
 		Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
 		CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
 		Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error)
+		QueryFilter(rs app.RequestScope, offset, limit int, m *models.FilterVehicles) ([]models.VehicleDetails, error)
 		Count(rs app.RequestScope, uid int, typ string) (int, error)
+		CountFilter(rs app.RequestScope, m *models.FilterVehicles) (int, error)
 		Update(rs app.RequestScope, model *models.VehicleDetails) error
 		Delete(rs app.RequestScope, id uint32) error
 		CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
@@ -34,6 +36,7 @@ func ServeVehicleRecordResource(rg *routing.RouteGroup, service vehicleRecordSer
 	rg.Get("/vehicle/get/<id>", r.get)
 	rg.Post("/vehicle/create", r.createVehicle)
 	rg.Get("/vehicles/list", r.query)
+	rg.Post("/vehicles/filter", r.filterVehicles)
 	rg.Get("/vehicles/count", r.count)
 	rg.Put("/vehicle/update", r.update)
 	rg.Delete("/vehicle/delete/<id>", r.delete)
@@ -83,6 +86,26 @@ func (r *vehicleRecordResource) query(c *routing.Context) error {
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
 	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uid, typ)
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = items
+	return c.Write(paginatedList)
+}
+
+func (r *vehicleRecordResource) filterVehicles(c *routing.Context) error {
+	var model models.FilterVehicles
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	rs := app.GetRequestScope(c)
+	count, err := r.service.CountFilter(rs, &model)
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	items, err := r.service.QueryFilter(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), &model)
 	if err != nil {
 		return err
 	}
