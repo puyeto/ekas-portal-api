@@ -29,8 +29,8 @@ type vehicleDAO interface {
 	CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
 	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
-	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
-	CountSearches(rs app.RequestScope, searchterm string) (int, error)
+	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
+	CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
 	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid uint32, vehicleid uint32) error
 	GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error)
 	CountTripDataByDeviceID(deviceid string) (int, error)
@@ -114,8 +114,8 @@ func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid s
 }
 
 // SearchVehicles ...
-func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error) {
-	return s.dao.SearchVehicles(rs, searchterm, offset, limit)
+func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error) {
+	return s.dao.SearchVehicles(rs, searchterm, offset, limit, qtype)
 }
 
 // ListRecentViolations ...
@@ -263,8 +263,8 @@ func (s *VehicleService) CountOverspeed(rs app.RequestScope, deviceid string) (i
 }
 
 // CountSearches Count returns the number of search records.
-func (s *VehicleService) CountSearches(rs app.RequestScope, searchterm string) (int, error) {
-	return s.dao.CountSearches(rs, searchterm)
+func (s *VehicleService) CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error) {
+	return s.dao.CountSearches(rs, searchterm, qtype)
 }
 
 // CountViolations Count returns the number of Violation records.
