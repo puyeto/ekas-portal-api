@@ -114,16 +114,39 @@ func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string, rea
 }
 
 // SearchVehicles ...
-func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error) {
+// qtype can be ntsa or ...
+func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error) {
 	tdetails := []models.SearchDetails{}
 
-	err := rs.Tx().Select("DISTINCT(vehicle_configuration.vehicle_id) AS vehicle_name", "data").
-		From("vehicle_configuration").Offset(int64(offset)).Limit(int64(limit)).
-		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
-		Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_configuration.vehicle_string_id": searchterm}, dbx.NewExp("send_to_ntsa=1")),
-			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm}, dbx.NewExp("send_to_ntsa=1")))).
-		OrderBy("vehicle_configuration.vehicle_id DESC").All(&tdetails)
+	q := rs.Tx().Select("DISTINCT(vehicle_configuration.vehicle_id) AS vehicle_name", "data").
+		From("vehicle_configuration").LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id"))
+	if qtype == "ntsa" {
+		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_configuration.vehicle_string_id": searchterm}, dbx.NewExp("send_to_ntsa=1")),
+			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm}, dbx.NewExp("send_to_ntsa=1"))))
+	} else {
+		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_configuration.vehicle_string_id": searchterm}),
+			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm})))
+
+	}
+	err := q.OrderBy("vehicle_configuration.vehicle_id DESC").All(&tdetails)
 	return tdetails, err
+}
+
+// CountSearches ///
+func (dao *VehicleDAO) CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error) {
+	var count int
+	q := rs.Tx().Select("COUNT(*)").From("vehicle_configuration").
+		InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id"))
+	if qtype == "ntsa" {
+		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_configuration.vehicle_string_id": searchterm}, dbx.NewExp("send_to_ntsa=1")),
+			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm}, dbx.NewExp("send_to_ntsa=1"))))
+	} else {
+		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_configuration.vehicle_string_id": searchterm}),
+			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm})))
+
+	}
+	err := q.Row(&count)
+	return count, err
 }
 
 // CountTripRecords returns the number of trip records in the database.
@@ -131,17 +154,6 @@ func (dao *VehicleDAO) CountTripRecords(rs app.RequestScope, deviceid string) (i
 	var count int
 	err := rs.Tx().Select("COUNT(*)").From("trip_data").
 		Where(dbx.HashExp{"device_id": deviceid}).
-		Row(&count)
-	return count, err
-}
-
-// CountSearches ///
-func (dao *VehicleDAO) CountSearches(rs app.RequestScope, searchterm string) (int, error) {
-	var count int
-	err := rs.Tx().Select("COUNT(*)").From("vehicle_configuration").
-		InnerJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id")).
-		Where(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm))).
-		// Where(dbx.And(dbx.NewExp("status=1"))).
 		Row(&count)
 	return count, err
 }

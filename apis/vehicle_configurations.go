@@ -29,8 +29,8 @@ type (
 		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error)
 		CountAllViolations(rs app.RequestScope) int
-		SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int) ([]models.SearchDetails, error)
-		CountSearches(rs app.RequestScope, searchterm string) (int, error)
+		SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
+		CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
 		GetUnavailableDevices(rs app.RequestScope) ([]models.DeviceData, error)
 		GetOfflineViolations(rs app.RequestScope, deviceid string) ([]models.DeviceData, error)
 		CountTripDataByDeviceID(deviceid string) (int, error)
@@ -220,13 +220,14 @@ func (r *vehicleResource) getDisconnectsByDeviceID(c *routing.Context) error {
 // searchVehicle ...
 func (r *vehicleResource) searchVehicle(c *routing.Context) error {
 	searchterm := c.Param("term")
+	qtype := c.Query("type", "")
 	rs := app.GetRequestScope(c)
-	count, err := r.service.CountSearches(rs, searchterm)
+	count, err := r.service.CountSearches(rs, searchterm, qtype)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	response, err := r.service.SearchVehicles(rs, searchterm, paginatedList.Offset(), paginatedList.Limit())
+	response, err := r.service.SearchVehicles(rs, searchterm, paginatedList.Offset(), paginatedList.Limit(), qtype)
 	if err != nil {
 		return err
 	}
