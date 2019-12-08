@@ -2,7 +2,6 @@ package daos
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -30,9 +29,6 @@ func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.Request
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
 		Where(dbx.HashExp{"auth_user_email": email}).Limit(1).One(&res)
 
-	// q := rs.Tx().NewQuery("SELECT auth_user_id, auth_user_role FROM auth_users WHERE auth_user_email='" + email + "' LIMIT 1")
-	// err := q.One(&res)
-	fmt.Println(res)
 	return res.AuthUserID, res.AuthUserRole, res.CompanyID, err
 }
 
