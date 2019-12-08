@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -14,7 +13,7 @@ import (
 // trackingServerDAO specifies the interface of the trackingServer DAO needed by TrackingServerService.
 type trackingServerDAO interface {
 	// Login to tracking server.
-	SaveTrackingServerLoginDetails(rs app.RequestScope, id uint32, email string, hash string, status int8, data interface{}) error
+	SaveTrackingServerLoginDetails(rs app.RequestScope, email string, hash string, status int8, data interface{}) error
 	TrackingServerUserEmailExists(rs app.RequestScope, email string) (int, error)
 	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, int, error)
 	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
@@ -43,7 +42,11 @@ func NewTrackingServerService(dao trackingServerDAO) *TrackingServerService {
 // }
 
 type loginData struct {
-	Status int8 `json:"status"`
+	Status      int8   `json:"status"`
+	UserAPIHash string `json:"user_api_hash"`
+	Email       string `json:"user_email"`
+	UserID      uint32 `json:"user_id"`
+	UserRole    int    `json:"user_role"`
 }
 
 // TrackingServerLogin login to the tracking server
@@ -69,19 +72,91 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 		return m, err
 	}
 
-	if data.Status > 0 {
-		return s.Login(rs, model.Email, model.Password)
+	if data.Status == 0 {
+		// return m, errors.New("Invalid Credentials")
 	}
 
-	return m, errors.New("Invalid Credentials")
+	var hash = data.UserAPIHash
+	var status = data.Status
+	data.Email = model.Email
+	data.UserRole = 10005
+
+	exists, err := s.dao.TrackingServerUserEmailExists(rs, model.Email)
+	if err != nil {
+		return m, err
+	}
+
+	if exists == 0 {
+		// Save Results to db
+		err = s.dao.SaveTrackingServerLoginDetails(rs, model.Email, hash, status, data)
+		if err != nil {
+			return m, err
+		}
+	}
+
+	return s.Login(rs, model.Email, model.Password)
 }
+
+// TrackingServerLogin2 login to the tracking server
+// func (s *TrackingServerService) TrackingServerLogin2(rs app.RequestScope, model *models.TrackingServerAuth) (models.AdminUserDetails, error) {
+// 	// if err := model.ValidateTrackingServerLogin(); err != nil {
+// 	// 	return nil, err
+// 	// }
+// 	URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
+// 	res, err := http.Get(URL)
+// 	if err != nil {
+// 		// return nil, err
+// 		return s.Login(rs, model.Email, model.Password)
+// 	}
+
+// 	body, err := ioutil.ReadAll(res.Body)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	var data map[string]interface{}
+// 	err = json.Unmarshal(body, &data)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	var id = app.GenerateNewID()
+// 	var hash = data["user_api_hash"].(string)
+// 	var status = int8(data["status"].(float64))
+// 	data["user_email"] = model.Email
+// 	data["user_id"] = id
+// 	data["user_role"] = 10005
+
+// 	exists, err := s.dao.TrackingServerUserEmailExists(rs, model.Email)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	if exists == 1 {
+// 		uid, role, cid, err := s.dao.GetTrackingServerUserLoginIDByEmail(rs, model.Email)
+// 		data["user_id"] = uid
+// 		data["user_role"] = role
+// 		data["company_id"] = cid
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	} else {
+// 		// Save Results to db
+// 		err = s.dao.SaveTrackingServerLoginDetails(rs, id, model.Email, hash, status, data)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
+
+// 	return data, nil
+// }
 
 // Login a user  from portal
 func (s *TrackingServerService) Login(rs app.RequestScope, email, password string) (models.AdminUserDetails, error) {
 
 	res, err := s.dao.GetUserByEmail(rs, email)
 	if err != nil {
-		// return res, err
+		return res, err
 	}
 
 	// reset(res)
