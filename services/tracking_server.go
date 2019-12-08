@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -73,7 +74,7 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	}
 
 	if data.Status == 0 {
-		// return m, errors.New("Invalid Credentials")
+		return m, errors.New("Invalid Credentials :: Tracking System")
 	}
 
 	var hash = data.UserAPIHash
