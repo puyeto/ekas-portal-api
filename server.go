@@ -51,6 +51,10 @@ func main() {
 		logger.Error(err)
 	}
 
+	// run cronjobs
+	// jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
+	// go jobrunner.Schedule("@every 1m", checkdata.CheckDataStatus{})
+
 	// wire up API routing
 	http.Handle("/", buildRouter(logger, db, seconddb))
 

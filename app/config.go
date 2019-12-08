@@ -95,7 +95,7 @@ func GenerateNewStringID() string {
 	guid := xid.New()
 	hd := hashids.NewData()
 	hd.Salt = guid.String()
-	hd.MinLength = 10
+	hd.MinLength = 8
 	hd.Alphabet = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
 	h, _ := hashids.NewWithData(hd)
 	e, _ := h.Encode([]int{45, 434, 1313})
