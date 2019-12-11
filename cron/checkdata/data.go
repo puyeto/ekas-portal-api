@@ -23,6 +23,7 @@ func (c CheckDataStatus) Run() {
 	}
 
 	for _, data := range deviceids {
+		fmt.Println(data.DeviceID)
 		// check if table exist
 		exist, err := checkIfDataTableExists(data.DeviceID)
 		if exist == 0 || err != nil {
@@ -30,15 +31,15 @@ func (c CheckDataStatus) Run() {
 		}
 
 		// Check if device has sent data last 3 days.
-		confirm, err := confirmPreviousData(3)
-		if confirm == 0 || err != nil {
-			continue
-		}
+		// confirm, err := confirmPreviousData(3)
+		// if confirm == 0 || err != nil {
+		// 	continue
+		// }
 
 		// update ntsa status as true (send_to_ntsa)
-		// app.DBCon.Update("vehicle_details", dbx.Params{
-		// 	"send_to_ntsa": 1,
-		// }, dbx.HashExp{"key_string": data.VehicleID}).Execute()
+		app.DBCon.Update("vehicle_details", dbx.Params{
+			"send_to_ntsa": 1,
+		}, dbx.HashExp{"vehicle_id": data.VehicleID}).Execute()
 		fmt.Println(data.DeviceID, data.VehicleID, exist)
 
 	}
@@ -55,7 +56,7 @@ func getAllDeviceIDs() ([]devices, error) {
 	deviceids := []devices{}
 	err := app.DBCon.Select("vehicle_details.vehicle_id", "device_id").From("vehicle_details").
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
-		Where(dbx.HashExp{"send_to_ntsa": 0}).All(&deviceids)
+		Where(dbx.HashExp{"send_to_ntsa": 0}).Limit(20).OrderBy("RAND()").All(&deviceids)
 	return deviceids, err
 }
 
