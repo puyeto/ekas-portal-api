@@ -93,7 +93,7 @@ func (dao *VehicleRecordDAO) QueryFilter(rs app.RequestScope, offset, limit int,
 	vehicleRecords := []models.VehicleDetails{}
 	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id",
 		"COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "JSON_VALUE(data, '$.device_detail.owner_name') AS vehicle_owner",
-		"notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "JSON_VALUE(data, '$.device_detail.serial_no') AS limiter_serial",
+		"notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "JSON_VALUE(data, '$.device_detail.serial_no') AS limiter_serial", "JSON_VALUE(data, '$.device_detail.certificate') AS certificate",
 		"COALESCE(model, make_type) AS model", "limiter_type", "JSON_VALUE(data, '$.device_detail.owner_phone_number') AS vehicle_owner_tel", "JSON_VALUE(data, '$.device_detail.agent_location') AS fitting_location", "vehicle_details.created_on").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
