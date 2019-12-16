@@ -15,7 +15,7 @@ type (
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
 		GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error)
-		GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error)
+		GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error)
 		GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
 		CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
@@ -105,12 +105,13 @@ func (r *vehicleResource) create(c *routing.Context) error {
 // getTripDataByDeviceID ...
 func (r *vehicleResource) getTripDataByDeviceID(c *routing.Context) error {
 	deviceid := c.Param("id")
+	orderby := c.Query("orderby", "desc")
 
 	// rs := app.GetRequestScope(c)
 	count, _ := r.service.CountTripDataByDeviceID(deviceid)
 	paginatedList := getPaginatedListFromRequest(c, count)
 
-	response, err := r.service.GetTripDataByDeviceID(deviceid, paginatedList.Offset(), paginatedList.Limit())
+	response, err := r.service.GetTripDataByDeviceID(deviceid, paginatedList.Offset(), paginatedList.Limit(), orderby)
 	if err != nil {
 		return err
 	}

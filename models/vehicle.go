@@ -75,7 +75,7 @@ type DeviceDetails struct {
 // GovernorDetails ...
 type GovernorDetails struct {
 	DeviceID       string `json:"device_id"`
-	AccountID      string `json:"account_id"`
+	AccountID      interface{} `json:"account_id"`
 	Domain         string `json:"domain"`
 	Port           string `json:"port"`
 	SecondDomain   string `json:"second_domain"`
@@ -119,6 +119,7 @@ type VehicleDetails struct {
 	FuelType               int       `json:"fuel_type,omitempty" db:"fuel_type"`
 	DefaultTripType        int       `json:"default_trip_type,omitempty" db:"default_trip_type"`
 
+	Certificate       string `json:"certificate"`
 	LimiterType       string `json:"limiter_type,omitempty" db:"limiter_type"`
 	LimiterSerial     string `json:"limiter_serial,omitempty" db:"limiter_serial"`
 	VehicleOwner      string `json:"vehicle_owner,omitempty" db:"vehicle_owner"`
