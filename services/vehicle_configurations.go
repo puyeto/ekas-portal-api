@@ -32,7 +32,7 @@ type vehicleDAO interface {
 	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
 	CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
 	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid uint32, vehicleid uint32) error
-	GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error)
+	GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error)
 	CountTripDataByDeviceID(deviceid string) (int, error)
 	CountTripRecordsBtwDates(deviceid string, from int64, to int64) (int, error)
 }
@@ -63,25 +63,31 @@ func (s *VehicleService) CountTripDataByDeviceID(deviceid string) (int, error) {
 }
 
 // GetTripDataByDeviceID ...
-func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error) {
+func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error) {
 	var deviceData []models.DeviceData
+	var data []string
+	var err error
 
-	keysList, err := app.ZRevRange("data:"+deviceid, int64(offset), int64(limit-1))
+	if orderby == "asc" {
+		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit-1))
+	} else {
+		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit-1))
+	}
 	if err != nil {
 		fmt.Println("Getting Keys Failed : " + err.Error())
 	}
 
-	for i := 0; i < len(keysList); i++ {
+	for i := 0; i < len(data); i++ {
 
-		if keysList[i] != "0" {
+		if data[i] != "0" {
 			var deserializedValue models.DeviceData
-			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
+			json.Unmarshal([]byte(data[i]), &deserializedValue)
 			deviceData = append(deviceData, deserializedValue)
 		}
 
 	}
 	if len(deviceData) == 0 {
-		return s.dao.GetTripDataByDeviceID(deviceid, offset, limit)
+		return s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
 	}
 
 	return deviceData, err

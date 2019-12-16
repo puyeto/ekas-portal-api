@@ -298,7 +298,7 @@ func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 }
 
 // GetTripDataByDeviceID ...
-func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int) ([]models.DeviceData, error) {
+func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error) {
 	ddetails := []models.DeviceData{}
 	var cnt int
 	// check if table exist
@@ -308,7 +308,7 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int)
 	}
 
 	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude", "date_time_stamp").From("data_" + deviceid).
-		OrderBy("date_time_stamp DESC").Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
+		OrderBy("date_time_stamp " + orderby).Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
 	return ddetails, err
 }
 
