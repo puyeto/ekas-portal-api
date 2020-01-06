@@ -33,7 +33,7 @@ func ServeCompanyResource(rg *routing.RouteGroup, service companyService) {
 	rg.Get("/companies/user/<id>", r.getCompanyUser)
 	rg.Get("/companies/list", r.query)
 	rg.Post("/companies/create", r.create)
-	rg.Put("/companies/update/<id>", r.update)
+	rg.Put("/company/update/<id>", r.update)
 	rg.Delete("/companies/del/<id>", r.delete)
 }
 
