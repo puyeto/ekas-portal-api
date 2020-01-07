@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -34,6 +35,7 @@ type userDAO interface {
 	Count(rs app.RequestScope) (int, error)
 	Update(rs app.RequestScope, model *models.AuthUsers) error
 	CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
+	UpdateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
 	IfCompanyUserExists(rs app.RequestScope, companyid int32, userid uint32) (int, error)
 }
 
@@ -85,8 +87,14 @@ func (u *UserService) Update(rs app.RequestScope, model *models.AuthUsers) (*mod
 			return nil, err
 		}
 
-		if exists != 1 {
+		fmt.Println(exists)
+
+		if exists == 0 {
 			if err := u.dao.CreateCompanyUser(rs, int32(model.CompanyID), model.UserID); err != nil {
+				return nil, err
+			}
+		} else {
+			if err := u.dao.UpdateCompanyUser(rs, int32(model.CompanyID), model.UserID); err != nil {
 				return nil, err
 			}
 		}
