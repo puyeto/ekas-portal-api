@@ -65,7 +65,7 @@ func (s *CompanyService) Create(rs app.RequestScope, model *models.Companies) (*
 			return nil, err
 		}
 
-		if model.CompanyID > 0 {
+		if model.CompanyID > 0 && model.UserID > 0 {
 			if err = s.dao.CreateCompanyUser(rs, model.CompanyID, model.UserID); err != nil {
 				return nil, err
 			}

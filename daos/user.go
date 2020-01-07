@@ -68,10 +68,20 @@ func (dao *UserDAO) CreateCompanyUser(rs app.RequestScope, companyid int32, user
 	return err
 }
 
+// UpdateCompanyUser Update user relationship to company.
+func (dao *UserDAO) UpdateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error {
+	_, err := rs.Tx().Update("company_users", dbx.Params{
+		"company_id": companyid},
+		dbx.HashExp{"user_id": userid}).Execute()
+
+	return err
+}
+
 // IfCompanyUserExists check if company and user exists (company_users)
 func (dao *UserDAO) IfCompanyUserExists(rs app.RequestScope, companyid int32, userid uint32) (int, error) {
 	var exists int
-	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM company_users WHERE user_id='" + strconv.Itoa(int(userid)) + "' AND company_id='" + strconv.Itoa(int(companyid)) + "' LIMIT 1) AS exist")
+	// q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM company_users WHERE user_id='" + strconv.Itoa(int(userid)) + "' AND company_id='" + strconv.Itoa(int(companyid)) + "' LIMIT 1) AS exist")
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM company_users WHERE user_id='" + strconv.Itoa(int(userid)) + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
 	return exists, err
 }
