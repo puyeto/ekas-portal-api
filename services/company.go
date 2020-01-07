@@ -51,6 +51,10 @@ func (s *CompanyService) Create(rs app.RequestScope, model *models.Companies) (*
 		return nil, err
 	}
 
+	if model.CompanyPhone == "" {
+		model.CompanyPhone = model.CompanyContacts
+	}
+
 	companyid, err := s.dao.IsExistCompanyName(rs, model.CompanyName)
 	if err != nil {
 		return nil, err
@@ -80,6 +84,10 @@ func (s *CompanyService) Update(rs app.RequestScope, id int, model *models.Compa
 	if err := model.ValidateCompanies(); err != nil {
 		return nil, err
 	}
+	if model.CompanyPhone == "" {
+		model.CompanyPhone = model.CompanyContacts
+	}
+
 	if err := s.dao.Update(rs, id, model); err != nil {
 		return nil, err
 	}
