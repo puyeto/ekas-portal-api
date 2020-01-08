@@ -37,6 +37,8 @@ func (dao *DeviceDAO) Create(rs app.RequestScope, device *models.Devices) error 
 		"device_manufacturer": strings.ToUpper(device.DeviceManufacturer),
 		"sim_serial_no":       device.SimSerialNo,
 		"sim_number":          device.SimNumber,
+		"motherboard_no":      device.MotherboardNO,
+		"technician":          device.Technician,
 		"configured":          device.Configured,
 		"note":                device.Note}).Execute()
 	if err != nil {
@@ -87,14 +89,14 @@ func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit, cid int) ([]mode
 	if cid == 0 {
 		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
 			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
-			"sim_serial_no", "sim_number", "status", "configured", "configuration_date", "status_reason", "created_on").
+			"sim_serial_no", "sim_number", "motherboard_no", "technician", "status", "configured", "configuration_date", "status_reason", "created_on").
 			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
 			From("device_details").OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
 
 	} else {
 		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
 			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
-			"sim_serial_no", "sim_number", "status", "configured", "configuration_date", "status_reason", "created_on").
+			"sim_serial_no", "sim_number", "motherboard_no", "technician", "status", "configured", "configuration_date", "status_reason", "created_on").
 			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
 			From("device_details").Where(dbx.HashExp{"device_details.company_id": cid}).
 			OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
