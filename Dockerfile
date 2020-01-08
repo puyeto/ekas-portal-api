@@ -44,6 +44,9 @@ COPY --from=build-env /go/src/github.com/ekas-portal-api/key.pem /go/key.pem
 # Use an unprivileged user.
 USER appuser
 
+# Set the working environment.
+ENV GO_ENV production
+
 ENTRYPOINT ./ekas-portal-api
 
 #Expose the port specific to the ekas API Application.
