@@ -292,12 +292,6 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	// Add Fitter Center / Fitter
-	// fd := NewFitter(model.DeviceDetails, model.FitterID, userid)
-	// if err := s.dao.CreateFitter(rs, fd); err != nil {
-	//	return 0, err
-	// }
-
 	// Add Vehicle
 	vd := NewVehicle(model.DeviceDetails, model.VehicleID, userid)
 	vehid, err := s.dao.CreateVehicle(rs, vd)
@@ -311,13 +305,6 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	// Add Configuration Details
-	// if model.ConfigID > 0 {
-	// 	// update configuration status
-	// 	if err := s.dao.UpdateConfigurationStatus(rs, model.ConfigID, 0); err != nil {
-	// 		return 0, err
-	// 	}
-	// }
 	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, vehid, vd.VehicleStringID); err != nil {
 		return 0, err
 	}

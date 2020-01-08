@@ -16,6 +16,8 @@ type Devices struct {
 	CompanyName        string       `json:"company_name,omitempty" db:"company_name"`
 	DeviceSerialNo     string       `json:"device_serial_no,omitempty" db:"device_serial_no"`
 	DeviceModelNo      string       `json:"device_model_no,omitempty" db:"device_model"`
+	MotherboardNO      string       `json:"motherboard_no,omitempty" db:"motherboard_no"`
+	Technician         string       `json:"technician,omitempty" db:"technician"`
 	DeviceManufacturer string       `json:"device_manufacturer,omitempty" db:"device_manufacturer"`
 	Configured         int8         `json:"configured,omitempty" db:"configured"`
 	Status             int8         `json:"status,omitempty" db:"status"`
