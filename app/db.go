@@ -1,6 +1,7 @@
 package app
 
 import (
+	"time"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
@@ -17,6 +18,9 @@ func InitializeDB(dns string) *dbx.DB {
 		panic(err)
 	}
 
+	db.DB().SetMaxIdleConns(0)
+	db.DB().SetConnMaxLifetime(time.Second * 10)
+
 	DBCon = db
 	return db
 }
@@ -27,6 +31,9 @@ func InitializeSecondDB(dns string) *dbx.DB {
 	if err != nil {
 		panic(err)
 	}
+
+	db.DB().SetMaxIdleConns(0)
+	db.DB().SetConnMaxLifetime(time.Second * 10)
 
 	SecondDBCon = db
 	return db
