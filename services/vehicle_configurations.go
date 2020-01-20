@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	//"time"
+	"strconv"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -287,7 +286,8 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	userid := model.UserID
 
 	// Add Device Details
-	dm := models.NewDevice(model.GovernorDetails.DeviceID, model.DeviceDetails.DeviceType, model.DeviceDetails.SerialNO, model.SimNO, model.MotherboardNO, model.Technician)
+	did, _ := strconv.ParseInt(model.GovernorDetails.DeviceID, 10, 64)
+	dm := models.NewDevice(did, model.DeviceDetails.DeviceType, model.DeviceDetails.SerialNO, model.SimNO, model.MotherboardNO, model.Technician)
 	if err := s.dao.CreateDevice(rs, dm); err != nil {
 		return 0, err
 	}
@@ -308,7 +308,7 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	model.VehicleID = vehid
 
 	// Update Device Configuration status (is configured)
-	if err := s.dao.UpdatDeviceConfigurationStatus(rs, model.GovernorDetails.DeviceID, model.VehicleID); err != nil {
+	if err := s.dao.UpdatDeviceConfigurationStatus(rs, did, model.VehicleID); err != nil {
 		return 0, err
 	}
 
