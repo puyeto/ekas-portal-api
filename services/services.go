@@ -2,6 +2,7 @@ package services
 
 import (
 	"strings"
+	"strconv"
 
 	"github.com/ekas-portal-api/models"
 )
@@ -55,9 +56,10 @@ func NewVehicle(m models.DeviceDetails, id uint32, userid uint32) *models.Vehicl
 
 // NewTrackingServerVehicle ...
 func NewTrackingServerVehicle(m *models.Vehicle) *models.AddDeviceDetails {
+	imei := strconv.FormatInt(m.GovernorDetails.DeviceID, 10)
 	vd := &models.AddDeviceDetails{
 		Name:               m.DeviceDetails.RegistrationNO,
-		Imei:               m.GovernorDetails.DeviceID,
+		Imei:               imei,
 		IconID:             "45",
 		FuelMeasurementID:  "1",
 		TailLength:         "5",
@@ -71,5 +73,4 @@ func NewTrackingServerVehicle(m *models.Vehicle) *models.AddDeviceDetails {
 		ObjectOwner:        "",
 	}
 	return vd
-
 }

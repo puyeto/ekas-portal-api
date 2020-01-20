@@ -14,6 +14,8 @@ type Vehicle struct {
 	UserHash        string          `json:"user_hash,omitempty"`
 	SimNO           string          `json:"sim_no,omitempty"`
 	SimIMEI         string          `json:"sim_imei,omitempty"`
+	MotherboardNO   string          `json:"motherboard_no,omitempty" db:"motherboard_no"`
+	Technician      string          `json:"technician,omitempty" db:"technician"`
 	VehicleID       uint32          `json:"vehicle_id,omitempty"`
 	OwnerID         uint32          `json:"owner_id,omitempty"`
 	FitterID        uint32          `json:"fitter_id,omitempty"`
@@ -74,8 +76,8 @@ type DeviceDetails struct {
 
 // GovernorDetails ...
 type GovernorDetails struct {
-	DeviceID       string `json:"device_id"`
-	AccountID      interface{} `json:"account_id"`
+	DeviceID       int64  `json:"device_id"`
+	AccountID      int64  `json:"account_id"`
 	Domain         string `json:"domain"`
 	Port           string `json:"port"`
 	SecondDomain   string `json:"second_domain"`
