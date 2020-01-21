@@ -33,6 +33,22 @@ type Devices struct {
 	Positions          []DeviceData `json:"positions,omitempty"`
 }
 
+// NewDevice ...
+func NewDevice(did int64, dname, dsno, sno, mno, tech string) *Devices {
+	nd := &Devices{
+		DeviceID:           did,
+		DeviceName:         dname,
+		DeviceSerialNo:     dsno,
+		DeviceModelNo:      "E042",
+		DeviceManufacturer: "EkTechnologies",
+		SimNumber:          sno,
+		MotherboardNO:      mno,
+		Technician:         tech,
+	}
+
+	return nd
+}
+
 // ValidateDevices validates user data fields.
 func (m Devices) ValidateDevices() error {
 	return validation.ValidateStruct(&m,
@@ -46,13 +62,13 @@ func (m Devices) ValidateDevices() error {
 type DeviceConfiguration struct {
 	ConfigID            int32     `json:"conf_id" db:"pk,conf_id"`
 	DeviceID            int32     `json:"device_id" db:"device_id"`
-	DeviceName          string    `json:"device_name,omitempty" db:"device_name"`
-	ChassisNo           string    `json:"chassis_no,omitempty" db:"chassis_no"`
-	MakeType            string    `json:"make_type" db:"make_type"`
-	DeviceType          string    `json:"device_type" db:"device_type"`
-	SerialNo            string    `json:"serial_no" db:"serial_no"`
+	DeviceName          string    `json:"device_name,omitempty" db:"dveame"`
+	ChassisNo           string    `json:"chassis_no,omitempty" db:"chis_no"`
+	akeType             string    `json:"make_type" db:"make_type"`
+	iceType             string    `json:"device_type" db:"device_type"`
+	rialNo              string    `json:"serial_no" db:"serial_no"`
 	SIMImei             string    `json:"sim_imei" db:"sim_imei"`
-	VehicleID           string    `json:"vehicle_id" db:"vehicle_id"`
+	hicleID             string    `json:"vehicle_id" db:"vehicle_id"`
 	CreatedOn           time.Time `json:"created_on" db:"created_on"`
 	ConfigurationStatus int8      `json:"status" db:"status"`
 	DeviceStatus        int8      `json:"device_status" db:"device_status"`

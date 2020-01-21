@@ -71,5 +71,4 @@ func NewTrackingServerVehicle(m *models.Vehicle) *models.AddDeviceDetails {
 		ObjectOwner:        "",
 	}
 	return vd
-
 }

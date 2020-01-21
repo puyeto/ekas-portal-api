@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"github.com/ekas-portal-api/app"
-	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )
@@ -30,14 +29,13 @@ func (dao *VehicleRecordDAO) Get(rs app.RequestScope, id uint32) (*models.Vehicl
 // Delete deletes an vehicleRecord with the specified ID from the database.
 func (dao *VehicleRecordDAO) Delete(rs app.RequestScope, id uint32) error {
 	// Delete configuration data
-	// _, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_id": id}).Execute()
-	// if err != nil {
-	// 	return err
-	// }
+	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_id": id}).Execute()
+	if err != nil {
+		return err
+	}
 
-	// _, err = rs.Tx().Delete("vehicle_details", dbx.HashExp{"vehicle_id": id}).Execute()
-	// return nil
-	return errors.New("Denied")
+	_, err = rs.Tx().Delete("vehicle_details", dbx.HashExp{"vehicle_id": id}).Execute()
+	return nil
 }
 
 // Count returns the number of the vehicleRecord records in the database.

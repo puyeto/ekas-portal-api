@@ -3,10 +3,8 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
-
-	//"time"
+	"strconv"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -31,10 +29,12 @@ type vehicleDAO interface {
 	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
 	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
 	CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
-	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid uint32, vehicleid uint32) error
+	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid int64, vehicleid uint32) error
 	GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error)
 	CountTripDataByDeviceID(deviceid string) (int, error)
 	CountTripRecordsBtwDates(deviceid string, from int64, to int64) (int, error)
+	// CreateDevice saves a new device in the storage.
+	CreateDevice(rs app.RequestScope, device *models.Devices) error
 }
 
 // VehicleService provides services related with vehicles.
@@ -285,6 +285,13 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	// }
 	userid := model.UserID
 
+	// Add Device Details
+	did, _ := strconv.ParseInt(model.GovernorDetails.DeviceID, 10, 64)
+	dm := models.NewDevice(did, model.DeviceDetails.DeviceType, model.DeviceDetails.SerialNO, model.SimNO, model.MotherboardNO, model.Technician)
+	if err := s.dao.CreateDevice(rs, dm); err != nil {
+		return 0, err
+	}
+
 	// Add vehicle owner
 	vm := NewOwner(model.DeviceDetails, model.OwnerID, userid)
 	ownerid, err := s.dao.CreateVehicleOwner(rs, vm)
@@ -298,14 +305,14 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	if err != nil {
 		return 0, err
 	}
+	model.VehicleID = vehid
 
-	// Update Device Configuration status (is configured
-	did, _ := strconv.Atoi(model.GovernorDetails.DeviceID)
-	if err := s.dao.UpdatDeviceConfigurationStatus(rs, uint32(did), model.VehicleID); err != nil {
+	// Update Device Configuration status (is configured)
+	if err := s.dao.UpdatDeviceConfigurationStatus(rs, did, model.VehicleID); err != nil {
 		return 0, err
 	}
 
-	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, vehid, vd.VehicleStringID); err != nil {
+	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, model.VehicleID, vd.VehicleStringID); err != nil {
 		return 0, err
 	}
 

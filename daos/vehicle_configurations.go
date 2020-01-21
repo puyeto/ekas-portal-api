@@ -271,7 +271,7 @@ func (dao *VehicleDAO) UpdateConfigurationStatus(rs app.RequestScope, configid u
 }
 
 // UpdatDeviceConfigurationStatus ...
-func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid uint32, vehicleid uint32) error {
+func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid int64, vehicleid uint32) error {
 	t := time.Now()
 	currentDate := t.Format("2006-01-02 15:04:05")
 
@@ -344,3 +344,42 @@ func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, li
 		OrderBy("date_time_stamp DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
 	return tdetails, err
 }
+
+// CreateDevice saves a new device record in the database.
+// The Device.Id field will be populated with an automatically generated ID upon successful saving.
+func (dao *VehicleDAO) CreateDevice(rs app.RequestScope, device *models.Devices) error {
+	var exists int
+	strID := strconv.FormatInt(device.DeviceID, 10)
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM device_details WHERE device_id='" + strID + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	
+	if exists == 1 {
+		_, err = rs.Tx().Update("device_details", dbx.Params{
+			"device_serial_no":    strings.ToUpper(device.DeviceSerialNo),
+			"sim_serial_no":       device.SimSerialNo,
+			"sim_number":          device.SimNumber,
+			"motherboard_no":      device.MotherboardNO,
+			"technician":          device.Technician,
+			"configured":          device.Configured,
+			"note":                device.Note,
+		}, dbx.HashExp{"device_id": device.DeviceID}).Execute()
+		return err
+	}
+
+	_, err = rs.Tx().Insert("device_details", dbx.Params{
+		"device_id":           device.DeviceID,
+		"device_name":         device.DeviceName,
+		"device_serial_no":    strings.ToUpper(device.DeviceSerialNo),
+		"device_model":        strings.ToUpper(device.DeviceModelNo),
+		"device_manufacturer": strings.ToUpper(device.DeviceManufacturer),
+		"sim_serial_no":       device.SimSerialNo,
+		"sim_number":          device.SimNumber,
+		"motherboard_no":      device.MotherboardNO,
+		"technician":          device.Technician,
+		"configured":          device.Configured,
+		"note":                device.Note,
+	}).Execute()
+	
+	return err
+}
+
