@@ -258,6 +258,12 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 		"owner_id":          ownerid,
 		"fitter_id":         fitterid,
 		"vehicle_string_id": strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1)),
+		"fitting_date": 	cd.DeviceDetails.FittingDate,
+		"frequency": 		cd.DeviceDetails.SetFrequency,
+		"speed": 			cd.DeviceDetails.PresetSpeed,
+		"speed_source": 	cd.DeviceDetails.SpeedSource,
+		"fail_safe": 		cd.GovernorDetails.FailSafe,
+		"apn": 				cd.GovernorDetails.APN,
 		"data":              string(a)}).Execute()
 	return err
 }
