@@ -77,7 +77,7 @@ type DeviceDetails struct {
 // GovernorDetails ...
 type GovernorDetails struct {
 	DeviceID       string  `json:"device_id"`
-	AccountID      string  `json:"account_id"`
+	AccountID      interface{}  `json:"account_id"`
 	Domain         string `json:"domain"`
 	Port           string `json:"port"`
 	SecondDomain   string `json:"second_domain"`
