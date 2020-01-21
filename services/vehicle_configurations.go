@@ -288,9 +288,10 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	// Add Device Details
 	did, _ := strconv.ParseInt(model.GovernorDetails.DeviceID, 10, 64)
 	dm := models.NewDevice(did, model.DeviceDetails.DeviceType, model.DeviceDetails.SerialNO, model.SimNO, model.MotherboardNO, model.Technician)
-	if err := s.dao.CreateDevice(rs, dm); err != nil {
-		return 0, err
-	}
+	// if err := s.dao.CreateDevice(rs, dm); err != nil {
+	// 	return 0, err
+	// }
+	s.dao.CreateDevice(rs, dm)
 
 	// Add vehicle owner
 	vm := NewOwner(model.DeviceDetails, model.OwnerID, userid)
