@@ -245,7 +245,7 @@ func (dao *VehicleDAO) VehicleExistsConfigurationByStringID(rs app.RequestScope,
 //CreateConfiguration Add configuartion details to db
 func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error {
 	// Delete Previous Configuration
-	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehstringid}).Execute()
+	_, err := rs.Tx().Delete("vehicle_configuration", dbx.Or(dbx.HashExp{"vehicle_string_id": vehstringid, "device_id": cd.GovernorDetails.DeviceID})).Execute()
 	if err != nil {
 		return err
 	}
@@ -389,3 +389,9 @@ func (dao *VehicleDAO) CreateDevice(rs app.RequestScope, device *models.Devices)
 	return err
 }
 
+
+// DeleteDeviceData ...
+func (dao *VehicleDAO) DeleteDeviceData(deviceid string) (error) {
+	err := app.SecondDBCon.NewQuery("TRUNCATE TABLE data_" + deviceid + ")").Row()
+	return err
+}
