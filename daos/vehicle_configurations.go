@@ -245,7 +245,7 @@ func (dao *VehicleDAO) VehicleExistsConfigurationByStringID(rs app.RequestScope,
 //CreateConfiguration Add configuartion details to db
 func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error {
 	// Delete Previous Configuration
-	_, err := rs.Tx().Delete("vehicle_configuration", dbx.Or(dbx.HashExp{"vehicle_string_id": vehstringid, "device_id": cd.GovernorDetails.DeviceID})).Execute()
+	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehstringid}).Execute()
 	if err != nil {
 		return err
 	}
@@ -258,12 +258,12 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 		"owner_id":          ownerid,
 		"fitter_id":         fitterid,
 		"vehicle_string_id": strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1)),
-		"fitting_date": 	cd.DeviceDetails.FittingDate,
-		"frequency": 		cd.DeviceDetails.SetFrequency,
-		"speed": 			cd.DeviceDetails.PresetSpeed,
-		"speed_source": 	cd.DeviceDetails.SpeedSource,
-		"fail_safe": 		cd.GovernorDetails.FailSafe,
-		"apn": 				cd.GovernorDetails.APN,
+		"fitting_date":      cd.DeviceDetails.FittingDate,
+		"frequency":         cd.DeviceDetails.SetFrequency,
+		"speed":             cd.DeviceDetails.PresetSpeed,
+		"speed_source":      cd.DeviceDetails.SpeedSource,
+		"fail_safe":         cd.GovernorDetails.FailSafe,
+		"apn":               cd.GovernorDetails.APN,
 		"data":              string(a)}).Execute()
 	return err
 }
@@ -358,16 +358,16 @@ func (dao *VehicleDAO) CreateDevice(rs app.RequestScope, device *models.Devices)
 	strID := strconv.FormatInt(device.DeviceID, 10)
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM device_details WHERE device_id='" + strID + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
-	
+
 	if exists == 1 {
 		_, err = rs.Tx().Update("device_details", dbx.Params{
-			"device_serial_no":    strings.ToUpper(device.DeviceSerialNo),
-			"sim_serial_no":       device.SimSerialNo,
-			"sim_number":          device.SimNumber,
-			"motherboard_no":      device.MotherboardNO,
-			"technician":          device.Technician,
-			"configured":          device.Configured,
-			"note":                device.Note,
+			"device_serial_no": strings.ToUpper(device.DeviceSerialNo),
+			"sim_serial_no":    device.SimSerialNo,
+			"sim_number":       device.SimNumber,
+			"motherboard_no":   device.MotherboardNO,
+			"technician":       device.Technician,
+			"configured":       device.Configured,
+			"note":             device.Note,
 		}, dbx.HashExp{"device_id": device.DeviceID}).Execute()
 		return err
 	}
@@ -385,13 +385,6 @@ func (dao *VehicleDAO) CreateDevice(rs app.RequestScope, device *models.Devices)
 		"configured":          device.Configured,
 		"note":                device.Note,
 	}).Execute()
-	
-	return err
-}
 
-
-// DeleteDeviceData ...
-func (dao *VehicleDAO) DeleteDeviceData(deviceid string) (error) {
-	err := app.SecondDBCon.NewQuery("TRUNCATE TABLE data_" + deviceid + ")").Row()
 	return err
 }
