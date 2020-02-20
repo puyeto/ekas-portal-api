@@ -34,6 +34,7 @@ type VehicleConfigDetails struct {
 	FitterID          uint32 `json:"fitter_id,omitempty"`
 	NotificationEmail string `json:"notification_email,omitempty"`
 	NotificationNO    string `json:"notification_no,omitempty"`
+	SimNO             string `json:"sim_no,omitempty"`
 	Data              string `json:"vehicle_data,omitempty"`
 	CreatedOn         string `json:"created_on,omitempty"`
 }
@@ -76,20 +77,20 @@ type DeviceDetails struct {
 
 // GovernorDetails ...
 type GovernorDetails struct {
-	DeviceID       string  `json:"device_id"`
-	AccountID      interface{}  `json:"account_id"`
-	Domain         string `json:"domain"`
-	Port           string `json:"port"`
-	SecondDomain   string `json:"second_domain"`
-	SecondPort     string `json:"second_port"`
-	FailSafe       string `json:"fail_safe"`
-	APN            string `json:"apn"`
-	APNSet         string `json:"apn_set"`
-	APNUsername    string `json:"apn_username"`
-	APNUsernamSet  string `json:"apn_username_set"`
-	APNPassword    string `json:"apn_password"`
-	APNPasswordSet string `json:"apn_password_set"`
-	TConfigDone    string `json:"t_config_done"`
+	DeviceID       string      `json:"device_id"`
+	AccountID      interface{} `json:"account_id"`
+	Domain         string      `json:"domain"`
+	Port           string      `json:"port"`
+	SecondDomain   string      `json:"second_domain"`
+	SecondPort     string      `json:"second_port"`
+	FailSafe       string      `json:"fail_safe"`
+	APN            string      `json:"apn"`
+	APNSet         string      `json:"apn_set"`
+	APNUsername    string      `json:"apn_username"`
+	APNUsernamSet  string      `json:"apn_username_set"`
+	APNPassword    string      `json:"apn_password"`
+	APNPasswordSet string      `json:"apn_password_set"`
+	TConfigDone    string      `json:"t_config_done"`
 }
 
 // VehicleDetails ...
