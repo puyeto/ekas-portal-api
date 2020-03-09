@@ -3,8 +3,8 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 	"strconv"
+	"time"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -163,6 +163,12 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.Dev
 	return deviceData, err
 }
 
+// CountAllViolations ...
+func (s *VehicleService) CountAllViolations(rs app.RequestScope) int {
+	count := app.ZCount("violations", "-inf", "+inf")
+	return int(count)
+}
+
 // ListAllViolations ...
 func (s *VehicleService) ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error) {
 
@@ -207,12 +213,6 @@ func (s *VehicleService) GetOfflineViolations(rs app.RequestScope, deviceid stri
 	}
 
 	return deviceData, err
-}
-
-// CountAllViolations ...
-func (s *VehicleService) CountAllViolations(rs app.RequestScope) int {
-	count := app.ZCount("violation", "-inf", "+inf")
-	return int(count)
 }
 
 // GetUnavailableDevices ...
