@@ -28,6 +28,7 @@ type (
 		ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error)
 		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error)
+		XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
 		CountAllViolations(rs app.RequestScope) int
 		SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
 		CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
@@ -57,6 +58,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/listrecentviolations", r.listRecentViolations)
 	rg.Get("/currentviolation", r.getCurrentViolations)
 	rg.Get("/listviolations", r.listAllViolations)
+	rg.Get("/xmllistviolations", r.xmlListRecentViolations)
 	rg.Get("/getoffline/<id>", r.getOffline)
 	rg.Get("/search/<term>", r.searchVehicle)
 	rg.Get("/unavailable", r.getUnavailable)
@@ -142,12 +144,26 @@ func (r *vehicleResource) getTripDataByDeviceIDBtwDates(c *routing.Context) erro
 
 // listAllViolations ...
 func (r *vehicleResource) listAllViolations(c *routing.Context) error {
-
 	rs := app.GetRequestScope(c)
 	count := r.service.CountAllViolations(rs)
 	paginatedList := getPaginatedListFromRequest(c, count)
 
 	response, err := r.service.ListAllViolations(rs, paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
+}
+
+// xmlListRecentViolations
+func (r *vehicleResource) xmlListRecentViolations(c *routing.Context) error {
+
+	rs := app.GetRequestScope(c)
+	count := r.service.CountAllViolations(rs)
+	paginatedList := getPaginatedListFromRequest(c, count)
+
+	response, err := r.service.XMLListAllViolations(rs, paginatedList.Offset(), paginatedList.Limit())
 	if err != nil {
 		return err
 	}

@@ -21,6 +21,16 @@ func NewVehicleDAO() *VehicleDAO {
 	return &VehicleDAO{}
 }
 
+// GetVehicleName ...
+func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.VDetails {
+	var vd models.VDetails
+	query := "SELECT json_value(data, '$.device_detail.registration_no'), json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
+	query += " FROM vehicle_configuration WHERE device_id='" + strconv.Itoa(deviceid) + "'LIMIT 1"
+	rs.Tx().NewQuery(query).Row(&vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
+
+	return vd
+}
+
 // GetVehicleByStrID ...
 func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails

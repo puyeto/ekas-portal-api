@@ -130,6 +130,12 @@ type VehicleDetails struct {
 	LocationOfFitting string `json:"fitting_location,omitempty" db:"fitting_location"`
 }
 
+type VDetails struct {
+	Name         string
+	VehicleOwner string
+	OwnerTel     string
+}
+
 // ValidateVehicleDetails validates fields.
 func (v VehicleDetails) ValidateVehicleDetails() error {
 	return validation.ValidateStruct(&v,
@@ -219,6 +225,8 @@ type DeviceData struct {
 	DateTime                       time.Time `json:"date_time,omitempty"`
 	Name                           string    `json:"name,omitempty"`
 	DateTimeStamp                  int64     `json:"date_time_stamp,omitempty"`
+	VehicleOwner                   string    `json:"vehicle_owner,omitempty"`
+	OwnerTel                       string    `json:"owner_tel,omitempty"`
 }
 
 // LastSeenStruct ...
@@ -267,4 +275,15 @@ type FilterVehicles struct {
 	MaxTimeStamp string `json:"max"`
 	FilterStatus int8   `json:"status"`
 	FilterNTSA   int8   `json:"ntsa"`
+}
+
+// XMLResults ...
+type XMLResults struct {
+	SerialNo            uint32
+	VehicleRegistration string
+	VehicleOwner        string
+	OwnerTel            string
+	ViolationType       string
+	DateOfViolation     string
+	ActionTaken         string
 }
