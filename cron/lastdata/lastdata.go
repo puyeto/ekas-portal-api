@@ -47,7 +47,7 @@ func getAllDeviceIDs() ([]devices, error) {
 	deviceids := []devices{}
 	err := app.DBCon.Select("vehicle_details.vehicle_id", "device_id", "send_to_ntsa").From("vehicle_details").
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
-		Where(dbx.And(dbx.NewExp("device_id>0"), dbx.HashExp{"vehicle_status": 1})).All(&deviceids)
+		Where(dbx.And(dbx.NewExp("device_id>0"), dbx.HashExp{"vehicle_status": 1})).OrderBy("device_id DESC").All(&deviceids)
 	return deviceids, err
 }
 
