@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/ekas-portal-api/models"
-	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // Message ...
@@ -88,13 +87,6 @@ func SendSMSMessages(message chan models.MessageDetails) {
 	}
 }
 
-// SMSCheck ...
-type SMSCheck struct {
-	MessageID int       `json:"message_id"`
-	DateTime  time.Time `json:"date_time"`
-	Message   string    `json:"message"`
-}
-
 // check for sent messages
 func checkMessages(tonumber string) (SMSCheck, error) {
 	var data SMSCheck
@@ -102,18 +94,4 @@ func checkMessages(tonumber string) (SMSCheck, error) {
 	err := q.One(&data)
 
 	return data, err
-}
-
-// save sent messages
-func saveSentMessages(m models.SaveMessageDetails) {
-	DBCon.Insert("saved_messages", dbx.Params{
-		"message_id":   m.MessageID,
-		"message":      m.Message,
-		"date_time":    m.DateTime,
-		"from":         m.From,
-		"to":           m.To,
-		"date_created": m.DateCreated,
-		"sid":          m.SID,
-		"status":       m.Status,
-	}).Execute()
 }
