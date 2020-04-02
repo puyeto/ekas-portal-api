@@ -8,10 +8,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
+	"github.com/ekas-portal-api/cron/lastdata"
 	"github.com/ekas-portal-api/daos"
 	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/services"
@@ -52,8 +55,11 @@ func main() {
 	}
 
 	// run cronjobs
-	// jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
+	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
 	// go jobrunner.Schedule("@every 60m", checkdata.CheckDataStatus{})
+	// go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
+	go jobrunner.Schedule("@every 1m", lastdata.LastDataStatus{}) // every midnight do this..
+	jobrunner.In(2*time.Minute, lastdata.LastDataStatus{})        // one time job. starts after 10sec
 
 	// wire up API routing
 	http.Handle("/", buildRouter(logger, db, seconddb))
