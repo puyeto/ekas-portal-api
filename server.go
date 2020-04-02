@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/bamzi/jobrunner"
@@ -57,9 +56,7 @@ func main() {
 	// run cronjobs
 	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
 	// go jobrunner.Schedule("@every 60m", checkdata.CheckDataStatus{})
-	// go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
-	// go jobrunner.Schedule("@every 1m", lastdata.LastDataStatus{}) // every midnight do this..
-	go jobrunner.In(20*time.Second, lastdata.LastDataStatus{}) // one time job. starts after 10sec
+	go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
 
 	// wire up API routing
 	http.Handle("/", buildRouter(logger, db, seconddb))
