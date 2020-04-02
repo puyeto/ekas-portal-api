@@ -36,15 +36,16 @@ func (c LastDataStatus) Run() {
 }
 
 type devices struct {
-	DeviceID  int32 `json:"device_id"`
-	VehicleID int32 `json:"vehicle_id"`
+	DeviceID   int32 `json:"device_id"`
+	VehicleID  int32 `json:"vehicle_id"`
+	SendToNTSA int32 `json:"send_to_ntsa"`
 }
 
 func getAllDeviceIDs() ([]devices, error) {
 	// Queries the DB
 	// check vehicles without data status (send_to_ntsa)
 	deviceids := []devices{}
-	err := app.DBCon.Select("vehicle_details.vehicle_id", "device_id").From("vehicle_details").
+	err := app.DBCon.Select("vehicle_details.vehicle_id", "device_id", "send_to_ntsa").From("vehicle_details").
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
 		Where(dbx.And(dbx.NewExp("device_id>0"), dbx.HashExp{"vehicle_status": 1})).All(&deviceids)
 	return deviceids, err
@@ -59,7 +60,7 @@ func checkIfDataTableExists(data devices) (int64, error) {
 	if err := tx.NewQuery(query).Row(&exist); err != nil {
 		return 0, err
 	}
-	if exist == 0 {
+	if exist == 0 && data.SendToNTSA > 0 {
 		updateNTSAStatus(data.VehicleID, 0)
 		return 0, nil
 	}
@@ -83,7 +84,7 @@ func checkIfDataTableExists(data devices) (int64, error) {
 
 	fmt.Println(datetimestamp)
 
-	if datetimestamp == 0 {
+	if datetimestamp == 0 && data.SendToNTSA > 0 {
 		// update ntsa status as true (send_to_ntsa)
 		updateNTSAStatus(data.VehicleID, 0)
 	}
