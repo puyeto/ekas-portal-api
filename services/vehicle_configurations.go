@@ -65,17 +65,27 @@ func (s *VehicleService) CountTripDataByDeviceID(deviceid string) (int, error) {
 
 // GetTripDataByDeviceID ...
 func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error) {
+
 	var deviceData []models.DeviceData
 	var data []string
 	var err error
 
 	if orderby == "asc" {
-		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit-1))
+		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit+offset-1))
 	} else {
-		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit-1))
+		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit+offset-1))
 	}
 	if err != nil {
 		fmt.Println("Getting Keys Failed : " + err.Error())
+	}
+
+	fmt.Println("Redis Count", len(data), offset, offset+limit-1)
+	if len(data) < limit {
+		deviceData, err := s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
+		for _, rec := range deviceData {
+			go app.ZAdd("data:"+deviceid, rec.DateTimeStamp, rec)
+		}
+		return deviceData, err
 	}
 
 	for i := 0; i < len(data); i++ {
@@ -86,9 +96,6 @@ func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit in
 			deviceData = append(deviceData, deserializedValue)
 		}
 
-	}
-	if len(deviceData) == 0 {
-		return s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
 	}
 
 	return deviceData, err
@@ -140,24 +147,31 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.Dev
 		return nil, err
 	}
 	if value.SystemCode == "MCPG" {
-		// var message string
-		// var message_id int
-		// // fmt.Println("device_id", value.DeviceID)
-		// if value.Offline {
-		// 	message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
-		// 	message_id = 4
-		// } else if value.Disconnect {
-		// 	message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
-		// 	message_id = 3
-		// } else if value.Failsafe {
-		// 	message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
-		// 	message_id = 2
-		// } else if value.GroundSpeed > 80 {
-		// 	message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
-		// 	message_id = 1
-		// }
+		var (
+			message          string
+			messageid        int
+			violationMessage = make(chan models.MessageDetails)
+		)
 
-		// app.Message <- models.MessageDetails{message_id, message}
+		go app.SendViolationSMSMessages(violationMessage)
+
+		// fmt.Println("device_id", value.DeviceID)
+		if value.Offline {
+			message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
+			messageid = 4
+		} else if value.Disconnect {
+			message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
+			messageid = 3
+		} else if value.Failsafe {
+			message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
+			messageid = 2
+		} else if value.GroundSpeed > 80 {
+			message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
+			messageid = 1
+		}
+
+		fmt.Println(messageid, message)
+		// violationMessage <- models.MessageDetails{messageid, message}
 		vd := s.dao.GetVehicleName(rs, int(value.DeviceID))
 		value.Name = vd.Name
 		deviceData = append(deviceData, value)
