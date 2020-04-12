@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/ekas-portal-api/models"
@@ -92,8 +93,20 @@ func LRange(key string, start, stop int64) ([]string, error) {
 	return val, err
 }
 
+// ZAdd ...
+// Adds all the specified members with the specified scores to the sorted set stored at key
+func ZAdd(key string, score int64, members interface{}) error {
+	serializedValue, _ := json.Marshal(members)
+	err := redisClient.ZAdd(key, &redis.Z{
+		Score:  float64(score),
+		Member: string(serializedValue),
+	}).Err()
+	return err
+}
+
 // ZRange ...
 // Returns the specified range of elements in the sorted set stored at key
+// The elements are considered to be ordered from the lowest to the highest
 func ZRange(key string, start, stop int64) ([]string, error) {
 	val, err := redisClient.ZRange(key, start, stop).Result()
 	return val, err
@@ -154,4 +167,13 @@ func DelKey(key string) error {
 // ListKeys ...
 func ListKeys(key string) ([]string, error) {
 	return redisClient.Keys(key).Result()
+}
+
+// SetRedisLog log to redis
+func SetRedisLog(devData chan models.DeviceData, key string) error {
+	dev := <-devData
+	err := ZAdd(key, dev.DateTimeStamp, dev)
+	fmt.Println(err, key, dev.DateTimeStamp)
+	fmt.Println(dev)
+	return err
 }
