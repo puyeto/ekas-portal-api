@@ -79,7 +79,6 @@ func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit in
 		fmt.Println("Getting Keys Failed : " + err.Error())
 	}
 
-	fmt.Println("Redis Count", len(data), offset, offset+limit-1)
 	if len(data) < limit {
 		deviceData, err := s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
 		for _, rec := range deviceData {
