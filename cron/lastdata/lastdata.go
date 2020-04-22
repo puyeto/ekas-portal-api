@@ -68,7 +68,7 @@ func checkIfDataTableExists(data devices) (int64, error) {
 	lastMonth := strconv.FormatInt(getLastMonthUnix(), 10)
 	did := strconv.FormatInt(int64(data.DeviceID), 10)
 	// Delete data Older tha 30 Days
-	query = "DELETE FROM data_" + did + " WHERE date_time_stamp < " + lastMonth
+	query = "DELETE FROM data_" + did + " WHERE transmission_reason < 255 AND date_time_stamp < " + lastMonth
 	_, err := app.SecondDBCon.NewQuery(query).Execute()
 	if err != nil {
 		tx.Rollback()
