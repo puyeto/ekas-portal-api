@@ -73,7 +73,7 @@ func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid stri
 	findOptions.SetSort(map[string]int{"datetimestamp": -1})
 	findOptions.SetSkip(int64(offset))
 	findOptions.SetLimit(int64(limit))
-	filter := bson.D{{"speed", bson.D{{"$gte", 84}}}}
+	filter := bson.D{{"speed", bson.D{{"$gt", 84}}}}
 	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
@@ -87,38 +87,32 @@ func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int
 
 // GetViolationsByDeviceID ...
 func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error) {
-	tdetails := []models.DeviceData{}
-	var query = "disconnect>0"
+	findOptions := options.Find()
+	findOptions.SetSort(map[string]int{"datetimestamp": -1})
+	findOptions.SetSkip(int64(offset))
+	findOptions.SetLimit(int64(limit))
+	filter := bson.D{}
 	if reason == "failsafe" {
-		query = "failsafe>0"
+		filter = bson.D{{"failsafe", true}}
+	} else {
+		filter = bson.D{{"disconnect", true}}
 	}
-
-	err := app.SecondDBCon.Select("trip_id", "device_id", "data_date", "failsafe", "disconnect").From("data_" + deviceid).
-		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp(query))).
-		All(&tdetails)
-	return tdetails, err
+	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
 // CountViolations returns the number of violation records in the database.
 func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error) {
-	var count int
-	var query = "disconnect>0"
+	filter := bson.M{}
 	if reason == "failsafe" {
-		query = "failsafe>0"
+		filter = bson.M{"failsafe": true}
+	} else {
+		filter = bson.M{"disconnect": true}
 	}
 
-	var cnt int
-	// check if table exist
-	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
-	if cnt == 0 {
-		return cnt, err
-	}
-
-	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp(query))).
-		Row(&count)
+	count, err := app.CountRecordsMongo("data_"+deviceid, filter, nil)
+	fmt.Printf("Count records %v with err %v\n", count, err)
 	return count, err
+
 }
 
 // SearchVehicles ...
@@ -345,12 +339,6 @@ func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, li
 
 func getRecords(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
 	var tdetails []models.DeviceData
-
-	// err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
-	// 	Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).
-	// 	OrderBy("date_time_stamp DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
-	// return tdetails, err
-	// Get collection
 	collection := app.MongoDB.Collection("data_" + deviceid)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 

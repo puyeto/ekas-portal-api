@@ -13,7 +13,7 @@ import (
 
 // check if messages have been sent
 
-// SendSMSMessages ...
+// SendViolationSMSMessages ...
 func SendViolationSMSMessages(message chan models.MessageDetails) {
 	for {
 		message := <-message

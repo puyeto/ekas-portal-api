@@ -36,7 +36,7 @@ func InitializeMongoDB(dbURL, dbName string, logger *logrus.Logger) *mongo.Datab
 	return client.Database(dbName)
 }
 
-// Count returns the number of records in the database.
+// CountRecordsMongo returns the number of records in the database.
 func CountRecordsMongo(colName string, filter primitive.M, opts *options.FindOptions) (int, error) {
 	collection := MongoDB.Collection(colName)
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
@@ -44,7 +44,7 @@ func CountRecordsMongo(colName string, filter primitive.M, opts *options.FindOpt
 	return int(count), err
 }
 
-// GetRecords ...
+// GetDeviceDataLogsMongo ...
 func GetDeviceDataLogsMongo(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
 	var tdetails []models.DeviceData
 	// Get collection

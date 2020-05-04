@@ -2,7 +2,6 @@ package checkdata
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/ekas-portal-api/app"
 	dbx "github.com/go-ozzo/ozzo-dbx"
@@ -23,10 +22,9 @@ func (c CheckDataStatus) Run() {
 	}
 
 	for _, data := range deviceids {
-		fmt.Println(data.DeviceID)
 		// check if table exist
-		exist, err := checkIfDataTableExists(data.DeviceID)
-		if exist == 0 || err != nil {
+		count, err := app.CountRecordsMongo("data_" + data.DeviceID)
+		if count == 0 || err != nil {
 			continue
 		}
 
@@ -58,15 +56,6 @@ func getAllDeviceIDs() ([]devices, error) {
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
 		Where(dbx.HashExp{"send_to_ntsa": 0, "vehicle_status": 1, "speed_source": 1}).Limit(30).OrderBy("RAND()").All(&deviceids)
 	return deviceids, err
-}
-
-// Check if deviceTable Exists
-func checkIfDataTableExists(id int32) (int, error) {
-	var exist int
-	query := "SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + strconv.Itoa(int(id)) + "')"
-	err := app.SecondDBCon.NewQuery(query).Row(&exist)
-
-	return exist, err
 }
 
 func confirmPreviousData(noofdays int) (int, error) {
