@@ -15,7 +15,7 @@ The api provides the following features right out of the box
 The api uses the following Go packages which can be easily replaced with your own favorite ones
 since their usages are mostly localized and abstracted. 
 
-* Routing framework: [ozzo-routing](https://github.com/go-ozzo/ozzo-routing)
+* Routing framework: [ozzo-routing](https://github.com/go-ozzo/ozzo-routing/v2)
 * Database: [ozzo-dbx](https://github.com/go-ozzo/ozzo-dbx)
 * Data validation: [ozzo-validation](https://github.com/go-ozzo/ozzo-validation)
 * Logging: [logrus](https://github.com/sirupsen/logrus)

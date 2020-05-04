@@ -17,9 +17,9 @@ import (
 	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/services"
 	dbx "github.com/go-ozzo/ozzo-dbx"
-	routing "github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/content"
-	"github.com/go-ozzo/ozzo-routing/cors"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/go-ozzo/ozzo-routing/v2/content"
+	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 )

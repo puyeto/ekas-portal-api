@@ -68,34 +68,26 @@ func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, d
 }
 
 // GetOverspeedByDeviceID ...
-func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
-	tdetails := []models.TripData{}
-	err := app.SecondDBCon.Select("trip_id", "device_id", "data_date", "speed").From("data_" + deviceid).
-		OrderBy("trip_id DESC").Offset(int64(offset)).Limit(int64(limit)).
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>84"))).
-		All(&tdetails)
-	return tdetails, err
+func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error) {
+	findOptions := options.Find()
+	findOptions.SetSort(map[string]int{"datetimestamp": -1})
+	findOptions.SetSkip(int64(offset))
+	findOptions.SetLimit(int64(limit))
+	filter := bson.D{{"speed", bson.D{{"$gte", 84}}}}
+	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
 // CountOverspeed returns the number of overspeed records in the database.
 func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
-	var cnt int
-	// check if table exist
-	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
-	if cnt == 0 {
-		return cnt, err
-	}
-
-	var count int
-	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
-		Where(dbx.And(dbx.HashExp{"device_id": deviceid}, dbx.NewExp("speed>84"))).
-		Row(&count)
-	return count, err
+	id, _ := strconv.Atoi(deviceid)
+	filter := bson.M{"deviceid": id}
+	count, err := app.CountRecordsMongo("data_"+deviceid, filter, nil)
+	return int(count), err
 }
 
 // GetViolationsByDeviceID ...
-func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error) {
-	tdetails := []models.TripData{}
+func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error) {
+	tdetails := []models.DeviceData{}
 	var query = "disconnect>0"
 	if reason == "failsafe" {
 		query = "failsafe>0"

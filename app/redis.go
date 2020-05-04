@@ -97,7 +97,7 @@ func LRange(key string, start, stop int64) ([]string, error) {
 // Adds all the specified members with the specified scores to the sorted set stored at key
 func ZAdd(key string, score int64, members interface{}) error {
 	serializedValue, _ := json.Marshal(members)
-	err := redisClient.ZAdd(key, &redis.Z{
+	err := redisClient.ZAdd(key, redis.Z{
 		Score:  float64(score),
 		Member: string(serializedValue),
 	}).Err()
@@ -130,7 +130,7 @@ func ZRevRangeByScore(key string, min, max string, offset, lim int64) ([]string,
 		Offset: offset,
 		Count:  lim,
 	}
-	val, err := redisClient.ZRevRangeByScore(key, &opt).Result()
+	val, err := redisClient.ZRevRangeByScore(key, opt).Result()
 	return val, err
 }
 

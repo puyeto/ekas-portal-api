@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-ozzo/ozzo-routing"
+	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/stretchr/testify/assert"
 )
 

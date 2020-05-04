@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ekas-portal-api/models"
-	"github.com/lectrotel-energy-monitoring/api/app"
 	"github.com/sirupsen/logrus"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -38,18 +37,18 @@ func InitializeMongoDB(dbURL, dbName string, logger *logrus.Logger) *mongo.Datab
 }
 
 // Count returns the number of records in the database.
-func Count(colName string, filter primitive.D, opts *options.FindOptions) (int, error) {
-	collection := app.MongoDB.Collection(colName)
+func CountRecordsMongo(colName string, filter primitive.M, opts *options.FindOptions) (int, error) {
+	collection := MongoDB.Collection(colName)
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	count, err := collection.CountDocuments(ctx, filter, nil)
 	return int(count), err
 }
 
 // GetRecords ...
-func GetDeviceDataLogs(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
+func GetDeviceDataLogsMongo(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
 	var tdetails []models.DeviceData
 	// Get collection
-	collection := app.MongoDB.Collection("data_" + deviceid)
+	collection := MongoDB.Collection("data_" + deviceid)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	cur, err := collection.Find(ctx, filter, opts)

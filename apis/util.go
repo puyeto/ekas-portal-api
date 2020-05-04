@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/ekas-portal-api/util"
-	routing "github.com/go-ozzo/ozzo-routing"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
 )
 
 const (

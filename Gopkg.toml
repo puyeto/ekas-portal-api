@@ -34,7 +34,7 @@
   version = "1.1.0"
 
 [[constraint]]
-  name = "github.com/go-ozzo/ozzo-routing"
+  name = "github.com/go-ozzo/ozzo-routing/v2"
   version = "2.1.4"
 
 [[constraint]]

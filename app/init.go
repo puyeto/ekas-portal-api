@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/ekas-portal-api/errors"
-	routing "github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/access"
-	"github.com/go-ozzo/ozzo-routing/fault"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/go-ozzo/ozzo-routing/v2/access"
+	"github.com/go-ozzo/ozzo-routing/v2/fault"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/sirupsen/logrus"
 )

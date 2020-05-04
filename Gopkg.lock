@@ -32,7 +32,7 @@
   version = "v1.1"
 
 [[projects]]
-  name = "github.com/go-ozzo/ozzo-routing"
+  name = "github.com/go-ozzo/ozzo-routing/v2"
   packages = [".","access","auth","content","cors","fault"]
   revision = "9dcabc145f0d565b5219e2fd72c3da04876980b7"
   version = "v2.1.4"

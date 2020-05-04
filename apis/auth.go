@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/auth"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/models"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/go-ozzo/ozzo-routing/v2/auth"
 )
 
 // Credential ...
