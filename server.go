@@ -53,7 +53,7 @@ func main() {
 
 	// run cronjobs
 	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
-	// go jobrunner.Schedule("@every 60m", checkdata.CheckDataStatus{})
+	// go jobrunner.Schedule("@every 60m", checkdata.Status{})
 	// go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
 
 	// wire up API routing

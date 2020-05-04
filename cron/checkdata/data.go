@@ -1,20 +1,21 @@
 package checkdata
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/ekas-portal-api/app"
 	dbx "github.com/go-ozzo/ozzo-dbx"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-// CheckDataStatus check if device has sent data every 5 min
+// Status check if device has sent data every 5 min
 // then update device ntsa status as true (send_to_ntsa).
-type CheckDataStatus struct {
+type Status struct {
 	// filtered
 }
 
-// Run CheckDataStatus.Run() will get triggered automatically.
-func (c CheckDataStatus) Run() {
+// Run Status.Run() will get triggered automatically.
+func (c Status) Run() {
 	// select all deviceids
 	deviceids, err := getAllDeviceIDs()
 	if err != nil || len(deviceids) == 0 {
@@ -23,7 +24,8 @@ func (c CheckDataStatus) Run() {
 
 	for _, data := range deviceids {
 		// check if table exist
-		count, err := app.CountRecordsMongo("data_" + data.DeviceID)
+		filter := bson.M{"deviceid": data.DeviceID}
+		count, err := app.CountRecordsMongo("data_"+strconv.Itoa(int(data.DeviceID)), filter, nil)
 		if count == 0 || err != nil {
 			continue
 		}
@@ -38,7 +40,6 @@ func (c CheckDataStatus) Run() {
 		app.DBCon.Update("vehicle_details", dbx.Params{
 			"send_to_ntsa": 1,
 		}, dbx.HashExp{"vehicle_id": data.VehicleID}).Execute()
-		fmt.Println(data.DeviceID, data.VehicleID, exist)
 
 	}
 }
