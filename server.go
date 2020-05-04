@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
@@ -22,6 +21,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/content"
 	"github.com/go-ozzo/ozzo-routing/cors"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -42,14 +42,12 @@ func main() {
 	// connect to the database
 	dns := getDNS()
 	db := app.InitializeDB(dns)
-	db.LogFunc = logger.Infof
-
-
+	// db.LogFunc = logger.Infof
 
 	// connect to second database
 	seconddns := getDNSForSecondDB()
 	seconddb := app.InitializeSecondDB(seconddns)
-	seconddb.LogFunc = logger.Infof
+	// seconddb.LogFunc = logger.Infof
 
 	// Connect to mongodb
 	app.MongoDB = app.InitializeMongoDB(app.Config.MongoDBDNS, app.Config.MongoDBName, logger)

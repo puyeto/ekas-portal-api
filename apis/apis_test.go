@@ -6,11 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/content"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/testdata"
+	"github.com/go-ozzo/ozzo-routing"
+	"github.com/go-ozzo/ozzo-routing/content"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/go-ozzo/ozzo-dbx"
+	"github.com/sirupsen/logrus"
 )
 
 // RequestScope contains the application-specific information that are carried around in a request.

@@ -7,12 +7,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ekas-portal-api/errors"
 	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/go-ozzo/ozzo-routing/access"
 	"github.com/go-ozzo/ozzo-routing/fault"
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/sirupsen/logrus"
 )
 
 // Init returns a middleware that prepares the request context and processing environment.

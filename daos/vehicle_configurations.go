@@ -1,7 +1,9 @@
 package daos
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -11,6 +13,9 @@ import (
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // VehicleDAO persists vehicle data in database
@@ -300,66 +305,89 @@ func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, devic
 
 // CountTripDataByDeviceID returns the number of trip records in the database.
 func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
-	var count int
-	var cnt int
+	id, _ := strconv.Atoi(deviceid)
+	filter := bson.D{{"deviceid", id}}
+	return Count(deviceid, filter, nil)
+}
 
-	// check if table exist
-	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
-	if cnt == 0 {
-		return count, nil
-	}
-
-	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
-		Row(&count)
-	return count, err
+// Count returns the number of trip records in the database.
+func Count(deviceid string, filter primitive.D, opts *options.FindOptions) (int, error) {
+	collection := app.MongoDB.Collection("data_" + deviceid)
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	count, err := collection.CountDocuments(ctx, filter, nil)
+	return int(count), err
 }
 
 // GetTripDataByDeviceID ...
 func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error) {
-	ddetails := []models.DeviceData{}
-	var cnt int
-	// check if table exist
-	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
-	if cnt == 0 {
-		return ddetails, nil
+	findOptions := options.Find()
+	if orderby == "desc" {
+		// Sort by `price` field descending
+		findOptions.SetSort(map[string]int{"datetimestamp": -1})
 	}
-
-	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude", "date_time_stamp").From("data_" + deviceid).
-		OrderBy("date_time_stamp " + orderby).Offset(int64(offset)).Limit(int64(limit)).All(&ddetails)
-	return ddetails, err
+	findOptions.SetSkip(int64(offset))
+	findOptions.SetLimit(int64(limit))
+	filter := bson.D{}
+	return getRecords(deviceid, filter, findOptions)
 }
 
 // CountTripRecordsBtwDates returns the number of trip records between dates in the database.
 func (dao *VehicleDAO) CountTripRecordsBtwDates(deviceid string, from, to int64) (int, error) {
-	var count int
-	var cnt int
-	// check if table exist
-	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
-	if cnt == 0 {
-		return count, nil
-	}
-
-	err = app.SecondDBCon.Select("COUNT(*)").From("data_" + deviceid).
-		Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).
-		Row(&count)
-	return count, err
+	// id, _ := strconv.Atoi(deviceid)
+	// filter := bson.M{"deviceid": id}
+	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", from}}}}
+	return Count(deviceid, filter, nil)
 }
 
 // GetTripDataByDeviceIDBtwDates ...
 func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error) {
-	tdetails := []models.DeviceData{}
-	var cnt int
+	findOptions := options.Find()
+	// Sort by `price` field descending
+	findOptions.SetSort(map[string]int{"datetimestamp": -1})
 
-	// check if table exist
-	err := app.SecondDBCon.NewQuery("SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + deviceid + "')").Row(&cnt)
-	if cnt == 0 {
-		return tdetails, nil
+	findOptions.SetSkip(int64(offset))
+	findOptions.SetLimit(int64(limit))
+	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", from}}}}
+	return getRecords(deviceid, filter, findOptions)
+}
+
+func getRecords(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
+	var tdetails []models.DeviceData
+
+	// err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
+	// 	Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).
+	// 	OrderBy("date_time_stamp DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
+	// return tdetails, err
+	// Get collection
+	collection := app.MongoDB.Collection("data_" + deviceid)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	cur, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return tdetails, err
+	}
+	defer cur.Close(ctx)
+	i := 0
+
+	for cur.Next(context.Background()) {
+
+		item := models.DeviceData{}
+		err := cur.Decode(&item)
+		if err != nil {
+			return tdetails, err
+		}
+		tdetails = append(tdetails, item)
+		i++
+	}
+	fmt.Println("Found a document: ", strconv.Itoa(i))
+	if err := cur.Err(); err != nil {
+		return tdetails, err
 	}
 
-	err = app.SecondDBCon.Select("device_id", "data_date AS date_time", "speed AS ground_speed", "latitude", "longitude").From("data_" + deviceid).
-		Where(dbx.And(dbx.Between("date_time_stamp", from, to), dbx.HashExp{"device_id": deviceid})).
-		OrderBy("date_time_stamp DESC").Offset(int64(offset)).Limit(int64(limit)).All(&tdetails)
+	fmt.Print(len(tdetails))
+
 	return tdetails, err
+
 }
 
 // CreateDevice saves a new device record in the database.

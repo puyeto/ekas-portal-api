@@ -1,12 +1,18 @@
 package app
 
 import (
-	"github.com/Sirupsen/logrus"
 	"context"
+	"fmt"
 	"log"
+	"strconv"
 	"time"
 
+	"github.com/ekas-portal-api/models"
+	"github.com/lectrotel-energy-monitoring/api/app"
+	"github.com/sirupsen/logrus"
+
 	_ "github.com/go-sql-driver/mysql"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -29,4 +35,45 @@ func InitializeMongoDB(dbURL, dbName string, logger *logrus.Logger) *mongo.Datab
 
 	logger.Infof("Mongo DB initialized: %v", dbName)
 	return client.Database(dbName)
+}
+
+// Count returns the number of records in the database.
+func Count(colName string, filter primitive.D, opts *options.FindOptions) (int, error) {
+	collection := app.MongoDB.Collection(colName)
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	count, err := collection.CountDocuments(ctx, filter, nil)
+	return int(count), err
+}
+
+// GetRecords ...
+func GetDeviceDataLogs(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
+	var tdetails []models.DeviceData
+	// Get collection
+	collection := app.MongoDB.Collection("data_" + deviceid)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	cur, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return tdetails, err
+	}
+	defer cur.Close(ctx)
+	i := 0
+
+	for cur.Next(context.Background()) {
+
+		item := models.DeviceData{}
+		err := cur.Decode(&item)
+		if err != nil {
+			return tdetails, err
+		}
+		tdetails = append(tdetails, item)
+		i++
+	}
+	fmt.Println("Found a document: ", strconv.Itoa(i))
+	if err := cur.Err(); err != nil {
+		return tdetails, err
+	}
+
+	return tdetails, err
+
 }
