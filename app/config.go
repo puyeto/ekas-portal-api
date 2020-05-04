@@ -27,6 +27,8 @@ type appConfig struct {
 	ServerDSN string `mapstructure:"server_dns"`
 	SecondLocalDSN  string `mapstructure:"second_local_dsn"`
 	SecondServerDSN string `mapstructure:"second_server_dns"`
+	MongoDBDNS string `mapstructure:"mongo_db_dns"`
+	MongoDBName string `mapstructure:"mongo_db_name"`
 
 	// the signing method for JWT. Defaults to "HS256"
 	JWTSigningMethod string `mapstructure:"jwt_signing_method"`

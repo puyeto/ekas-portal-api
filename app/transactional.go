@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/go-ozzo/ozzo-dbx"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 	routing "github.com/go-ozzo/ozzo-routing"
 	"github.com/go-ozzo/ozzo-routing/fault"
 )

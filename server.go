@@ -37,16 +37,22 @@ func main() {
 
 	// create the logger
 	logger := logrus.New()
+	app.InitLogger(logger)
 
 	// connect to the database
 	dns := getDNS()
 	db := app.InitializeDB(dns)
 	db.LogFunc = logger.Infof
 
+
+
 	// connect to second database
 	seconddns := getDNSForSecondDB()
 	seconddb := app.InitializeSecondDB(seconddns)
 	seconddb.LogFunc = logger.Infof
+
+	// Connect to mongodb
+	app.MongoDB = app.InitializeMongoDB(app.Config.MongoDBDNS, app.Config.MongoDBName, logger)
 
 	err := app.InitializeRedis()
 	if err != nil {
