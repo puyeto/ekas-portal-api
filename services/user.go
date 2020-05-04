@@ -11,7 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
-	"github.com/go-ozzo/ozzo-routing/auth"
+	"github.com/go-ozzo/ozzo-routing/v2/auth"
 	uuid "github.com/nu7hatch/gouuid"
 )
 

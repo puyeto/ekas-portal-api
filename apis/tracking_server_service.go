@@ -3,7 +3,7 @@ package apis
 import (
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
-	routing "github.com/go-ozzo/ozzo-routing"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
 )
 
 type (

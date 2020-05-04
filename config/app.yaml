@@ -4,11 +4,10 @@
 # local_dsn: "root:@/ekas_portal?parseTime=true"
 local_dsn: "root:Safcom@2012@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
 server_dns: "root:Safcom@2012@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
-second_local_dsn: "root:Safcom@2012@tcp(159.65.92.201:3306)/ekas_portal_data?parseTime=true"
-second_server_dns: "root:Safcom@2012@tcp(159.65.92.201:3306)/ekas_portal_data?parseTime=true"
 tracking_server_url: "https://tracking.ekastech.com/api/"
 server_port: "8081"
-
+mongo_db_dns: "mongodb://root:safcom2012@68.183.39.248:27017/?authSource=admin"
+mongo_db_name: "ekas_portal"
 # These are secret keys used for JWT signing and verification.
 # Make sure you override these keys in production by the following environment variables:
 #   RESTFUL_JWT_VERIFICATION_KEY

@@ -7,7 +7,7 @@ import (
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
-	routing "github.com/go-ozzo/ozzo-routing"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
 )
 
 type (
@@ -23,8 +23,8 @@ type (
 
 		CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
-		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
-		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
+		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
 		ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error)
 		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error)

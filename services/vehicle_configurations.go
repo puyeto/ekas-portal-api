@@ -26,8 +26,8 @@ type vehicleDAO interface {
 	UpdateConfigurationStatus(rs app.RequestScope, configid uint32, status int8) error
 	CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 	CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
-	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error)
-	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error)
+	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
+	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
 	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
 	CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
 	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid int64, vehicleid uint32) error
@@ -117,12 +117,12 @@ func (s *VehicleService) CountRedisTripRecords(deviceid string) int {
 }
 
 // GetOverspeedByDeviceID ...
-func (s *VehicleService) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.TripData, error) {
+func (s *VehicleService) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error) {
 	return s.dao.GetOverspeedByDeviceID(rs, deviceid, offset, limit)
 }
 
 // GetViolationsByDeviceID ...
-func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.TripData, error) {
+func (s *VehicleService) GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error) {
 	return s.dao.GetViolationsByDeviceID(rs, deviceid, reason, offset, limit)
 }
 

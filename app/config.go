@@ -23,10 +23,10 @@ type appConfig struct {
 	// the server port. Defaults to 8080
 	ServerPort int `mapstructure:"server_port"`
 	// the data source name (DSN) for connecting to the database. required.
-	LocalDSN  string `mapstructure:"local_dsn"`
-	ServerDSN string `mapstructure:"server_dns"`
-	SecondLocalDSN  string `mapstructure:"second_local_dsn"`
-	SecondServerDSN string `mapstructure:"second_server_dns"`
+	LocalDSN    string `mapstructure:"local_dsn"`
+	ServerDSN   string `mapstructure:"server_dns"`
+	MongoDBDNS  string `mapstructure:"mongo_db_dns"`
+	MongoDBName string `mapstructure:"mongo_db_name"`
 
 	// the signing method for JWT. Defaults to "HS256"
 	JWTSigningMethod string `mapstructure:"jwt_signing_method"`

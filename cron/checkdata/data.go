@@ -1,21 +1,21 @@
 package checkdata
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/ekas-portal-api/app"
 	dbx "github.com/go-ozzo/ozzo-dbx"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-// CheckDataStatus check if device has sent data every 5 min
+// Status check if device has sent data every 5 min
 // then update device ntsa status as true (send_to_ntsa).
-type CheckDataStatus struct {
+type Status struct {
 	// filtered
 }
 
-// Run CheckDataStatus.Run() will get triggered automatically.
-func (c CheckDataStatus) Run() {
+// Run Status.Run() will get triggered automatically.
+func (c Status) Run() {
 	// select all deviceids
 	deviceids, err := getAllDeviceIDs()
 	if err != nil || len(deviceids) == 0 {
@@ -23,10 +23,10 @@ func (c CheckDataStatus) Run() {
 	}
 
 	for _, data := range deviceids {
-		fmt.Println(data.DeviceID)
 		// check if table exist
-		exist, err := checkIfDataTableExists(data.DeviceID)
-		if exist == 0 || err != nil {
+		filter := bson.M{"deviceid": data.DeviceID}
+		count, err := app.CountRecordsMongo("data_"+strconv.Itoa(int(data.DeviceID)), filter, nil)
+		if count == 0 || err != nil {
 			continue
 		}
 
@@ -40,7 +40,6 @@ func (c CheckDataStatus) Run() {
 		app.DBCon.Update("vehicle_details", dbx.Params{
 			"send_to_ntsa": 1,
 		}, dbx.HashExp{"vehicle_id": data.VehicleID}).Execute()
-		fmt.Println(data.DeviceID, data.VehicleID, exist)
 
 	}
 }
@@ -58,15 +57,6 @@ func getAllDeviceIDs() ([]devices, error) {
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
 		Where(dbx.HashExp{"send_to_ntsa": 0, "vehicle_status": 1, "speed_source": 1}).Limit(30).OrderBy("RAND()").All(&deviceids)
 	return deviceids, err
-}
-
-// Check if deviceTable Exists
-func checkIfDataTableExists(id int32) (int, error) {
-	var exist int
-	query := "SELECT count(*) FROM information_schema.TABLES WHERE (TABLE_SCHEMA = 'ekas_portal_data') AND (TABLE_NAME = 'data_" + strconv.Itoa(int(id)) + "')"
-	err := app.SecondDBCon.NewQuery(query).Row(&exist)
-
-	return exist, err
 }
 
 func confirmPreviousData(noofdays int) (int, error) {

@@ -13,5 +13,9 @@ services:
       - "8081:8081"
     networks:
       - host
+    volumes:
+      - logs:/go/logs
+volumes:
+  logs:
 networks:
   host:

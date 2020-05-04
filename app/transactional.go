@@ -1,9 +1,9 @@
 package app
 
 import (
-	"github.com/go-ozzo/ozzo-dbx"
-	routing "github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/fault"
+	dbx "github.com/go-ozzo/ozzo-dbx"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/go-ozzo/ozzo-routing/v2/fault"
 )
 
 // Transactional returns a handler that encloses the nested handlers with a DB transaction.

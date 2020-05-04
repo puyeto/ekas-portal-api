@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ekas-portal-api/errors"
-	routing "github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/access"
-	"github.com/go-ozzo/ozzo-routing/fault"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/go-ozzo/ozzo-routing/v2/access"
+	"github.com/go-ozzo/ozzo-routing/v2/fault"
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/sirupsen/logrus"
 )
 
 // Init returns a middleware that prepares the request context and processing environment.
@@ -72,4 +73,24 @@ func convertError(c *routing.Context, err error) error {
 		}
 	}
 	return errors.InternalServerError(err)
+}
+
+// InitLogger Initialize Logger
+func InitLogger(logger *logrus.Logger) {
+	// The API for setting attributes is a little different than the package level
+	// exported Logger. See Godoc.
+	logger.Out = os.Stdout
+	logger.Formatter = &logrus.JSONFormatter{}
+
+	if os.Getenv("GO_ENV") == "production" {
+		// You could set this to any `io.Writer` such as a file
+		t := time.Now()
+		name := "data_" + t.Format("2006-01-02")
+		file, err := os.OpenFile("./logs/"+name+".log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err == nil {
+			logger.Out = file
+		} else {
+			logger.Infof("Failed to log to file, using default stderr %v", err)
+		}
+	}
 }

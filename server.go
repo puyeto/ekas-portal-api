@@ -9,19 +9,18 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
-	"github.com/ekas-portal-api/cron/lastdata"
 	"github.com/ekas-portal-api/daos"
 	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/services"
 	dbx "github.com/go-ozzo/ozzo-dbx"
-	routing "github.com/go-ozzo/ozzo-routing"
-	"github.com/go-ozzo/ozzo-routing/content"
-	"github.com/go-ozzo/ozzo-routing/cors"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/go-ozzo/ozzo-routing/v2/content"
+	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -37,16 +36,15 @@ func main() {
 
 	// create the logger
 	logger := logrus.New()
+	app.InitLogger(logger)
 
 	// connect to the database
 	dns := getDNS()
 	db := app.InitializeDB(dns)
-	db.LogFunc = logger.Infof
+	// db.LogFunc = logger.Infof
 
-	// connect to second database
-	seconddns := getDNSForSecondDB()
-	seconddb := app.InitializeSecondDB(seconddns)
-	seconddb.LogFunc = logger.Infof
+	// Connect to mongodb
+	app.MongoDB = app.InitializeMongoDB(app.Config.MongoDBDNS, app.Config.MongoDBName, logger)
 
 	err := app.InitializeRedis()
 	if err != nil {
@@ -55,11 +53,11 @@ func main() {
 
 	// run cronjobs
 	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
-	// go jobrunner.Schedule("@every 60m", checkdata.CheckDataStatus{})
-	go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
+	// go jobrunner.Schedule("@every 60m", checkdata.Status{})
+	// go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
 
 	// wire up API routing
-	http.Handle("/", buildRouter(logger, db, seconddb))
+	http.Handle("/", buildRouter(logger, db))
 
 	// start the server
 	address := fmt.Sprintf(":%v", app.Config.ServerPort)
@@ -91,7 +89,7 @@ func main() {
 	server := &http.Server{
 		Addr: ":8082",
 		// TLSConfig: tlsConfig,
-		Handler: buildRouter(logger, db, seconddb),
+		Handler: buildRouter(logger, db),
 	}
 
 	// Listen to HTTPS connections with the server certificate and wait
@@ -109,15 +107,7 @@ func getDNS() string {
 	return app.Config.LocalDSN
 }
 
-func getDNSForSecondDB() string {
-	if os.Getenv("GO_ENV") == "production" {
-		return app.Config.SecondServerDSN
-	}
-
-	return app.Config.SecondLocalDSN
-}
-
-func buildRouter(logger *logrus.Logger, db *dbx.DB, seconddb *dbx.DB) *routing.Router {
+func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	router := routing.New()
 
 	router.To("GET,HEAD", "/ping", func(c *routing.Context) error {

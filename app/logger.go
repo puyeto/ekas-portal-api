@@ -1,6 +1,6 @@
 package app
 
-import "github.com/Sirupsen/logrus"
+import "github.com/sirupsen/logrus"
 
 // Logger defines the logger interface that is exposed via RequestScope.
 type Logger interface {

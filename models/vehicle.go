@@ -161,18 +161,6 @@ type FitterDetails struct {
 	FitterBizRegNo    string `json:"fitter_biz_reg_no" db:"fitter_biz_reg_no"`
 }
 
-// TripData ...
-type TripData struct {
-	TripID     int32     `json:"trip_id" db:"pk,trip_id"`
-	DeviceID   int32     `json:"device_id" db:"device_id"`
-	DateTime   time.Time `json:"date_time" db:"data_date"`
-	Speed      float32   `json:"speed,omitempty" db:"speed"`
-	Longitude  float32   `json:"longitude,omitempty" db:"longitude"`
-	Latitude   float32   `json:"latitude,omitempty" db:"latitude"`
-	Failsafe   bool      `json:"failsafe,omitempty" db:"failsafe"`
-	Disconnect bool      `json:"disconnect,omitempty" db:"disconnect"`
-}
-
 // TripBetweenDates ...
 type TripBetweenDates struct {
 	DeviceID string `json:"DeviceID,omitempty"`
