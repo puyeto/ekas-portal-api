@@ -79,9 +79,8 @@ func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid stri
 
 // CountOverspeed returns the number of overspeed records in the database.
 func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
-	id, _ := strconv.Atoi(deviceid)
-	filter := bson.M{"deviceid": id}
-	count, err := app.CountRecordsMongo("data_"+deviceid, filter, nil)
+	filter := bson.D{{"speed", bson.D{{"$gt", 84}}}}
+	count, err := Count(deviceid, filter, nil)
 	return int(count), err
 }
 
@@ -110,7 +109,6 @@ func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string, rea
 	}
 
 	count, err := app.CountRecordsMongo("data_"+deviceid, filter, nil)
-	fmt.Printf("Count records %v with err %v\n", count, err)
 	return count, err
 
 }
@@ -298,6 +296,7 @@ func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 
 // Count returns the number of trip records in the database.
 func Count(deviceid string, filter primitive.D, opts *options.FindOptions) (int, error) {
+	app.CreateIndexMongo("data_" + deviceid)
 	collection := app.MongoDB.Collection("data_" + deviceid)
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	count, err := collection.CountDocuments(ctx, filter, nil)
@@ -306,6 +305,7 @@ func Count(deviceid string, filter primitive.D, opts *options.FindOptions) (int,
 
 // GetTripDataByDeviceID ...
 func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error) {
+	app.CreateIndexMongo(deviceid)
 	findOptions := options.Find()
 	if orderby == "desc" {
 		// Sort by `price` field descending
@@ -314,15 +314,17 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int,
 	findOptions.SetSkip(int64(offset))
 	findOptions.SetLimit(int64(limit))
 	filter := bson.D{}
-	return getRecords(deviceid, filter, findOptions)
+	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
 // CountTripRecordsBtwDates returns the number of trip records between dates in the database.
 func (dao *VehicleDAO) CountTripRecordsBtwDates(deviceid string, from, to int64) (int, error) {
 	// id, _ := strconv.Atoi(deviceid)
 	// filter := bson.M{"deviceid": id}
-	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", from}}}}
-	return Count(deviceid, filter, nil)
+	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", to}}}}
+	count, err := Count(deviceid, filter, nil)
+	fmt.Printf("count %v with error %v", count, err)
+	return count, err
 }
 
 // GetTripDataByDeviceIDBtwDates ...
@@ -333,41 +335,8 @@ func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, li
 
 	findOptions.SetSkip(int64(offset))
 	findOptions.SetLimit(int64(limit))
-	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", from}}}}
-	return getRecords(deviceid, filter, findOptions)
-}
-
-func getRecords(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
-	var tdetails []models.DeviceData
-	collection := app.MongoDB.Collection("data_" + deviceid)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-
-	cur, err := collection.Find(ctx, filter, opts)
-	if err != nil {
-		return tdetails, err
-	}
-	defer cur.Close(ctx)
-	i := 0
-
-	for cur.Next(context.Background()) {
-
-		item := models.DeviceData{}
-		err := cur.Decode(&item)
-		if err != nil {
-			return tdetails, err
-		}
-		tdetails = append(tdetails, item)
-		i++
-	}
-	fmt.Println("Found a document: ", strconv.Itoa(i))
-	if err := cur.Err(); err != nil {
-		return tdetails, err
-	}
-
-	fmt.Print(len(tdetails))
-
-	return tdetails, err
-
+	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", to}}}}
+	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
 // CreateDevice saves a new device record in the database.
