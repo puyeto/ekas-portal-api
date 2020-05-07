@@ -176,5 +176,8 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	ownersDAO := daos.NewOwnerDAO()
 	apis.ServeOwnerResource(rg, services.NewOwnerService(ownersDAO))
 
+	simcardsDAO := daos.NewSimcardDAO()
+	apis.ServeSimcardResource(rg, services.NewSimcardService(simcardsDAO))
+
 	return router
 }
