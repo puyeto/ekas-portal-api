@@ -12,9 +12,9 @@ type simcardDAO interface {
 	// Get returns the simcard with the specified simcard ID.
 	Get(rs app.RequestScope, id int) (*models.Simcards, error)
 	// Count returns the number of simcards.
-	Count(rs app.RequestScope) (int, error)
+	Count(rs app.RequestScope, status string) (int, error)
 	// Query returns the list of simcards with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int) ([]models.Simcards, error)
+	Query(rs app.RequestScope, offset, limit int, status string) ([]models.Simcards, error)
 	// Create saves a new simcard in the storage.
 	Create(rs app.RequestScope, simcard *models.Simcards) error
 	// Update updates the simcard with given ID in the storage.
@@ -42,6 +42,7 @@ func (s *SimcardService) Get(rs app.RequestScope, id int) (*models.Simcards, err
 
 // Create creates a new simcard.
 func (s *SimcardService) Create(rs app.RequestScope, model *models.Simcards) (*models.Simcards, error) {
+	model.Prepare()
 	if err := model.Validate(); err != nil {
 		return nil, err
 	}
@@ -85,13 +86,13 @@ func (s *SimcardService) Delete(rs app.RequestScope, id int) (*models.Simcards, 
 }
 
 // Count returns the number of simcards.
-func (s *SimcardService) Count(rs app.RequestScope) (int, error) {
-	return s.dao.Count(rs)
+func (s *SimcardService) Count(rs app.RequestScope, status string) (int, error) {
+	return s.dao.Count(rs, status)
 }
 
 // Query returns the simcards with the specified offset and limit.
-func (s *SimcardService) Query(rs app.RequestScope, offset, limit int) ([]models.Simcards, error) {
-	return s.dao.Query(rs, offset, limit)
+func (s *SimcardService) Query(rs app.RequestScope, offset, limit int, status string) ([]models.Simcards, error) {
+	return s.dao.Query(rs, offset, limit, status)
 }
 
 // GetStats ...

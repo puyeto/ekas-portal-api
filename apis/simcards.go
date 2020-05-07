@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/ekas-portal-api/app"
@@ -12,8 +13,8 @@ type (
 	// simcardService specifies the interface for the simcard service needed by simcardResource.
 	simcardService interface {
 		Get(rs app.RequestScope, id int) (*models.Simcards, error)
-		Query(rs app.RequestScope, offset, limit int) ([]models.Simcards, error)
-		Count(rs app.RequestScope) (int, error)
+		Query(rs app.RequestScope, offset, limit int, status string) ([]models.Simcards, error)
+		Count(rs app.RequestScope, status string) (int, error)
 		Create(rs app.RequestScope, model *models.Simcards) (*models.Simcards, error)
 		Update(rs app.RequestScope, id int, model *models.Simcards) (*models.Simcards, error)
 		Delete(rs app.RequestScope, id int) (*models.Simcards, error)
@@ -29,11 +30,11 @@ type (
 // ServeSimcardResource sets up the routing of simcard endpoints and the corresponding handlers.
 func ServeSimcardResource(rg *routing.RouteGroup, service simcardService) {
 	r := &simcardResource{service}
-	rg.Get("/simcards/get/<id>", r.get)
+	rg.Get("/simcard/get/<id>", r.get)
 	rg.Get("/simcards/list", r.query)
-	rg.Post("/simcards/create", r.create)
+	rg.Post("/simcard/create", r.create)
 	rg.Put("/simcard/update/<id>", r.update)
-	rg.Delete("/simcards/del/<id>", r.delete)
+	rg.Delete("/simcard/del/<id>", r.delete)
 	rg.Get("/simcards/stats", r.stats)
 }
 
@@ -53,12 +54,15 @@ func (r *simcardResource) get(c *routing.Context) error {
 
 func (r *simcardResource) query(c *routing.Context) error {
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
+	status := c.Query("status", "")
+	fmt.Printf("status %v\n", status)
+
+	count, err := r.service.Count(rs, status)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), status)
 	if err != nil {
 		return err
 	}
@@ -86,7 +90,6 @@ func (r *simcardResource) update(c *routing.Context) error {
 	}
 
 	rs := app.GetRequestScope(c)
-
 	model, err := r.service.Get(rs, id)
 	if err != nil {
 		return err

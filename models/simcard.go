@@ -29,6 +29,11 @@ func (s Simcards) Validate() error {
 	)
 }
 
+// Prepare ...
+func (s *Simcards) Prepare() {
+	s.AddedAt = time.Now()
+}
+
 // SimcardStats ...
 type SimcardStats struct {
 	TotalCount     int `json:"total_count"`
