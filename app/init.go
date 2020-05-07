@@ -83,6 +83,7 @@ func InitLogger(logger *logrus.Logger) {
 	logger.Formatter = &logrus.JSONFormatter{}
 
 	if os.Getenv("GO_ENV") == "production" {
+		logger.SetLevel(logrus.WarnLevel)
 		// You could set this to any `io.Writer` such as a file
 		t := time.Now()
 		name := "data_" + t.Format("2006-01-02")

@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	_ "github.com/go-sql-driver/mysql"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -46,6 +47,7 @@ func CountRecordsMongo(colName string, filter primitive.M, opts *options.FindOpt
 
 // GetDeviceDataLogsMongo ...
 func GetDeviceDataLogsMongo(deviceid string, filter primitive.D, opts *options.FindOptions) ([]models.DeviceData, error) {
+	CreateIndexMongo(deviceid)
 	var tdetails []models.DeviceData
 	// Get collection
 	collection := MongoDB.Collection("data_" + deviceid)
@@ -75,4 +77,16 @@ func GetDeviceDataLogsMongo(deviceid string, filter primitive.D, opts *options.F
 
 	return tdetails, err
 
+}
+
+// CreateIndexMongo create a mongodn index
+func CreateIndexMongo(deviceid string) (string, error) {
+	mod := mongo.IndexModel{
+		Keys: bson.M{
+			"datetimestamp": -1, // index in ascending order
+		}, Options: nil,
+	}
+	collection := MongoDB.Collection("data_" + deviceid)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	return collection.Indexes().CreateOne(ctx, mod)
 }
