@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -33,15 +34,6 @@ func NewTrackingServerService(dao trackingServerDAO) *TrackingServerService {
 	return &TrackingServerService{dao}
 }
 
-//TrackingServerLogin ...
-// func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *models.TrackingServerAuth) (m models.AdminUserDetails, err error) {
-// 	if err := model.ValidateTrackingServerLogin(); err != nil {
-// 		return m, err
-// 	}
-
-// 	return s.Login(rs, model.Email, model.Password)
-// }
-
 type loginData struct {
 	Status      int8   `json:"status"`
 	UserAPIHash string `json:"user_api_hash"`
@@ -52,9 +44,9 @@ type loginData struct {
 
 // TrackingServerLogin login to the tracking server
 func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *models.TrackingServerAuth) (m models.AdminUserDetails, err error) {
-	// if err := model.ValidateTrackingServerLogin(); err != nil {
-	// 	return nil, err
-	// }
+	if err := model.Validate(); err != nil {
+		return m, err
+	}
 	URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
 	res, err := http.Get(URL)
 	if err != nil {
@@ -72,6 +64,7 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	if err != nil {
 		return m, err
 	}
+	fmt.Printf("login details %v", data)
 
 	if data.Status == 0 {
 		return m, errors.New("Invalid Credentials :: Tracking System")
@@ -160,15 +153,9 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 		return res, err
 	}
 
-	// reset(res)
+	fmt.Println(res)
 
-	// token, err := auth.NewJWT(jwt.MapClaims{
-	// 	"id":  strconv.Itoa(int(res.UserID)),
-	// 	"exp": time.Now().Add(time.Hour * 72).Unix(),
-	// }, app.Config.JWTSigningKey)
-	// if err != nil {
-	// 	return nil, errors.New(err.Error())
-	// }
+	res.Token, _ = app.CreateToken(&res)
 
 	s.storeLoginSession(rs, &res)
 

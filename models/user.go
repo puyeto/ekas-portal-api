@@ -29,8 +29,8 @@ type Credential struct {
 //AdminUserDetails user structure
 type AdminUserDetails struct {
 	UserID           int32  `json:"user_id" db:"pk,user_id"`
-	FirstName        string `json:"user_first_name" db:"first_name"`
-	LastName         string `json:"user_last_name" db:"last_name"`
+	FirstName        string `json:"first_name" db:"first_name"`
+	LastName         string `json:"last_name" db:"last_name"`
 	Email            string `json:"user_email" db:"email"`
 	Username         string `json:"username,omitempty" db:"username"`
 	Password         string `json:"user_password,omitempty" db:"password"`
@@ -42,6 +42,8 @@ type AdminUserDetails struct {
 	IsVerified       int8   `json:"is_verified,omitempty"`
 	RoleID           int32  `json:"role,omitempty" db:"role_id"`
 	RoleName         string `json:"role_name,omitempty" db:"role_name"`
+	CompanyID        int32  `json:"company_id" db:"company_id"`
+	CompanyName      string `json:"company_name,omitempty" db:"company_name"`
 }
 
 // AuthUsers ...
@@ -55,7 +57,7 @@ type AuthUsers struct {
 	RoleID      int32  `json:"role,omitempty" db:"auth_user_role"`
 	RoleName    string `json:"role_name" db:"role_name"`
 	CompanyID   int    `json:"company_id" db:"company_id"`
-	CompanyName string `json:"company_name" db:"company_name"`
+	CompanyName string `json:"company_name,omitempty" db:"company_name"`
 }
 
 // ValidateAuthUsers validates fields.

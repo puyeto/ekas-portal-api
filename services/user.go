@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
-	"github.com/go-ozzo/ozzo-routing/v2/auth"
 	uuid "github.com/nu7hatch/gouuid"
 )
 
@@ -132,16 +128,7 @@ func (u *UserService) Login(rs app.RequestScope, c *models.Credential) (*models.
 
 	reset(res)
 
-	token, err := auth.NewJWT(jwt.MapClaims{
-		"id":  strconv.Itoa(int(res.UserID)),
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
-	}, app.Config.JWTSigningKey)
-	if err != nil {
-		return nil, errors.New(err.Error())
-	}
-
-	res.Token = token
-
+	res.Token, _ = app.CreateToken(res)
 	u.storeLoginSession(rs, res)
 
 	return res, nil

@@ -17,6 +17,7 @@ import (
 	"github.com/ekas-portal-api/services"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/go-ozzo/ozzo-routing/v2/auth"
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	_ "github.com/go-sql-driver/mysql"
@@ -41,7 +42,7 @@ func main() {
 	// connect to the database
 	dns := getDNS()
 	db := app.InitializeDB(dns)
-	// db.LogFunc = logger.Infof
+	db.LogFunc = logger.Infof
 
 	// Connect to mongodb
 	app.MongoDB = app.InitializeMongoDB(app.Config.MongoDBDNS, app.Config.MongoDBName, logger)
@@ -132,10 +133,6 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	apis.ServeUserResource(rg, services.NewUserService(userDAO))
 
 	// rg.Post("/auth", apis.Auth(app.Config.JWTSigningKey))
-	// rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
-	// 	SigningMethod: app.Config.JWTSigningMethod,
-	// 	TokenHandler:  apis.JWTHandler,
-	// }))
 
 	// artistDAO := daos.NewArtistDAO()
 	// apis.ServeArtistResource(rg, services.NewArtistService(artistDAO))
@@ -148,6 +145,11 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	trackingServerDAO := daos.NewTrackingServerDAO()
 	apis.ServeTrackingServerResource(rg, services.NewTrackingServerService(trackingServerDAO))
+
+	rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
+		SigningMethod: app.Config.JWTSigningMethod,
+		TokenHandler:  app.JWTHandler,
+	}))
 
 	deviceDAO := daos.NewDeviceDAO()
 	apis.ServeDeviceResource(rg, services.NewDeviceService(deviceDAO))

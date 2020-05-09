@@ -9,7 +9,7 @@ type TrackingServerAuth struct {
 }
 
 // ValidateTrackingServerLogin validates the TrackingServerAuth fields.
-func (m TrackingServerAuth) ValidateTrackingServerLogin() error {
+func (m TrackingServerAuth) Validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.Email, validation.Required, validation.Length(0, 120)),
 		validation.Field(&m.Password, validation.Required, validation.Length(0, 120)),
