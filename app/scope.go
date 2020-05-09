@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-ozzo/ozzo-dbx"
+	dbx "github.com/go-ozzo/ozzo-dbx"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,6 +15,10 @@ type RequestScope interface {
 	UserID() string
 	// SetUserID sets the ID of the currently authenticated user
 	SetUserID(id string)
+	CompanyID() string
+	SetCompanyID(id string)
+	RoleID() string
+	SetRoleID(id string)
 	// RequestID returns the ID of the current request
 	RequestID() string
 	// Tx returns the currently active database transaction that can be used for DB query purpose
@@ -34,17 +38,37 @@ type requestScope struct {
 	now       time.Time // the time when the request is being processed
 	requestID string    // an ID identifying one or multiple correlated HTTP requests
 	userID    string    // an ID identifying the current user
-	rollback  bool      // whether to roll back the current transaction
-	tx        *dbx.Tx   // the currently active transaction
+	roleID    string    // an ID identifying the current user
+	companyID string
+	rollback  bool    // whether to roll back the current transaction
+	tx        *dbx.Tx // the currently active transaction
 }
 
 func (rs *requestScope) UserID() string {
 	return rs.userID
 }
 
+func (rs *requestScope) CompanyID() string {
+	return rs.companyID
+}
+
+func (rs *requestScope) RoleID() string {
+	return rs.roleID
+}
+
 func (rs *requestScope) SetUserID(id string) {
 	rs.Logger.SetField("UserID", id)
 	rs.userID = id
+}
+
+func (rs *requestScope) SetCompanyID(id string) {
+	rs.Logger.SetField("CompanyID", id)
+	rs.companyID = id
+}
+
+func (rs *requestScope) SetRoleID(id string) {
+	rs.Logger.SetField("RoleID", id)
+	rs.roleID = id
 }
 
 func (rs *requestScope) RequestID() string {

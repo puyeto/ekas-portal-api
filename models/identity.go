@@ -27,22 +27,6 @@ func (m UserData) ValidateUserData() error {
 	)
 }
 
-// User ...
-type User struct {
-	ID   string
-	Name string
-}
-
-// GetID ...
-func (u User) GetID() string {
-	return u.ID
-}
-
-// GetName ...
-func (u User) GetName() string {
-	return u.Name
-}
-
 // MessageDetails ...
 type MessageDetails struct {
 	MessageID int
