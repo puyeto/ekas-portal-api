@@ -225,22 +225,13 @@ type LastSeenStruct struct {
 
 // CurrentViolations ...
 type CurrentViolations struct {
-	DeviceID            string    `json:"device_id" db:"device_id"`
-	Name                string    `json:"name" db:"name"`
-	UserID              string    `json:"user_id,omitempty" db:"user_id"`
-	OverspeedTripData   string    `json:"overspeed_trip_data,omitempty" db:"overspeed_trip_data"`
-	OverspeedSpeed      string    `json:"overspeed_speed,omitempty" db:"overspeed_speed"`
-	OverspeedDate       string    `json:"overspeed_date,omitempty" db:"overspeed_date"`
-	DisconnectTripData  string    `json:"disconnect_trip_data,omitempty" db:"disconnect_trip_data"`
-	DisconnectTripSpeed string    `json:"disconnect_trip_speed,omitempty" db:"disconnect_trip_speed"`
-	DisconnectTripDate  string    `json:"disconnect_trip_date,omitempty" db:"disconnect_trip_date"`
-	FailsafeTripData    string    `json:"failsafe_trip_data,omitempty" db:"failsafe_trip_data"`
-	FailsafeTripSpeed   string    `json:"failsafe_trip_speed,omitempty" db:"failsafe_trip_speed"`
-	FailsafeTripDate    string    `json:"failsafe_trip_date,omitempty" db:"failsafe_trip_date"`
-	OfflineTripData     string    `json:"offline_trip_data,omitempty" db:"offline_trip_data"`
-	OfflineTripSpeeds   string    `json:"offline_trip_speed,omitempty" db:"offline_trip_speed"`
-	OfflineTripDate     string    `json:"offline_trip_date,omitempty" db:"offline_trip_date"`
-	CreatedOn           time.Time `json:"created_on,omitempty" db:"created_on"`
+	DeviceID            int32      `json:"device_id" bson:"_id"`
+	DateTime            time.Time  `json:"date_time,omitempty" bson:"datetime"`
+	DateTimeStamp       int64      `json:"date_time_stamp,omitempty" bson:"datetimeunix"`
+	VehicleRegistration string     `json:"name,omitempty"`
+	VehicleOwner        string     `json:"vehicle_owner,omitempty"`
+	OwnerTel            string     `json:"owner_tel,omitempty"`
+	Data                DeviceData `json:"data,omitempty" bson:"data"`
 }
 
 // Reminders ...
@@ -267,7 +258,7 @@ type FilterVehicles struct {
 
 // XMLResults ...
 type XMLResults struct {
-	SerialNo            uint32
+	SerialNo            int32
 	VehicleRegistration string
 	VehicleOwner        string
 	OwnerTel            string

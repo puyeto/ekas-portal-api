@@ -1,8 +1,8 @@
 # The Data Source Name for the database
 # Make sure you override this in production with the environment variable: RESTFUL_DSN
 # dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
-local_dsn: "root:@/ekas_portal?parseTime=true"
-# local_dsn: "root:Safcom@2012@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
+# local_dsn: "root:@/ekas_portal?parseTime=true"
+local_dsn: "root:Safcom@2012@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
 server_dns: "root:Safcom@2012@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
 tracking_server_url: "https://tracking.ekastech.com/api/"
 server_port: "8081"
