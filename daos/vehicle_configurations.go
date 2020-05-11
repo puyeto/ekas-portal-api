@@ -339,6 +339,97 @@ func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, li
 	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
+// CountAllViolations returns the number of violation records in the database.
+func (dao *VehicleDAO) CountAllViolations() (int, error) {
+	count, err := app.CountRecordsMongo("current_violations", nil, nil)
+	fmt.Printf("count %v with error %v", count, err)
+	return count, err
+}
+
+// ListAllViolations ...
+func (dao *VehicleDAO) ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error) {
+	var vdetails []models.CurrentViolations
+	findOptions := options.Find()
+	findOptions.SetSort(map[string]int{"datetimeunix": -1})
+	findOptions.SetSkip(int64(offset))
+	findOptions.SetLimit(int64(limit))
+	filter := bson.D{}
+
+	cur, err := app.FindDataMongoDB("current_violations", filter, findOptions)
+	if err != nil {
+		return vdetails, err
+	}
+	for cur.Next(context.Background()) {
+		item := models.CurrentViolations{}
+		err := cur.Decode(&item)
+		if err != nil {
+			return vdetails, err
+		}
+		vd := dao.GetVehicleName(rs, int(item.DeviceID))
+		item.VehicleRegistration = vd.Name
+		item.VehicleOwner = vd.VehicleOwner
+		item.OwnerTel = vd.OwnerTel
+		if item.VehicleRegistration != "" {
+			vdetails = append(vdetails, item)
+		}
+	}
+
+	if err := cur.Err(); err != nil {
+		return vdetails, err
+	}
+
+	return vdetails, err
+}
+
+// ListAllViolations ...
+func (dao *VehicleDAO) XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error) {
+	var vdetails []models.XMLResults
+	findOptions := options.Find()
+	findOptions.SetSort(map[string]int{"datetimeunix": -1})
+	findOptions.SetSkip(int64(offset))
+	findOptions.SetLimit(int64(limit))
+	filter := bson.D{}
+
+	cur, err := app.FindDataMongoDB("current_violations", filter, findOptions)
+	if err != nil {
+		return vdetails, err
+	}
+	for cur.Next(context.Background()) {
+		var dData models.XMLResults
+		item := models.CurrentViolations{}
+		err := cur.Decode(&item)
+		if err != nil {
+			return vdetails, err
+		}
+		vd := dao.GetVehicleName(rs, int(item.DeviceID))
+		dData.SerialNo = item.DeviceID
+		dData.DateOfViolation = item.DateTime.Local().Format("2006-01-02 15:04:05")
+		dData.VehicleRegistration = vd.Name
+		dData.VehicleOwner = vd.VehicleOwner
+		dData.OwnerTel = vd.OwnerTel
+
+		if item.Data.Failsafe {
+			dData.ViolationType = "Signal Disconnect"
+		} else if item.Data.Disconnect {
+			dData.ViolationType = "Power Disconnect"
+		} else if item.Data.Offline {
+			dData.ViolationType = "Offline"
+		} else {
+			dData.ViolationType = "Overspeeding"
+		}
+
+		if dData.VehicleRegistration != "" {
+			vdetails = append(vdetails, dData)
+		}
+	}
+
+	if err := cur.Err(); err != nil {
+		return vdetails, err
+	}
+
+	return vdetails, err
+}
+
 // CreateDevice saves a new device record in the database.
 // The Device.Id field will be populated with an automatically generated ID upon successful saving.
 func (dao *VehicleDAO) CreateDevice(rs app.RequestScope, device *models.Devices) error {

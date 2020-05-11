@@ -79,6 +79,16 @@ func GetDeviceDataLogsMongo(deviceid string, filter primitive.D, opts *options.F
 
 }
 
+// FindDataMongoDB ...
+func FindDataMongoDB(colname string, filter primitive.D, opts *options.FindOptions) (*mongo.Cursor, error) {
+
+	// Get collection
+	collection := MongoDB.Collection(colname)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	return collection.Find(ctx, filter, opts)
+}
+
 // CreateIndexMongo create a mongodn index
 func CreateIndexMongo(deviceid string) (string, error) {
 	mod := mongo.IndexModel{

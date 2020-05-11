@@ -34,6 +34,9 @@ type vehicleDAO interface {
 	GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error)
 	CountTripDataByDeviceID(deviceid string) (int, error)
 	CountTripRecordsBtwDates(deviceid string, from int64, to int64) (int, error)
+	CountAllViolations() (int, error)
+	ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
+	XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
 	// CreateDevice saves a new device in the storage.
 	CreateDevice(rs app.RequestScope, device *models.Devices) error
 }
@@ -180,88 +183,20 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.Dev
 }
 
 // CountAllViolations ...
-func (s *VehicleService) CountAllViolations(rs app.RequestScope) int {
-	count := app.ZCount("violations", "-inf", "+inf")
-	return int(count)
+func (s *VehicleService) CountAllViolations() (int, error) {
+	// count := app.ZCount("violations", "-inf", "+inf")
+	// return int(count)
+	return s.dao.CountAllViolations()
 }
 
 // ListAllViolations ...
-func (s *VehicleService) ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.DeviceData, error) {
-
-	var deviceData []models.DeviceData
-	var previousid uint32
-
-	keysList, err := app.ZRevRange("violations", int64(offset), int64(limit))
-	if err != nil {
-		fmt.Println("Getting Keys Failed : " + err.Error())
-	}
-
-	for i := 0; i < len(keysList); i++ {
-
-		if keysList[i] != "0" {
-			var deserializedValue models.DeviceData
-			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
-			if deserializedValue.DeviceID != previousid {
-				previousid = deserializedValue.DeviceID
-				vd := s.dao.GetVehicleName(rs, int(deserializedValue.DeviceID))
-				deserializedValue.Name = vd.Name
-				deserializedValue.VehicleOwner = vd.VehicleOwner
-				deserializedValue.OwnerTel = vd.OwnerTel
-				deviceData = append(deviceData, deserializedValue)
-			}
-
-		}
-
-	}
-
-	return deviceData, err
+func (s *VehicleService) ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error) {
+	return s.dao.ListAllViolations(rs, offset, limit)
 }
 
 // XMLListAllViolations ...
 func (s *VehicleService) XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error) {
-
-	var deviceData []models.XMLResults
-	var previousid uint32
-
-	keysList, err := app.ZRevRange("violations", int64(offset), int64(limit))
-	if err != nil {
-		fmt.Println("Getting Keys Failed : " + err.Error())
-	}
-
-	for i := 0; i < len(keysList); i++ {
-
-		if keysList[i] != "0" {
-			var deserializedValue models.DeviceData
-			var dData models.XMLResults
-			json.Unmarshal([]byte(keysList[i]), &deserializedValue)
-			if deserializedValue.DeviceID != previousid {
-				previousid = deserializedValue.DeviceID
-				vd := s.dao.GetVehicleName(rs, int(deserializedValue.DeviceID))
-				dData.SerialNo = deserializedValue.DeviceID
-				dData.VehicleRegistration = vd.Name
-				dData.VehicleOwner = vd.VehicleOwner
-				dData.OwnerTel = vd.OwnerTel
-
-				if deserializedValue.Failsafe {
-					dData.ViolationType = "Signal Disconnect"
-				} else if deserializedValue.Disconnect {
-					dData.ViolationType = "Power Disconnect"
-				} else if deserializedValue.Offline {
-					dData.ViolationType = "Offline"
-				} else {
-					dData.ViolationType = "Overspeeding"
-				}
-
-				dData.DateOfViolation = deserializedValue.DateTime.Local().Format("2006-01-02 15:04:05")
-				dData.ActionTaken = "Summoned"
-				deviceData = append(deviceData, dData)
-			}
-
-		}
-
-	}
-
-	return deviceData, err
+	return s.dao.XMLListAllViolations(rs, offset, limit)
 }
 
 // GetOfflineViolations ...
