@@ -399,7 +399,7 @@ func (dao *VehicleDAO) XMLListAllViolations(rs app.RequestScope, offset, limit i
 		item := models.CurrentViolations{}
 		err := cur.Decode(&item)
 		if err != nil {
-			return vdetails, err
+			continue
 		}
 		vd := dao.GetVehicleName(rs, int(item.DeviceID))
 		dData.SerialNo = item.DeviceID
