@@ -28,22 +28,24 @@ type Credential struct {
 
 //AdminUserDetails user structure
 type AdminUserDetails struct {
-	UserID           int32  `json:"user_id" db:"pk,user_id"`
-	FirstName        string `json:"first_name" db:"first_name"`
-	LastName         string `json:"last_name" db:"last_name"`
-	Email            string `json:"user_email" db:"email"`
-	Username         string `json:"username,omitempty" db:"username"`
-	Password         string `json:"user_password,omitempty" db:"password"`
-	DOB              string `json:"user_dob,omitempty" db:"dob"`
-	MobileNumber     string `json:"user_mobile_number,omitempty" db:"mobile_number"`
-	Salt             string `json:"salt,omitempty" db:"salt"`
-	VerificationCode string `json:"Verification_code,omitempty" db:"Verification_code"`
-	Token            string `json:"token,omitempty"`
-	IsVerified       int8   `json:"is_verified,omitempty"`
-	RoleID           int32  `json:"role,omitempty" db:"role_id"`
-	RoleName         string `json:"role_name,omitempty" db:"role_name"`
-	CompanyID        int32  `json:"company_id" db:"company_id"`
-	CompanyName      string `json:"company_name,omitempty" db:"company_name"`
+	UserID                      int32  `json:"user_id" db:"pk,user_id"`
+	FirstName                   string `json:"first_name" db:"first_name"`
+	LastName                    string `json:"last_name" db:"last_name"`
+	Email                       string `json:"user_email" db:"email"`
+	Username                    string `json:"username,omitempty" db:"username"`
+	Password                    string `json:"user_password,omitempty" db:"password"`
+	DOB                         string `json:"user_dob,omitempty" db:"dob"`
+	MobileNumber                string `json:"user_mobile_number,omitempty" db:"mobile_number"`
+	Salt                        string `json:"salt,omitempty" db:"salt"`
+	VerificationCode            string `json:"Verification_code,omitempty" db:"Verification_code"`
+	Token                       string `json:"token,omitempty"`
+	IsVerified                  int8   `json:"is_verified,omitempty"`
+	RoleID                      int32  `json:"role,omitempty" db:"role_id"`
+	RoleName                    string `json:"role_name,omitempty" db:"role_name"`
+	CompanyID                   int32  `json:"company_id" db:"company_id"`
+	CompanyName                 string `json:"company_name,omitempty" db:"company_name"`
+	EnableGPSConfiguration      int8   `json:"enable_gps_configuration" db:"enable_gps_configuration"`
+	EnableFailsafeConfiguration int8   `json:"enable_failsafe_configuration" db:"enable_failsafe_configuration"`
 }
 
 // AuthUsers ...
