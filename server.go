@@ -146,6 +146,9 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	trackingServerDAO := daos.NewTrackingServerDAO()
 	apis.ServeTrackingServerResource(rg, services.NewTrackingServerService(trackingServerDAO))
 
+	settingDAO := daos.NewSettingDAO()
+	apis.ServeSettingResource(rg, services.NewSettingService(settingDAO))
+
 	rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
 		SigningMethod: app.Config.JWTSigningMethod,
 		TokenHandler:  app.JWTHandler,
@@ -156,9 +159,6 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	vehicleRecordDAO := daos.NewVehicleRecordDAO()
 	apis.ServeVehicleRecordResource(rg, services.NewVehicleRecordService(vehicleRecordDAO))
-
-	settingDAO := daos.NewSettingDAO()
-	apis.ServeSettingResource(rg, services.NewSettingService(settingDAO))
 
 	certificateDAO := daos.NewCertificateDAO()
 	apis.ServeCertificateResource(rg, services.NewCertificateService(certificateDAO))

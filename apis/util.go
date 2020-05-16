@@ -15,7 +15,10 @@ const (
 func getPaginatedListFromRequest(c *routing.Context, count int) *util.PaginatedList {
 	page := parseInt(c.Query("page"), 1)
 	perPage := parseInt(c.Query("per_page"), DEFAULT_PAGE_SIZE)
-	if perPage <= 0 {
+	if perPage == -1 {
+		perPage = count
+	}
+	if perPage == 0 {
 		perPage = DEFAULT_PAGE_SIZE
 	}
 	if perPage > MAX_PAGE_SIZE {

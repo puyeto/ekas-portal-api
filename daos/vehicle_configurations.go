@@ -158,32 +158,6 @@ func (dao *VehicleDAO) CountTripRecords(rs app.RequestScope, deviceid string) (i
 	return count, err
 }
 
-// ListRecentViolations ...
-func (dao *VehicleDAO) ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error) {
-	tdetails := []models.CurrentViolations{}
-
-	query := "SELECT cv.device_id, user_id, name, overspeed_trip_data, overspeed_speed, COALESCE(td.data_date, '') AS overspeed_date, "
-	query += " disconnect_trip_data, disconnect_trip_speed, COALESCE(tdd.data_date, '') AS disconnect_trip_date, "
-	query += " failsafe_trip_data, failsafe_trip_speed, COALESCE(tdf.data_date, '') AS failsafe_trip_date, offline_trip_data, "
-	query += " offline_trip_speed, COALESCE(tdo.data_date, '') AS offline_trip_date FROM current_violations AS cv "
-	query += " LEFT JOIN trip_data AS td ON (td.trip_id = overspeed_trip_data) "
-	query += " LEFT JOIN trip_data AS tdd ON (tdd.trip_id = disconnect_trip_data) "
-	query += " LEFT JOIN trip_data AS tdf ON (tdf.trip_id = failsafe_trip_data) "
-	query += " LEFT JOIN trip_data AS tdo ON (tdo.trip_id = offline_trip_data) "
-	if uid != "0" {
-		query += " WHERE user_id=" + uid
-	}
-	query += " ORDER BY cv.created_on DESC LIMIT " + strconv.Itoa(limit)
-
-	//OrderBy("cv.created_on DESC").Offset(int64(offset)).Limit(int64(limit))
-	err := rs.Tx().NewQuery(query).All(&tdetails)
-	if err != nil {
-		return tdetails, err
-	}
-
-	return tdetails, nil
-}
-
 // ----------------------------Add / Update Vehicle------------------------------------
 
 // CreateVehicle saves a new vehicle record in the database.
