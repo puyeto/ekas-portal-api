@@ -1,7 +1,6 @@
 package apis
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -25,7 +24,6 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
-		ListRecentViolations(rs app.RequestScope, offset, limit int, uid string) ([]models.CurrentViolations, error)
 		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
 		XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
@@ -55,7 +53,6 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)
 	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
-	rg.Get("/listrecentviolations", r.listRecentViolations)
 	rg.Get("/currentviolation", r.getCurrentViolations)
 	rg.Get("/listviolations", r.listAllViolations)
 	rg.Get("/xmllistviolations", r.xmlListRecentViolations)
@@ -250,20 +247,6 @@ func (r *vehicleResource) searchVehicle(c *routing.Context) error {
 	}
 	paginatedList.Items = response
 	return c.Write(paginatedList)
-}
-
-// listViolations
-func (r *vehicleResource) listRecentViolations(c *routing.Context) error {
-	// get user id
-	uid := c.Query("uid", "0")
-	fmt.Println(uid)
-	offset := 0
-	limit := 50
-	resp, err := r.service.ListRecentViolations(app.GetRequestScope(c), offset, limit, uid)
-	if err != nil {
-		return err
-	}
-	return c.Write(resp)
 }
 
 // getCurrentViolations.. single violation that has just happened
