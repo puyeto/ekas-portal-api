@@ -149,6 +149,9 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	settingDAO := daos.NewSettingDAO()
 	apis.ServeSettingResource(rg, services.NewSettingService(settingDAO))
 
+	companyDAO := daos.NewCompanyDAO()
+	apis.ServeCompanyResource(rg, services.NewCompanyService(companyDAO))
+
 	rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
 		SigningMethod: app.Config.JWTSigningMethod,
 		TokenHandler:  app.JWTHandler,
@@ -171,9 +174,6 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 
 	invoiceDAO := daos.NewInvoiceDAO()
 	apis.ServeInvoiceResource(rg, services.NewInvoiceService(invoiceDAO))
-
-	companyDAO := daos.NewCompanyDAO()
-	apis.ServeCompanyResource(rg, services.NewCompanyService(companyDAO))
 
 	ownersDAO := daos.NewOwnerDAO()
 	apis.ServeOwnerResource(rg, services.NewOwnerService(ownersDAO))
