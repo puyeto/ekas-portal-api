@@ -24,7 +24,7 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
-		GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error)
+		GetCurrentViolations(rs app.RequestScope) (models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
 		XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
 		CountAllViolations() (int, error)
