@@ -318,12 +318,12 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	// Add vehicle to tracking server
-	tsv := NewTrackingServerVehicle(model)
-	_, err = AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
-	if err != nil {
-		return 0, err
-	}
+	// // Add vehicle to tracking server
+	// tsv := NewTrackingServerVehicle(model)
+	// _, err = AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
+	// if err != nil {
+	// 	return 0, err
+	// }
 
 	return 0, nil
 }
