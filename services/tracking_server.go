@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -46,17 +47,14 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	if err := model.Validate(); err != nil {
 		return m, err
 	}
-	/* URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
+	URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
 	res, err := http.Get(URL)
 	if err != nil {
-		fmt.Printf("tracking error %v\n", err)
 		return m, err
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
-	fmt.Printf("body %v\n", string(body))
 	if err != nil {
-		fmt.Printf("tracking error2 %v\n", err)
 		return m, err
 	}
 
@@ -88,7 +86,7 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 		if err != nil {
 			return m, err
 		}
-	} */
+	}
 
 	return s.Login(rs, model.Email, model.Password)
 }

@@ -134,46 +134,45 @@ func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, 
 }
 
 // GetCurrentViolations single violation as they happen...
-func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) ([]models.DeviceData, error) {
-	// define slice of Identification
-	var deviceData []models.DeviceData
-
-	value, err := app.GetDeviceDataValue("currentviolations")
+func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) (models.DeviceData, error) {
+	res, err := s.dao.ListAllViolations(rs, 0, 1)
 	if err != nil {
-		return nil, err
+		return res[0].Data, err
 	}
-	if value.SystemCode == "MCPG" {
-		var (
-			message          string
-			messageid        int
-			violationMessage = make(chan models.MessageDetails)
-		)
+	fmt.Printf("Name is %v", res[0].Data.Name)
 
-		go app.SendViolationSMSMessages(violationMessage)
+	// if value.SystemCode == "MCPG" {
+	// 	var (
+	// 		message          string
+	// 		messageid        int
+	// 		violationMessage = make(chan models.MessageDetails)
+	// 	)
 
-		// fmt.Println("device_id", value.DeviceID)
-		if value.Offline {
-			message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
-			messageid = 4
-		} else if value.Disconnect {
-			message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
-			messageid = 3
-		} else if value.Failsafe {
-			message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
-			messageid = 2
-		} else if value.GroundSpeed > 80 {
-			message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
-			messageid = 1
-		}
+	// 	go app.SendViolationSMSMessages(violationMessage)
 
-		fmt.Println(messageid, message)
-		// violationMessage <- models.MessageDetails{messageid, message}
-		vd := s.dao.GetVehicleName(rs, int(value.DeviceID))
-		value.Name = vd.Name
-		deviceData = append(deviceData, value)
-	}
+	// 	// fmt.Println("device_id", value.DeviceID)
+	// 	if value.Offline {
+	// 		message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
+	// 		messageid = 4
+	// 	} else if value.Disconnect {
+	// 		message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
+	// 		messageid = 3
+	// 	} else if value.Failsafe {
+	// 		message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
+	// 		messageid = 2
+	// 	} else if value.GroundSpeed > 80 {
+	// 		message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
+	// 		messageid = 1
+	// 	}
 
-	return deviceData, err
+	// 	fmt.Println(messageid, message)
+	// 	// violationMessage <- models.MessageDetails{messageid, message}
+	// 	vd := s.dao.GetVehicleName(rs, int(value.DeviceID))
+	// 	value.Name = vd.Name
+	// 	deviceData = append(deviceData, value)
+	// }
+
+	return res[0].Data, err
 }
 
 // CountAllViolations ...
@@ -318,12 +317,12 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	// // Add vehicle to tracking server
-	// tsv := NewTrackingServerVehicle(model)
-	// _, err = AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
-	// if err != nil {
-	// 	return 0, err
-	// }
+	// Add vehicle to tracking server
+	tsv := NewTrackingServerVehicle(model)
+	_, err = AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
+	if err != nil {
+		return 0, err
+	}
 
 	return 0, nil
 }

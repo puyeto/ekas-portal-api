@@ -30,7 +30,7 @@ func NewVehicleDAO() *VehicleDAO {
 func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.VDetails {
 	var vd models.VDetails
 	query := "SELECT json_value(data, '$.device_detail.registration_no'), json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
-	query += " FROM vehicle_configuration WHERE device_id='" + strconv.Itoa(deviceid) + "'LIMIT 1"
+	query += " FROM vehicle_configuration WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
 	rs.Tx().NewQuery(query).Row(&vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
 
 	return vd
@@ -341,6 +341,7 @@ func (dao *VehicleDAO) ListAllViolations(rs app.RequestScope, offset, limit int)
 		}
 		vd := dao.GetVehicleName(rs, int(item.DeviceID))
 		item.VehicleRegistration = vd.Name
+		item.Data.Name = vd.Name
 		item.VehicleOwner = vd.VehicleOwner
 		item.OwnerTel = vd.OwnerTel
 		if item.VehicleRegistration != "" {
