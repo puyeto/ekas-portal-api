@@ -67,7 +67,7 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 			LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
-			Where(dbx.And(dbx.HashExp{"vehicle_details.user_id": uid}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0"))).
+			Where(dbx.And(dbx.HashExp{"vehicle_details.user_id": uid}, dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0"))).
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	} else {
 		if typ == "ntsa" {
@@ -81,7 +81,7 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 				LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 				LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 				LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
-				Where(dbx.NewExp("vehicle_configuration.device_id>0")).OrderBy("vehicle_details.created_on desc").
+				Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"vehicle_details.vehicle_status": 1})).OrderBy("vehicle_details.created_on desc").
 				Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 		}
 	}
