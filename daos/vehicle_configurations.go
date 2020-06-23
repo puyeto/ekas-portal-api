@@ -356,7 +356,7 @@ func (dao *VehicleDAO) ListAllViolations(rs app.RequestScope, offset, limit int)
 	return vdetails, err
 }
 
-// ListAllViolations ...
+// XMLListAllViolations ...
 func (dao *VehicleDAO) XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error) {
 	var vdetails []models.XMLResults
 	findOptions := options.Find()

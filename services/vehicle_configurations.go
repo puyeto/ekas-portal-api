@@ -135,9 +135,10 @@ func (s *VehicleService) SearchVehicles(rs app.RequestScope, searchterm string, 
 
 // GetCurrentViolations single violation as they happen...
 func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) (models.DeviceData, error) {
+	var d models.DeviceData
 	res, err := s.dao.ListAllViolations(rs, 0, 1)
 	if err != nil {
-		return res[0].Data, err
+		return d, err
 	}
 	fmt.Printf("Name is %v", res[0].Data.Name)
 
