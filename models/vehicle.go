@@ -197,18 +197,18 @@ type DeviceData struct {
 	LocationStatus                 uint16    `json:"location_status,omitempty"`
 	Mode1                          uint16    `json:"mode_1,omitempty"`
 	Mode2                          uint16    `json:"mode_2,omitempty"`
-	NoOfSatellitesUsed             int       `json:"no_of_satellites_used,omitempty"`                     // 1 byte
-	Longitude                      int32     `json:"longitude,omitempty"`                                 // 4 byte
-	Latitude                       int32     `json:"latitude,omitempty"`                                  // 4 byte
-	Altitude                       int32     `json:"altitude,omitempty"`                                  // 4 byte
-	GroundSpeed                    float32   `json:"ground_speed,omitempty" bson:"ground_speed,truncate"` // 4 byte
-	SpeedDirection                 int       `json:"speed_direction,omitempty"`                           // 2 byte
-	UTCTimeSeconds                 int       `json:"utc_time_seconds,omitempty"`                          // 1 byte
-	UTCTimeMinutes                 int       `json:"utc_time_minutes,omitempty"`                          // 1 byte
-	UTCTimeHours                   int       `json:"utc_time_hours,omitempty"`                            // 1 byte
-	UTCTimeDay                     int       `json:"utc_time_day,omitempty"`                              // 1 byte
-	UTCTimeMonth                   int       `json:"utc_time_month,omitempty"`                            // 1 byte
-	UTCTimeYear                    int       `json:"utc_time_year,omitempty"`                             // 2 byte
+	NoOfSatellitesUsed             int       `json:"no_of_satellites_used,omitempty"` // 1 byte
+	Longitude                      int32     `json:"longitude,omitempty"`             // 4 byte
+	Latitude                       int32     `json:"latitude,omitempty"`              // 4 byte
+	Altitude                       int32     `json:"altitude,omitempty"`              // 4 byte
+	GroundSpeed                    float32   `json:"ground_speed,omitempty"`          // 4 byte
+	SpeedDirection                 int       `json:"speed_direction,omitempty"`       // 2 byte
+	UTCTimeSeconds                 int       `json:"utc_time_seconds,omitempty"`      // 1 byte
+	UTCTimeMinutes                 int       `json:"utc_time_minutes,omitempty"`      // 1 byte
+	UTCTimeHours                   int       `json:"utc_time_hours,omitempty"`        // 1 byte
+	UTCTimeDay                     int       `json:"utc_time_day,omitempty"`          // 1 byte
+	UTCTimeMonth                   int       `json:"utc_time_month,omitempty"`        // 1 byte
+	UTCTimeYear                    int       `json:"utc_time_year,omitempty"`         // 2 byte
 	ErrorDetectionCode             uint16    `json:"error_detection_code,omitempty"`
 	DateTime                       time.Time `json:"date_time,omitempty"`
 	Name                           string    `json:"name,omitempty"`
