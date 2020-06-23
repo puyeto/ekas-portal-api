@@ -337,7 +337,7 @@ func (dao *VehicleDAO) ListAllViolations(rs app.RequestScope, offset, limit int)
 		item := models.CurrentViolations{}
 		err := cur.Decode(&item)
 		if err != nil {
-			return vdetails, err
+			continue
 		}
 		vd := dao.GetVehicleName(rs, int(item.DeviceID))
 		item.VehicleRegistration = vd.Name
