@@ -24,6 +24,7 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
+		DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32) (int, error)
 		GetCurrentViolations(rs app.RequestScope) (models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
 		XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
@@ -51,6 +52,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/device/data/<id>", r.getTripDataByDeviceID)
 	rg.Get("/device/data-range/<id>", r.getTripDataByDeviceIDBtwDates)
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)
+	rg.Delete("/deloverspeed/<id>", r.delOverspeedsByDeviceID)
 	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
 	rg.Get("/currentviolation", r.getCurrentViolations)
@@ -196,6 +198,23 @@ func (r *vehicleResource) getOverspeedsByDeviceID(c *routing.Context) error {
 		paginatedList.Items = response
 	}
 	return c.Write(paginatedList)
+}
+
+// delOverspeedsByDeviceID ...
+func (r *vehicleResource) delOverspeedsByDeviceID(c *routing.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	count, err := r.service.DeleteOverspeedsByDeviceID(app.GetRequestScope(c), uint32(id))
+	if err != nil {
+		return err
+	}
+
+	return c.Write(map[string]int{
+		"deleted_count": count,
+	})
 }
 
 // getFailsafeByDeviceID

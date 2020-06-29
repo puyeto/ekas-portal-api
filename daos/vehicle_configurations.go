@@ -77,6 +77,23 @@ func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid stri
 	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
+// DeleteOverspeedsByDeviceID deletes an Record with the specified ID from the database (mongodb).
+func (dao *VehicleDAO) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32) (int, error) {
+	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 84}}}}
+
+	// Get collection
+	collection := app.MongoDB.Collection("data_" + strconv.Itoa(int(id)))
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(res.DeletedCount), nil
+}
+
 // CountOverspeed returns the number of overspeed records in the database.
 func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
 	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 84}}}}

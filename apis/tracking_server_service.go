@@ -19,7 +19,7 @@ type (
 	}
 )
 
-// ServeTrackingServerService sets up the routing of trackingServerService endpoints and the corresponding handlers.
+// ServeTrackingServerServiceResource sets up the routing of trackingServerService endpoints and the corresponding handlers.
 func ServeTrackingServerServiceResource(rg *routing.RouteGroup, service trackingServerServiceService) {
 	r := &trackingServerServiceResource{service}
 	rg.Post("/trackingservergetservices", r.get)
