@@ -92,9 +92,9 @@ func (dao *VehicleDAO) GetViolationsByDeviceID(rs app.RequestScope, deviceid str
 	findOptions.SetLimit(int64(limit))
 	filter := bson.D{}
 	if reason == "failsafe" {
-		filter = bson.D{{"failsafe", true}}
+		filter = bson.D{{Key: "failsafe", Value: true}}
 	} else {
-		filter = bson.D{{"disconnect", true}}
+		filter = bson.D{{Key: "disconnect", Value: true}}
 	}
 	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
@@ -264,7 +264,7 @@ func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, devic
 // CountTripDataByDeviceID returns the number of trip records in the database.
 func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 	id, _ := strconv.Atoi(deviceid)
-	filter := bson.D{{"deviceid", id}}
+	filter := bson.D{{Key: "deviceid", Value: id}}
 	return Count(deviceid, filter, nil)
 }
 
@@ -272,7 +272,8 @@ func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 func Count(deviceid string, filter primitive.D, opts *options.FindOptions) (int, error) {
 	app.CreateIndexMongo("data_" + deviceid)
 	collection := app.MongoDB.Collection("data_" + deviceid)
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel() // cancel when we are finished consuming integers
 	count, err := collection.CountDocuments(ctx, filter, nil)
 	return int(count), err
 }
@@ -295,7 +296,10 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int,
 func (dao *VehicleDAO) CountTripRecordsBtwDates(deviceid string, from, to int64) (int, error) {
 	// id, _ := strconv.Atoi(deviceid)
 	// filter := bson.M{"deviceid": id}
-	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", to}}}}
+	filter := bson.D{
+		{Key: "datetimestamp", Value: bson.D{{Key: "$gte", Value: from}}},
+		{Key: "datetimestamp", Value: bson.D{{Key: "$lte", Value: to}}},
+	}
 	count, err := Count(deviceid, filter, nil)
 	fmt.Printf("count %v with error %v", count, err)
 	return count, err
@@ -309,7 +313,10 @@ func (dao *VehicleDAO) GetTripDataByDeviceIDBtwDates(deviceid string, offset, li
 
 	findOptions.SetSkip(int64(offset))
 	findOptions.SetLimit(int64(limit))
-	filter := bson.D{{"datetimestamp", bson.D{{"$gte", from}}}, {"datetimestamp", bson.D{{"$lte", to}}}}
+	filter := bson.D{
+		{Key: "datetimestamp", Value: bson.D{{Key: "$gte", Value: from}}},
+		{Key: "datetimestamp", Value: bson.D{{Key: "$lte", Value: to}}},
+	}
 	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
