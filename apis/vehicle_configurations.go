@@ -186,12 +186,15 @@ func (r *vehicleResource) getOverspeedsByDeviceID(c *routing.Context) error {
 	if err != nil {
 		return err
 	}
+
 	paginatedList := getPaginatedListFromRequest(c, count)
-	response, err := r.service.GetOverspeedByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
-	if err != nil {
-		return err
+	if count > 0 {
+		response, err := r.service.GetOverspeedByDeviceID(rs, deviceid, paginatedList.Offset(), paginatedList.Limit())
+		if err != nil {
+			return err
+		}
+		paginatedList.Items = response
 	}
-	paginatedList.Items = response
 	return c.Write(paginatedList)
 }
 
