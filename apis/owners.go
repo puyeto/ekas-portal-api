@@ -25,7 +25,7 @@ type (
 	}
 )
 
-// ServeOwner sets up the routing of owner endpoints and the corresponding handlers.
+// ServeOwnerResource sets up the routing of owner endpoints and the corresponding handlers.
 func ServeOwnerResource(rg *routing.RouteGroup, service ownerService) {
 	r := &ownerResource{service}
 	rg.Get("/owner/get/<id>", r.get)

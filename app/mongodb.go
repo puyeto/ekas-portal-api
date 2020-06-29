@@ -26,7 +26,9 @@ func InitializeMongoDB(dbURL, dbName string, logger *logrus.Logger) *mongo.Datab
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	err = client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +42,9 @@ func InitializeMongoDB(dbURL, dbName string, logger *logrus.Logger) *mongo.Datab
 // CountRecordsMongo returns the number of records in the database.
 func CountRecordsMongo(colName string, filter primitive.M, opts *options.FindOptions) (int, error) {
 	collection := MongoDB.Collection(colName)
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
 	count, err := collection.CountDocuments(ctx, filter, nil)
 	return int(count), err
 }
@@ -51,7 +55,8 @@ func GetDeviceDataLogsMongo(deviceid string, filter primitive.D, opts *options.F
 	var tdetails []models.DeviceData
 	// Get collection
 	collection := MongoDB.Collection("data_" + deviceid)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	cur, err := collection.Find(ctx, filter, opts)
 	if err != nil {
@@ -84,8 +89,8 @@ func FindDataMongoDB(colname string, filter primitive.D, opts *options.FindOptio
 
 	// Get collection
 	collection := MongoDB.Collection(colname)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	return collection.Find(ctx, filter, opts)
 }
 
@@ -97,6 +102,7 @@ func CreateIndexMongo(deviceid string) (string, error) {
 		}, Options: nil,
 	}
 	collection := MongoDB.Collection("data_" + deviceid)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	return collection.Indexes().CreateOne(ctx, mod)
 }
