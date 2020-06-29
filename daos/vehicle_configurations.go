@@ -39,12 +39,13 @@ func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.
 // GetVehicleByStrID ...
 func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vc.device_id, vd.user_id, vd.vehicle_id, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
+	query := "SELECT conf_id, vc.device_id, vd.user_id, CONCAT(u.first_name , ' ' , u.last_name) AS fitter, vd.vehicle_id, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
 	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
+	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
 	query += " WHERE status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.VehicleID, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.Data)
 	return &vdetails, err
 }
 
