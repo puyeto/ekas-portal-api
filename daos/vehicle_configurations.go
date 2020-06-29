@@ -73,13 +73,13 @@ func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid stri
 	findOptions.SetSort(map[string]int{"datetimestamp": -1})
 	findOptions.SetSkip(int64(offset))
 	findOptions.SetLimit(int64(limit))
-	filter := bson.D{{"speed", bson.D{{"$gt", 84}}}}
+	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 84}}}}
 	return app.GetDeviceDataLogsMongo(deviceid, filter, findOptions)
 }
 
 // CountOverspeed returns the number of overspeed records in the database.
 func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
-	filter := bson.D{{"speed", bson.D{{"$gt", 84}}}}
+	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 84}}}}
 	count, err := Count(deviceid, filter, nil)
 	return int(count), err
 }
