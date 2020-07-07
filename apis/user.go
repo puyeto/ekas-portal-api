@@ -21,6 +21,7 @@ type (
 		Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
 		Count(rs app.RequestScope) (int, error)
 		Update(rs app.RequestScope, model *models.AuthUsers) (*models.AuthUsers, error)
+		ResetPassword(rs app.RequestScope, model *models.ResetPassword) error
 	}
 
 	// userResource defines the handlers for the CRUD APIs.
@@ -38,6 +39,7 @@ func ServeUserResource(rg *routing.RouteGroup, service userService) {
 	rg.Get("/users/list", r.query)
 	rg.Post("/register", r.register)
 	rg.Post("/login", r.login)
+	rg.Put("/reset-password", r.resetPassword)
 	rg.Put("/users/update", r.update)
 	rg.Get("/ping", r.healthCheck)
 }
@@ -128,6 +130,23 @@ func (r *userResource) delete(c *routing.Context) error {
 
 	return c.Write(map[string]string{
 		"message": "Record Deleted Successfully",
+	})
+}
+
+// Reset admin password
+func (r *userResource) resetPassword(c *routing.Context) error {
+	var model models.ResetPassword
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	err := r.service.ResetPassword(app.GetRequestScope(c), &model)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(map[string]int32{
+		"last_insert_id": model.UserID,
 	})
 }
 

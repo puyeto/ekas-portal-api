@@ -94,10 +94,25 @@ func (c Credential) ValidateCredential() error {
 	)
 }
 
-//ValidateNewUser validate create user
+// ValidateNewUser validate create user
 func (u AdminUserDetails) ValidateNewUser() error {
 	return validation.ValidateStruct(&u,
 		validation.Field(&u.Email, validation.Required, is.Email),
+		validation.Field(&u.Password, validation.Required, validation.Length(6, 120)),
+	)
+}
+
+// ResetPassword ...
+type ResetPassword struct {
+	UserID   int32  `json:"user_id"`
+	Password string `json:"user_password"`
+	Salt     string `json:"salt,omitempty"`
+}
+
+// Validate reset password details
+func (u ResetPassword) Validate() error {
+	return validation.ValidateStruct(&u,
+		validation.Field(&u.UserID, validation.Required),
 		validation.Field(&u.Password, validation.Required, validation.Length(6, 120)),
 	)
 }
