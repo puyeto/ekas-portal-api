@@ -30,6 +30,7 @@ type userDAO interface {
 	Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
 	Count(rs app.RequestScope) (int, error)
 	Update(rs app.RequestScope, model *models.AuthUsers) error
+	ResetPassword(rs app.RequestScope, model *models.ResetPassword) error
 	CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
 	UpdateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
 	IfCompanyUserExists(rs app.RequestScope, companyid int32, userid uint32) (int, error)
@@ -199,6 +200,23 @@ func (u *UserService) Register(rs app.RequestScope, model *models.AdminUserDetai
 	//}
 
 	return model.UserID, nil
+}
+
+// ResetPassword Reset admin password
+func (u *UserService) ResetPassword(rs app.RequestScope, model *models.ResetPassword) error {
+	if err := model.Validate(); err != nil {
+		return err
+	}
+
+	s := New()
+	model.Password = app.CalculatePassHash(model.Password, s.Salt)
+	model.Salt = s.Salt
+
+	if err := u.dao.ResetPassword(rs, model); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // SubmitUserRole creates a new user role.

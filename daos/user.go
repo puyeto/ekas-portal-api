@@ -60,6 +60,16 @@ func (dao *UserDAO) Update(rs app.RequestScope, a *models.AuthUsers) error {
 	return err
 }
 
+// ResetPassword Reset admin password.
+func (dao *UserDAO) ResetPassword(rs app.RequestScope, m *models.ResetPassword) error {
+	_, err := rs.Tx().Update("admin_user_details", dbx.Params{
+		"password": m.Password,
+		"salt":     m.Salt},
+		dbx.HashExp{"user_id": m.UserID}).Execute()
+
+	return err
+}
+
 // CreateCompanyUser create user relationship to company.
 func (dao *UserDAO) CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error {
 	_, err := rs.Tx().Insert("company_users", dbx.Params{
