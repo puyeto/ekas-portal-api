@@ -92,6 +92,8 @@ func (dao *VehicleDAO) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32
 		return 0, err
 	}
 
+	app.DelKey("data:" + strconv.Itoa(int(id)))
+
 	return int(res.DeletedCount), nil
 }
 
