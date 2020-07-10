@@ -43,7 +43,7 @@ func getAllDeviceIDFromMongoDb() {
 
 		// update last seen
 		app.DBCon.Update("vehicle_configuration", dbx.Params{
-			"last_seen": m.LastSeenDate,
+			"last_seen": m.LastSeenUnix,
 		}, dbx.HashExp{"device_id": m.ID}).Execute()
 	}
 }
