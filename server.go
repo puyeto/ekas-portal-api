@@ -12,7 +12,6 @@ import (
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
-	"github.com/ekas-portal-api/cron/checkdata"
 	"github.com/ekas-portal-api/cron/lastseen"
 	"github.com/ekas-portal-api/daos"
 	"github.com/ekas-portal-api/errors"
@@ -56,7 +55,7 @@ func main() {
 
 	// run cronjobs
 	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
-	go jobrunner.Schedule("@every 60m", checkdata.Status{})
+	// go jobrunner.Schedule("@every 60m", checkdata.Status{})
 	go jobrunner.Schedule("@every 10m", lastseen.Status{})
 	// go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
 
