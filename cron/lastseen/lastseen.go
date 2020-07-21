@@ -37,6 +37,7 @@ func getAllDeviceIDFromMongoDb() {
 		return
 	}
 	defer cursor.Close(ctx)
+
 	for cursor.Next(ctx) {
 		var m = LastSeen{}
 		if err = cursor.Decode(&m); err != nil {
@@ -64,7 +65,7 @@ func getAllDeviceIDFromMongoDb() {
 		}
 
 		app.DBCon.Update("vehicle_configuration", dbx.Params{
-			"last_seen":     m.LastSeenUnix,
+			"last_seen":     t,
 			"device_status": deviceStatus,
 		}, dbx.HashExp{"device_id": m.ID}).Execute()
 	}
