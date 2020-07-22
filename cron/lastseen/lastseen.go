@@ -33,6 +33,7 @@ func getAllDeviceIDFromMongoDb() {
 	// Get collection
 	collection := app.MongoDB.Collection("a_device_lastseen")
 	findOptions := options.Find()
+	findOptions.SetSort(map[string]int{"_id": -1})
 	findOptions.SetLimit(10000)
 
 	// defer cancel()

@@ -1,4 +1,4 @@
-package lastseen
+package updateviolations
 
 import (
 	"time"
