@@ -45,10 +45,9 @@ func getAllDeviceIDFromMongoDb() {
 
 	for cursor.Next(context.TODO()) {
 		i++
-		fmt.Println(i)
 		var m = LastSeen{}
 		if err = cursor.Decode(&m); err != nil {
-			return
+			continue
 		}
 
 		deviceStatus := "online"
@@ -61,8 +60,8 @@ func getAllDeviceIDFromMongoDb() {
 		} else if delta.Hours() > 24 {
 			deviceStatus = "offline"
 			vehicleID, err := getVehicleID(m.ID)
-			if err != nil {
-				return
+			if err == nil {
+				continue
 			}
 
 			app.DBCon.Update("vehicle_details", dbx.Params{
@@ -78,6 +77,7 @@ func getAllDeviceIDFromMongoDb() {
 			fmt.Println(err)
 		}
 	}
+	fmt.Printf("count %v", i)
 }
 
 func getVehicleID(deviceID int32) (int32, error) {
