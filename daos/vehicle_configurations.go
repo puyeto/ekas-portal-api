@@ -33,7 +33,7 @@ func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.
 	query += " FROM vehicle_configuration "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vehicle_configuration.vehicle_string_id) "
 	query += " WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
-	rs.Tx().NewQuery(query).Row(&vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
+	rs.Tx().NewQuery(query).Row(&vd.SendToNTSA, &vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
 
 	return vd
 }
