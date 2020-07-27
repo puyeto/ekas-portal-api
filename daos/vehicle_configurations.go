@@ -29,8 +29,10 @@ func NewVehicleDAO() *VehicleDAO {
 // GetVehicleName ...
 func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.VDetails {
 	var vd models.VDetails
-	query := "SELECT json_value(data, '$.device_detail.registration_no'), json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
-	query += " FROM vehicle_configuration WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
+	query := "SELECT send_to_ntsa, json_value(data, '$.device_detail.registration_no'), json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
+	query += " FROM vehicle_configuration "
+	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vehicle_configuration.vehicle_string_id) "
+	query += " WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
 	rs.Tx().NewQuery(query).Row(&vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
 
 	return vd
@@ -404,6 +406,9 @@ func (dao *VehicleDAO) XMLListAllViolations(rs app.RequestScope, offset, limit i
 			continue
 		}
 		vd := dao.GetVehicleName(rs, int(item.DeviceID))
+		if vd.SendToNTSA == 0 {
+			continue
+		}
 		dData.SerialNo = item.DeviceID
 		dData.DateOfViolation = item.DateTime.Local().Format("2006-01-02 15:04:05")
 		dData.VehicleRegistration = vd.Name

@@ -136,6 +136,7 @@ type VDetails struct {
 	Name         string
 	VehicleOwner string
 	OwnerTel     string
+	SendToNTSA   int8
 }
 
 // ValidateVehicleDetails validates fields.

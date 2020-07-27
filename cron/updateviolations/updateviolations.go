@@ -1,10 +1,17 @@
 package updateviolations
 
 import (
+	"context"
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/ekas-portal-api/app"
+	"github.com/ekas-portal-api/models"
 	dbx "github.com/go-ozzo/ozzo-dbx"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Status ...
@@ -15,23 +22,97 @@ type Status struct {
 // Run LastSeen.Run() will get triggered automatically.
 func (c Status) Run() {
 	// select all deviceids
-	getAllDeviceIDFromMongoDb()
+	getAllOfflines()
 }
 
-// LastSeen ...
-type LastSeen struct {
-	ID           int32     `bson:"_id"`
-	LastSeenDate time.Time `bson:"last_seen_date"`
-	LastSeenUnix uint64    `bson:"last_seen_unix"`
+// Devices ...
+type Devices struct {
+	DeviceID int32     `json:"device_id"`
+	LastSeen time.Time `json:"last_seen"`
 }
 
-func getAllDeviceIDFromMongoDb() {
+func getAllOfflines() {
+	devices, _ := getVehicleID()
+	for i, dev := range devices {
+		fmt.Println(i)
+		// filter := bson.D{{Key: "deviceid", Value: int(dev.DeviceID)}}
+		count, err := Count(strconv.Itoa(int(dev.DeviceID)), bson.D{}, nil)
+		if err != nil {
+			continue
+		}
 
+		if count <= 1 {
+			fmt.Printf("vehicle %v count %v\n", dev.DeviceID, count)
+
+			if count == 1 {
+
+				// Delete collection
+				collection := app.MongoDB.Collection("data_" + strconv.Itoa(int(dev.DeviceID)))
+				ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+				collection.DeleteMany(ctx, bson.D{})
+			}
+			var m models.DeviceData
+			m.DeviceID = uint32(dev.DeviceID)
+			m.Disconnect = true
+			m.TransmissionReason = 255
+			m.DateTime = dev.LastSeen
+			m.DateTimeStamp = dev.LastSeen.Unix()
+			if err := LogCurrentViolationSeenMongoDB(m); err != nil {
+				fmt.Printf("error 1 = %v", err)
+				continue
+			}
+			if err := LogToMongoDB(m); err != nil {
+				fmt.Printf("error 2 = %v", err)
+				continue
+			}
+		}
+	}
 }
 
-func getVehicleID(deviceID int32) (int32, error) {
-	var vid int32
-	err := app.DBCon.Select("device_id").From("vehicle_configuration").
-		Where(dbx.HashExp{"device_status": "offline"}).Row(&vid)
-	return vid, err
+// LogToMongoDB ...
+func LogToMongoDB(m models.DeviceData) error {
+	collection := app.MongoDB.Collection("data_" + strconv.FormatInt(int64(m.DeviceID), 10))
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	_, err := collection.InsertOne(ctx, m)
+	return err
+}
+
+// Count returns the number of trip records in the database.
+func Count(deviceid string, filter primitive.D, opts *options.FindOptions) (int, error) {
+	app.CreateIndexMongo("data_" + deviceid)
+	collection := app.MongoDB.Collection("data_" + deviceid)
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	count, err := collection.CountDocuments(ctx, filter, nil)
+	return int(count), err
+}
+
+func getVehicleID() ([]Devices, error) {
+	devices := []Devices{}
+	err := app.DBCon.Select("device_id", "COALESCE(vd.created_on, last_seen) AS last_seen").From("vehicle_configuration AS vc").
+		LeftJoin("vehicle_details AS vd", dbx.NewExp("vd.vehicle_id = vc.vehicle_id")).
+		Where(dbx.HashExp{"device_status": "offline"}).All(&devices)
+	return devices, err
+}
+
+// LogCurrentViolationSeenMongoDB update current violation
+func LogCurrentViolationSeenMongoDB(m models.DeviceData) error {
+	data := bson.M{
+		"$set": bson.M{
+			"data":         m,
+			"datetime":     m.DateTime,
+			"datetimeunix": m.DateTimeStamp,
+		},
+	}
+
+	return upsert(data, m.DeviceID, "current_violations")
+}
+
+func upsert(data bson.M, deviceID uint32, table string) error {
+	collection := app.MongoDB.Collection(table)
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	opts := options.Update().SetUpsert(true)
+
+	_, err := collection.UpdateOne(ctx, bson.M{"_id": deviceID}, data, opts)
+
+	return err
 }
