@@ -54,7 +54,7 @@ func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*mo
 // GetConfigurationDetails ...
 func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, vc.owner_id, fitter_id, notification_email, notification_no, data FROM vehicle_configuration AS vc "
+	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, vc.owner_id, fitter_id, vc.device_status, vc.last_seen, notification_email, notification_no, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details ON (vehicle_details.vehicle_id = vc.vehicle_id) "
 	if deviceid > 0 && vehicleid > 0 {
 		query += " WHERE status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' AND vc.device_id='" + strconv.Itoa(deviceid) + "' "
@@ -66,7 +66,7 @@ func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, d
 
 	query += " LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.DeviceStatus, &vdetails.LastSeen, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.Data)
 	return &vdetails, err
 }
 

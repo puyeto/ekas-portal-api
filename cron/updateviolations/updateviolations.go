@@ -53,7 +53,7 @@ func getAllOfflines() {
 			}
 			var m models.DeviceData
 			m.DeviceID = uint32(dev.DeviceID)
-			m.Disconnect = true
+			m.Offline = true
 			m.TransmissionReason = 255
 			m.DateTime = dev.LastSeen
 			m.DateTimeStamp = dev.LastSeen.Unix()

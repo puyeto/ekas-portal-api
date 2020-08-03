@@ -24,20 +24,22 @@ type Vehicle struct {
 
 // VehicleConfigDetails ...
 type VehicleConfigDetails struct {
-	ConfigID          uint32 `json:"conf_id"`
-	DeviceID          uint32 `json:"device_id,omitempty"`
-	VehicleID         uint32 `json:"vehicle_id,omitempty"`
-	UserID            uint32 `json:"user_id" db:"user_id"`
-	Fitter            string `json:"fitter,omitempty" db:"-"` // person who fitted the device from userid
-	VehicleStatus     int8   `json:"vehicle_status" db:"vehicle_status"`
-	NTSAShow          int8   `json:"ntsa_show" db:"send_to_ntsa"`
-	OwnerID           uint32 `json:"owner_id,omitempty"`
-	FitterID          uint32 `json:"fitter_id,omitempty"`
-	NotificationEmail string `json:"notification_email,omitempty"`
-	NotificationNO    string `json:"notification_no,omitempty"`
-	SimNO             string `json:"sim_no,omitempty"`
-	Data              string `json:"vehicle_data,omitempty"`
-	CreatedOn         string `json:"created_on,omitempty"`
+	ConfigID          uint32    `json:"conf_id"`
+	DeviceID          uint32    `json:"device_id,omitempty"`
+	VehicleID         uint32    `json:"vehicle_id,omitempty"`
+	UserID            uint32    `json:"user_id" db:"user_id"`
+	Fitter            string    `json:"fitter,omitempty" db:"-"` // person who fitted the device from userid
+	VehicleStatus     int8      `json:"vehicle_status" db:"vehicle_status"`
+	NTSAShow          int8      `json:"ntsa_show" db:"send_to_ntsa"`
+	DeviceStatus      string    `json:"device_status" db:"device_status"`
+	LastSeen          time.Time `json:"last_seen,omitempty" db:"last_seen"`
+	OwnerID           uint32    `json:"owner_id,omitempty"`
+	FitterID          uint32    `json:"fitter_id,omitempty"`
+	NotificationEmail string    `json:"notification_email,omitempty"`
+	NotificationNO    string    `json:"notification_no,omitempty"`
+	SimNO             string    `json:"sim_no,omitempty"`
+	Data              string    `json:"vehicle_data,omitempty"`
+	CreatedOn         string    `json:"created_on,omitempty"`
 }
 
 // SearchDetails ...
@@ -132,6 +134,7 @@ type VehicleDetails struct {
 	LastSeen          time.Time `json:"last_seen,omitempty" db:"last_seen"`
 }
 
+// VDetails ...
 type VDetails struct {
 	Name         string
 	VehicleOwner string

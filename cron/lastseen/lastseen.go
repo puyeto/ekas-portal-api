@@ -56,18 +56,18 @@ func getAllDeviceIDFromMongoDb() {
 		delta := time.Now().Sub(m.LastSeenDate)
 
 		// update last seen
-		if delta.Hours() > 2 {
+		if delta.Hours() > 2 && delta.Hours() < 24 {
 			deviceStatus = "idle"
 		} else if delta.Hours() > 24 {
 			deviceStatus = "offline"
-			vehicleID, err := getVehicleID(m.ID)
-			if err == nil {
-				continue
-			}
+			// vehicleID, err := getVehicleID(m.ID)
+			// if err == nil {
+			// 	continue
+			// }
 
-			app.DBCon.Update("vehicle_details", dbx.Params{
-				"send_to_ntsa": 0,
-			}, dbx.HashExp{"vehicle_id": vehicleID}).Execute()
+			// app.DBCon.Update("vehicle_details", dbx.Params{
+			// 	"send_to_ntsa": 0,
+			// }, dbx.HashExp{"vehicle_id": vehicleID}).Execute()
 		}
 
 		_, err := app.DBCon.Update("vehicle_configuration", dbx.Params{
