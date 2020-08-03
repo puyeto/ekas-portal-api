@@ -31,6 +31,7 @@ type VehicleConfigDetails struct {
 	Fitter            string `json:"fitter,omitempty" db:"-"` // person who fitted the device from userid
 	VehicleStatus     int8   `json:"vehicle_status" db:"vehicle_status"`
 	NTSAShow          int8   `json:"ntsa_show" db:"send_to_ntsa"`
+	DeviceStatus      string `json:"device_status" db:"device_status"`
 	OwnerID           uint32 `json:"owner_id,omitempty"`
 	FitterID          uint32 `json:"fitter_id,omitempty"`
 	NotificationEmail string `json:"notification_email,omitempty"`
