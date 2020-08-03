@@ -13,6 +13,7 @@ import (
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/cron/lastseen"
+	"github.com/ekas-portal-api/cron/updateviolations"
 	"github.com/ekas-portal-api/daos"
 	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/services"
@@ -58,7 +59,7 @@ func main() {
 	// go jobrunner.Schedule("@every 60m", checkdata.Status{})
 	go jobrunner.Schedule("@every 30m", lastseen.Status{})
 	// go jobrunner.In(10*time.Second, updateviolations.Status{})
-	// go jobrunner.Schedule("@midnight", lastdata.LastDataStatus{}) // every midnight do this..
+	go jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
 
 	// wire up API routing
 	http.Handle("/", buildRouter(logger, db))
