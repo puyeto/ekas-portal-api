@@ -45,9 +45,14 @@ func (s *VehicleRecordService) Get(rs app.RequestScope, id uint32) (*models.Vehi
 
 // Update updates the vehicleRecord with the specified ID.
 func (s *VehicleRecordService) Update(rs app.RequestScope, model *models.VehicleDetails) error {
+	model.VehicleStringID = strings.ToLower(strings.Replace(model.VehicleRegNo, " ", "", -1))
+	if model.Manufacturer == "" {
+		model.Manufacturer = model.MakeType
+	}
 	if err := model.ValidateVehicleDetails(); err != nil {
 		return err
 	}
+
 	if err := s.dao.UpdateVehicle(rs, model); err != nil {
 		return err
 	}

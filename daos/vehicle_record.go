@@ -160,7 +160,7 @@ func (dao *VehicleRecordDAO) CreateVehicle(rs app.RequestScope, v *models.Vehicl
 
 // UpdateVehicle ....
 func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.VehicleDetails) error {
-	_, err := rs.Tx().Update("vehicle_details", dbx.Params{
+	if _, err := rs.Tx().Update("vehicle_details", dbx.Params{
 		"user_id":            v.UserID,
 		"vehicle_string_id":  v.VehicleStringID,
 		"vehicle_reg_no":     v.VehicleRegNo,
@@ -170,8 +170,19 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 		"send_to_ntsa":       v.NTSAShow,
 		"notification_email": v.NotificationEmail,
 		"notification_no":    v.NotificationNO},
-		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute()
-	return err
+		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute(); err != nil {
+		return err
+	}
+
+	// update configuration details
+	if _, err := rs.Tx().Update("vehicle_configuration", dbx.Params{
+		"vehicle_string_id": v.VehicleStringID},
+		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute(); err != nil {
+		rs.Tx().Rollback()
+		return err
+	}
+
+	return nil
 }
 
 // VehicleExists ...
