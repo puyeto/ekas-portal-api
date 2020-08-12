@@ -29,7 +29,7 @@ func NewVehicleDAO() *VehicleDAO {
 // GetVehicleName ...
 func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.VDetails {
 	var vd models.VDetails
-	query := "SELECT send_to_ntsa, json_value(data, '$.device_detail.registration_no'), json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
+	query := "SELECT send_to_ntsa, vehicle_reg_no, json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
 	query += " FROM vehicle_configuration "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vehicle_configuration.vehicle_string_id) "
 	query += " WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
@@ -41,20 +41,20 @@ func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.
 // GetVehicleByStrID ...
 func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vc.device_id, vd.user_id, CONCAT(u.first_name , ' ' , u.last_name) AS fitter, vd.vehicle_id, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
+	query := "SELECT conf_id, vc.device_id, vd.user_id, CONCAT(u.first_name , ' ' , u.last_name) AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
 	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
 	query += " WHERE status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.Data)
 	return &vdetails, err
 }
 
 // GetConfigurationDetails ...
 func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, vc.owner_id, fitter_id, vc.device_status, vc.last_seen, notification_email, notification_no, data FROM vehicle_configuration AS vc "
+	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, vc.owner_id, fitter_id, vehicle_reg_no, vc.device_status, vc.last_seen, notification_email, notification_no, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details ON (vehicle_details.vehicle_id = vc.vehicle_id) "
 	if deviceid > 0 && vehicleid > 0 {
 		query += " WHERE status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' AND vc.device_id='" + strconv.Itoa(deviceid) + "' "
@@ -66,7 +66,7 @@ func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, d
 
 	query += " LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.DeviceStatus, &vdetails.LastSeen, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.VehicleID, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.VehicleRegistration, &vdetails.DeviceStatus, &vdetails.LastSeen, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.Data)
 	return &vdetails, err
 }
 
