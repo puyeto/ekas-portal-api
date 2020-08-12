@@ -56,7 +56,7 @@ func getAllDeviceIDFromMongoDb() {
 		delta := time.Now().Sub(m.LastSeenDate)
 
 		// update last seen
-		if delta.Hours() > 24 && delta.Hours() < 72 {
+		if delta.Hours() > 24 && delta.Hours() < (24*14) {
 			deviceStatus = "idle"
 		} else if delta.Hours() > 72 {
 			deviceStatus = "offline"
