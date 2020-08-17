@@ -156,10 +156,12 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 	companyDAO := daos.NewCompanyDAO()
 	apis.ServeCompanyResource(rg, services.NewCompanyService(companyDAO))
 
-	rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
-		SigningMethod: app.Config.JWTSigningMethod,
-		TokenHandler:  app.JWTHandler,
-	}))
+	if os.Getenv("GO_ENV") == "production" {
+		rg.Use(auth.JWT(app.Config.JWTVerificationKey, auth.JWTOptions{
+			SigningMethod: app.Config.JWTSigningMethod,
+			TokenHandler:  app.JWTHandler,
+		}))
+	}
 
 	deviceDAO := daos.NewDeviceDAO()
 	apis.ServeDeviceResource(rg, services.NewDeviceService(deviceDAO))
