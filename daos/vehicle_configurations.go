@@ -43,7 +43,7 @@ func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*mo
 	var vdetails models.VehicleConfigDetails
 	query := "SELECT conf_id, vc.device_id, vd.user_id, CONCAT(u.first_name , ' ' , u.last_name) AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
 	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, last_seen, "
-	query += " vc.created_on, DATE_ADD(DATE_ADD(vd.created_on, INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, data FROM vehicle_configuration AS vc "
+	query += " vd.created_on, DATE_ADD(DATE_ADD(vd.created_on, INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
 	query += " WHERE status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
