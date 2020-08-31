@@ -3,11 +3,7 @@ services:
   api:
     image: omollo/ekas-portal-api-prod
     deploy:
-      replicas: 2
-      resources:
-        limits:
-          cpus: "0.3"
-          memory: 500M
+      replicas: 3
     ports:
       - "8082:8082"
       - "8081:8081"
