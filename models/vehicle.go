@@ -40,7 +40,8 @@ type VehicleConfigDetails struct {
 	NotificationNO      string    `json:"notification_no,omitempty"`
 	SimNO               string    `json:"sim_no,omitempty"`
 	Data                string    `json:"vehicle_data,omitempty"`
-	CreatedOn           string    `json:"created_on,omitempty"`
+	CreatedOn           time.Time `json:"created_on,omitempty" db:"created_on"`
+	ExpiryDate          time.Time `json:"expiry_date,omitempty"`
 }
 
 // SearchDetails ...
