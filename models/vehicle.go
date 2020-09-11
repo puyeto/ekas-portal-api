@@ -41,6 +41,8 @@ type VehicleConfigDetails struct {
 	SimNO               string    `json:"sim_no,omitempty"`
 	Data                string    `json:"vehicle_data,omitempty"`
 	CreatedOn           time.Time `json:"created_on,omitempty" db:"created_on"`
+	Renew               int8      `json:"renew" db:"renew"`
+	RenewalDate         time.Time `json:"renewal_date,omitempty" db:"renewal_date"`
 	ExpiryDate          time.Time `json:"expiry_date,omitempty"`
 }
 
@@ -134,6 +136,8 @@ type VehicleDetails struct {
 	VehicleOwnerTel   string    `json:"vehicle_owner_tel,omitempty" db:"vehicle_owner_tel"`
 	LocationOfFitting string    `json:"fitting_location,omitempty" db:"fitting_location"`
 	LastSeen          time.Time `json:"last_seen,omitempty" db:"last_seen"`
+	Renew             int8      `json:"renew" db:"renew"`
+	RenewalDate       time.Time `json:"renewal_date,omitempty" db:"renewal_date"`
 }
 
 // VDetails ...
@@ -152,6 +156,13 @@ func (v VehicleDetails) ValidateVehicleDetails() error {
 		validation.Field(&v.ChassisNo, validation.Required),
 		validation.Field(&v.MakeType, validation.Required),
 	)
+}
+
+// Prepare ...
+func (v VehicleDetails) Prepare(action string) {
+	if action == "update" {
+		v.RenewalDate = time.Now()
+	}
 }
 
 // FitterDetails ...
