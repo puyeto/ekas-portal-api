@@ -49,6 +49,8 @@ func (s *VehicleRecordService) Update(rs app.RequestScope, model *models.Vehicle
 	if model.Manufacturer == "" {
 		model.Manufacturer = model.MakeType
 	}
+
+	model.Prepare("update")
 	if err := model.ValidateVehicleDetails(); err != nil {
 		return err
 	}
