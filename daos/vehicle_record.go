@@ -65,7 +65,7 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 	var err error
 	if uid > 0 {
 		// err = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid}).OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
-		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, created_on) AS renewal_date", "renew").
+		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew").
 			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 			LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
@@ -73,13 +73,13 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	} else {
 		if typ == "ntsa" {
-			err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, created_on) AS renewal_date", "renew").
+			err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew").
 				LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 				LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 				Where(dbx.HashExp{"send_to_ntsa": 1}).OrderBy("vehicle_details.created_on desc").
 				Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 		} else {
-			err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, created_on) AS renewal_date", "renew").
+			err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew").
 				LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 				LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 				LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
