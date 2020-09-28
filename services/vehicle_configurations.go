@@ -39,6 +39,7 @@ type vehicleDAO interface {
 	XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
 	// CreateDevice saves a new device in the storage.
 	CreateDevice(rs app.RequestScope, device *models.Devices) error
+	CheckIfSerialNoExists(rs app.RequestScope, device *models.Vehicle) error
 }
 
 // VehicleService provides services related with vehicles.
@@ -291,6 +292,10 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	//	return nil, err
 	// }
 	userid := model.UserID
+
+	if err := s.dao.CheckIfSerialNoExists(rs, model); err != nil {
+		return 0, err
+	}
 
 	// Add Device Details
 	did, _ := strconv.ParseInt(model.GovernorDetails.DeviceID, 10, 64)

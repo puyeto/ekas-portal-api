@@ -18,6 +18,10 @@ jwt_signing_key: "QfCAH04Cob7b71QCqy738vw5XGSnFZ9d"
 # The default signing method is HS256.
 #jwt_signing_method: "HS256"
 
-#twilio
+# twilio
 twilio_account_sid: "ACeab16ebd80a48c1f4318f09c6ad6e33e"
 twilio_auth_token : "8812492c587bf5cda4ee01a0bfedff3d"
+
+# Africas Talking 
+at_api_username: "Ekas1"
+at_api_key : "13b44c5b52cbd78c4fd19d7a2aa1329ccee7f01bec94cac107dd2c8c937d1905"

@@ -12,17 +12,17 @@ import (
 )
 
 // Message ...
-var Message = make(chan models.MessageDetails)
+var MessageTwilio = make(chan models.MessageDetails)
 
 func init() {
 	// message := <-Message
-	// go SendSMSMessages(Message)
+	// go SendSMSMessagesTwilio(MessageTwilio)
 }
 
 // check if messages have been sent
 
 // SendSMSMessages ...
-func SendSMSMessages(message chan models.MessageDetails) {
+func SendSMSMessagesTwilio(message chan models.MessageDetails) {
 	for {
 		message := <-message
 		toNumber := "+254723436438"

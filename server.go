@@ -54,13 +54,16 @@ func main() {
 		logger.Error(err)
 	}
 
+	jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
+	// jobrunner.Schedule("@every 1m", checkexpired.Status{})
+
 	if os.Getenv("GO_ENV") == "production" {
 		// run cronjobs
-		jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
+		// jobrunner.Schedule("CRON_TZ=Africa/Nairobi * 8 * * *", checkexpired.Status{})
 		// go jobrunner.Schedule("@every 60m", checkdata.Status{})
-		go jobrunner.Schedule("@every 30m", lastseen.Status{})
+		jobrunner.Schedule("@every 60m", lastseen.Status{})
 		// go jobrunner.In(10*time.Second, updateviolations.Status{})
-		go jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
+		jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
 	}
 
 	// wire up API routing

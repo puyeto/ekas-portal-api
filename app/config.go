@@ -39,6 +39,9 @@ type appConfig struct {
 	// Twilio
 	TwilioAccountSID string `mapstructure:"twilio_account_sid"`
 	TwilioAuthToken  string `mapstructure:"twilio_auth_token"`
+	// AT
+	ATAPIUsername string `mapstructure:"at_api_username"`
+	ATAPIKey      string `mapstructure:"at_api_key"`
 }
 
 func (config appConfig) Validate() error {

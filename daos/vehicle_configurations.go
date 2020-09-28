@@ -3,6 +3,7 @@ package daos
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -152,7 +153,6 @@ func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, of
 	} else {
 		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)),
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"device_id": searchterm})))
-
 	}
 	err := q.OrderBy("vehicle_configuration.vehicle_id DESC").All(&tdetails)
 	return tdetails, err
@@ -244,6 +244,8 @@ func (dao *VehicleDAO) VehicleExistsConfigurationByStringID(rs app.RequestScope,
 
 //CreateConfiguration Add configuartion details to db
 func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error {
+	var vehiclestringid = strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1))
+
 	// Delete Previous Configuration
 	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehstringid}).Execute()
 	if err != nil {
@@ -257,15 +259,32 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 		"vehicle_id":        vehicleid,
 		"owner_id":          ownerid,
 		"fitter_id":         fitterid,
-		"vehicle_string_id": strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1)),
+		"vehicle_string_id": vehiclestringid,
 		"fitting_date":      cd.DeviceDetails.FittingDate,
 		"frequency":         cd.DeviceDetails.SetFrequency,
 		"speed":             cd.DeviceDetails.PresetSpeed,
 		"speed_source":      cd.DeviceDetails.SpeedSource,
 		"fail_safe":         cd.GovernorDetails.FailSafe,
 		"apn":               cd.GovernorDetails.APN,
+		"serial_no":         cd.DeviceDetails.SerialNO,
+		"sim_no":            cd.SimNO,
 		"data":              string(a)}).Execute()
 	return err
+}
+
+func (dao *VehicleDAO) CheckIfSerialNoExists(rs app.RequestScope, cd *models.Vehicle) error {
+	var vehiclestringid = strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1))
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_configuration WHERE vehicle_string_id!='" + vehiclestringid + "' AND serial_no='" + cd.DeviceDetails.SerialNO + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	if err != nil {
+		return errors.New("Check failed try again.")
+	}
+	if exists > 0 {
+		return errors.New("Serial No already exist with a different vehicle.")
+	}
+
+	return nil
 }
 
 // UpdateConfigurationStatus ...
