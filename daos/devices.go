@@ -203,7 +203,7 @@ func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehi
 	query := "SELECT conf_id, vc.device_id, vc.vehicle_id, vehicle_string_id AS device_name, JSON_VALUE(data, '$.sim_imei') AS sim_imei, vc.created_on, vc.status AS status, "
 	query += " JSON_VALUE(data, '$.device_detail.chasis_no') AS chassis_no, JSON_VALUE(data, '$.device_detail.make_type') AS make_type, JSON_VALUE(data, '$.device_detail.device_type') AS device_type, "
 	query += " JSON_VALUE(data, '$.device_detail.serial_no') AS serial_no, JSON_VALUE(data, '$.device_detail.preset_speed') AS preset_speed, JSON_VALUE(data, '$.device_detail.set_frequency') AS set_frequency, "
-	query += " JSON_VALUE(data, '$.device_detail.fitting_date') AS fitting_date, DATE_ADD(JSON_VALUE(data, '$.device_detail.fitting_date'), INTERVAL 1 YEAR) AS expiry_date, JSON_VALUE(data, '$.device_detail.fitting_center') AS fitting_center, "
+	query += " JSON_VALUE(data, '$.device_detail.fitting_date') AS fitting_date, DATE_ADD(DATE_ADD(COALESCE(renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, JSON_VALUE(data, '$.device_detail.fitting_center') AS fitting_center, "
 	query += " JSON_VALUE(data, '$.device_detail.certificate') AS certificate, JSON_VALUE(data, '$.device_detail.email_address') AS email_address, JSON_VALUE(data, '$.device_detail.agent_phone') AS agent_phone, "
 	query += " JSON_VALUE(data, '$.device_detail.agent_location') AS agent_location, JSON_VALUE(data, '$.device_detail.owner_name') AS owner_name, JSON_VALUE(data, '$.device_detail.owner_phone_number') AS owner_phone_number,"
 	query += " COALESCE(dd.status, 0) AS device_status, COALESCE(dd.status_reason, 'Device record does not exit') AS reason FROM vehicle_configuration AS vc"
