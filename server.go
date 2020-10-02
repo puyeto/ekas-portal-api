@@ -12,7 +12,6 @@ import (
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
-	"github.com/ekas-portal-api/cron/lastseen"
 	"github.com/ekas-portal-api/cron/updateviolations"
 	"github.com/ekas-portal-api/daos"
 	"github.com/ekas-portal-api/errors"
@@ -61,7 +60,7 @@ func main() {
 		// run cronjobs
 		// jobrunner.Schedule("CRON_TZ=Africa/Nairobi * 8 * * *", checkexpired.Status{})
 		// go jobrunner.Schedule("@every 60m", checkdata.Status{})
-		jobrunner.Schedule("@every 60m", lastseen.Status{})
+		// jobrunner.Schedule("@every 60m", lastseen.Status{})
 		// go jobrunner.In(10*time.Second, updateviolations.Status{})
 		jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
 	}
