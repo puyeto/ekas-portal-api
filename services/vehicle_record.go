@@ -23,6 +23,7 @@ type vehicleRecordDAO interface {
 	Delete(rs app.RequestScope, id uint32) error
 	// CreateVehicle create new vehicle
 	CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
+	RenewVehicle(rs app.RequestScope, model *models.VehicleRenewals) (uint32, error)
 	CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 	CountReminders(rs app.RequestScope, uid int) (int, error)
 	GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
@@ -96,6 +97,14 @@ func (s *VehicleRecordService) CreateVehicle(rs app.RequestScope, model *models.
 		model.Manufacturer = model.MakeType
 	}
 	return s.dao.CreateVehicle(rs, model)
+}
+
+// RenewVehicle renew a vehicle.
+func (s *VehicleRecordService) RenewVehicle(rs app.RequestScope, model *models.VehicleRenewals) (uint32, error) {
+	if err := model.Validate(); err != nil {
+		return 0, err
+	}
+	return s.dao.RenewVehicle(rs, model)
 }
 
 // CreateReminder creates a new reminder.
