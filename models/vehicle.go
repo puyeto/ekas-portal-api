@@ -253,6 +253,29 @@ type CurrentViolations struct {
 	Data                DeviceData `json:"data,omitempty" bson:"data"`
 }
 
+// VehicleRenewals ...
+type VehicleRenewals struct {
+	ID              uint32    `json:"id" db:"id"`
+	VehicleID       int       `json:"vehicle_id" db:"vehicle_id"`
+	VehicleStringID string    `json:"vehicle_string_id" db:"vehicle_string_id"`
+	Status          int8      `json:"status" db:"status"`
+	AddedBy         string    `json:"added_by" db:"added_by"`
+	RenewalDate     time.Time `json:"renewal_date" db:"renewal_date"`
+	ExpiryDate      time.Time `json:"expiry_date" db:"expiry_date"`
+	RenewalCode     int       `json:"renewal_code" db:"renewal_code"`
+	CreatedOn       time.Time `json:"created_on" db:"created_on"`
+}
+
+// Validate validates fields.
+func (v VehicleRenewals) Validate() error {
+	return validation.ValidateStruct(&v,
+		validation.Field(&v.VehicleID, validation.Required),
+		validation.Field(&v.VehicleStringID, validation.Required),
+		validation.Field(&v.AddedBy, validation.Required),
+		validation.Field(&v.RenewalDate, validation.Required),
+	)
+}
+
 // Reminders ...
 type Reminders struct {
 	ID     uint32 `json:"id" db:"id"`

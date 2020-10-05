@@ -1,9 +1,7 @@
 package daos
 
 import (
-	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -124,28 +122,21 @@ func (dao *VehicleRecordDAO) QueryFilter(rs app.RequestScope, offset, limit int,
 // CountFilter returns the number of the filtered vehicleRecord records in the database.
 func (dao *VehicleRecordDAO) CountFilter(rs app.RequestScope, model *models.FilterVehicles) (int, error) {
 	var count int
-	var q *dbx.SelectQuery
+	var q = rs.Tx().Select("COUNT(*)").From("vehicle_details")
 	if model.MinTimeStamp != "" && model.MaxTimeStamp != "" && model.FilterNTSA != 2 && model.FilterStatus != 2 {
-		q = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.And(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}, dbx.HashExp{"vehicle_status": model.FilterStatus}))
+		q.Where(dbx.And(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}, dbx.HashExp{"vehicle_status": model.FilterStatus}))
 	} else if model.MinTimeStamp != "" && model.MaxTimeStamp != "" && model.FilterNTSA != 2 {
-		q = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.And(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}))
+		q.Where(dbx.And(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}))
 	} else if model.MinTimeStamp != "" && model.MaxTimeStamp != "" && model.FilterStatus != 2 {
-		q = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.And(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"vehicle_status": model.FilterStatus}))
+		q.Where(dbx.And(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"vehicle_status": model.FilterStatus}))
 	} else if model.FilterNTSA != 2 && model.FilterStatus != 2 {
-		q = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.And(dbx.HashExp{"send_to_ntsa": model.FilterNTSA}, dbx.HashExp{"vehicle_status": model.FilterStatus}))
+		q.Where(dbx.And(dbx.HashExp{"send_to_ntsa": model.FilterNTSA}, dbx.HashExp{"vehicle_status": model.FilterStatus}))
 	} else if model.MinTimeStamp != "" && model.MaxTimeStamp != "" {
-		q = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp))
+		q.Where(dbx.Between("created_on", model.MinTimeStamp, model.MaxTimeStamp))
 	} else if model.FilterNTSA != 2 {
-		q = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.HashExp{"send_to_ntsa": model.FilterNTSA})
+		q.Where(dbx.HashExp{"send_to_ntsa": model.FilterNTSA})
 	} else if model.FilterStatus != 2 {
-		q = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.HashExp{"vehicle_status": model.FilterStatus})
+		q.Where(dbx.HashExp{"vehicle_status": model.FilterStatus})
 	}
 
 	err := q.Row(&count)
@@ -176,18 +167,6 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 		return err
 	}
 
-	fmt.Println(v.Renew, v.RenewalDate)
-
-	if v.Renew == 1 {
-		v.RenewalDate = time.Now()
-		if _, err := rs.Tx().Update("vehicle_details", dbx.Params{
-			"renew":        v.Renew,
-			"renewal_date": v.RenewalDate},
-			dbx.HashExp{"vehicle_id": v.VehicleID}).Execute(); err != nil {
-			return err
-		}
-	}
-
 	// update configuration details
 	if _, err := rs.Tx().Update("vehicle_configuration", dbx.Params{
 		"vehicle_string_id": v.VehicleStringID},
@@ -205,6 +184,24 @@ func (dao *VehicleRecordDAO) VehicleExists(rs app.RequestScope, id uint32) (int,
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_details WHERE vehicle_id='" + strconv.Itoa(int(id)) + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
 	return exists, err
+}
+
+// RenewVehicle ...
+func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) (uint32, error) {
+	m.Status = 1
+	if err := rs.Tx().Model(m).Insert(); err != nil {
+		return m.ID, err
+	}
+	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, 0)
+	if _, err := rs.Tx().Update("vehicle_details", dbx.Params{
+		"renew":        m.Status,
+		"renewal_date": m.ExpiryDate},
+		dbx.HashExp{"vehicle_id": m.VehicleID}).Execute(); err != nil {
+		rs.Rollback()
+		return m.ID, err
+	}
+
+	return m.ID, nil
 }
 
 // CreateReminder saves a new reminder record in the database.

@@ -40,7 +40,7 @@ func (r *trackingServerResource) trackingServerLogin(c *routing.Context) error {
 
 	now := time.Now()
 	secs := now.Unix()
-	if secs > 1601966825 && version != "5.0" {
+	if secs > 1601935924 && version != "5.0" {
 		return errors.BadRequest("Update your system")
 	}
 

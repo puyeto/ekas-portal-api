@@ -1,6 +1,8 @@
 package apis
 
 import (
+	"crypto/rand"
+	"math/big"
 	"strconv"
 
 	"github.com/ekas-portal-api/app"
@@ -42,6 +44,7 @@ func ServeUserResource(rg *routing.RouteGroup, service userService) {
 	rg.Put("/reset-password", r.resetPassword)
 	rg.Put("/users/update", r.update)
 	rg.Get("/ping", r.healthCheck)
+	rg.Get("/otp-request", r.OTPRequest)
 }
 
 func (r *userResource) query(c *routing.Context) error {
@@ -162,6 +165,36 @@ func (r *userResource) update(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+// OTPRequest ...
+func (r *userResource) OTPRequest(c *routing.Context) error {
+	phone := c.Query("phone", "0")
+	if phone == "0" {
+		return errors.Unauthorized("Invalid Phone Number")
+	}
+	otp, err := getRandNum()
+	if err != nil {
+		return errors.Unauthorized("OTP Error")
+	}
+
+	// send sms
+	app.MessageChan <- app.MessageDetails{
+		Message:  strconv.Itoa(otp),
+		ToNumber: phone,
+	}
+
+	return c.Write(map[string]int{
+		"otp": otp,
+	})
+}
+
+func getRandNum() (int, error) {
+	nBig, e := rand.Int(rand.Reader, big.NewInt(8999))
+	if e != nil {
+		return 0, e
+	}
+	return int(nBig.Int64() + 1000), nil
 }
 
 func (r *userResource) healthCheck(c *routing.Context) error {

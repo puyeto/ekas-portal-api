@@ -19,6 +19,7 @@ type (
 		CountFilter(rs app.RequestScope, m *models.FilterVehicles) (int, error)
 		Update(rs app.RequestScope, model *models.VehicleDetails) error
 		Delete(rs app.RequestScope, id uint32) error
+		RenewVehicle(rs app.RequestScope, model *models.VehicleRenewals) (uint32, error)
 		CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 		CountReminders(rs app.RequestScope, uid int) (int, error)
 		GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
@@ -40,6 +41,7 @@ func ServeVehicleRecordResource(rg *routing.RouteGroup, service vehicleRecordSer
 	rg.Get("/vehicles/count", r.count)
 	rg.Put("/vehicle/update", r.update)
 	rg.Delete("/vehicle/delete/<id>", r.delete)
+	rg.Post("/vehicle/renew", r.renewVehicle)
 	rg.Post("/vehicle/reminders", r.createReminder)
 	rg.Get("/vehicle/reminders", r.getReminder)
 }
@@ -159,6 +161,22 @@ func (r *vehicleRecordResource) count(c *routing.Context) error {
 
 	return c.Write(map[string]int{
 		"count": response,
+	})
+}
+
+func (r *vehicleRecordResource) renewVehicle(c *routing.Context) error {
+	var model models.VehicleRenewals
+	if err := c.Read(&model); err != nil {
+		return err
+	}
+
+	response, err := r.service.RenewVehicle(app.GetRequestScope(c), &model)
+	if err != nil {
+		return err
+	}
+
+	return c.Write(map[string]uint32{
+		"response": response,
 	})
 }
 
