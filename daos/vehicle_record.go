@@ -2,6 +2,7 @@ package daos
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -156,9 +157,9 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 	if _, err := rs.Tx().Update("vehicle_details", dbx.Params{
 		"user_id":            v.UserID,
 		"vehicle_string_id":  v.VehicleStringID,
-		"vehicle_reg_no":     v.VehicleRegNo,
-		"chassis_no":         v.ChassisNo,
-		"make_type":          v.MakeType,
+		"vehicle_reg_no":     strings.ToUpper(v.VehicleRegNo),
+		"chassis_no":         strings.ToUpper(v.ChassisNo),
+		"make_type":          strings.ToUpper(v.MakeType),
 		"vehicle_status":     v.VehicleStatus,
 		"send_to_ntsa":       v.NTSAShow,
 		"notification_email": v.NotificationEmail,
@@ -168,10 +169,10 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 	}
 
 	// update configuration details
-	if _, err := rs.Tx().Update("vehicle_configuration", dbx.Params{
-		"vehicle_string_id": v.VehicleStringID},
-		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute(); err != nil {
-		rs.Tx().Rollback()
+	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID
+	query += "', data = JSON_SET(DATA, '$.device_detail.registration_no', '" + v.VehicleRegNo + "', '$.device_detail.chasis_no', '" + v.ChassisNo + "', '$.device_detail.make_type', '" + v.MakeType + "')"
+	query += " WHERE vehicle_id = " + strconv.Itoa(int(v.VehicleID))
+	if _, err := rs.Tx().NewQuery(query).Execute(); err != nil {
 		return err
 	}
 

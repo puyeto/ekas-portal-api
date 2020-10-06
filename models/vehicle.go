@@ -48,8 +48,11 @@ type VehicleConfigDetails struct {
 
 // SearchDetails ...
 type SearchDetails struct {
-	VehicleName string `json:"vehicle_name"`
-	Data        string `json:"vehicle_data,omitempty"`
+	DeviceID            uint32 `json:"device_id,omitempty"`
+	VehicleID           uint32 `json:"vehicle_id,omitempty"`
+	VehicleRegistration string `json:"registration_no" db:"vehicle_reg_no"`
+	VehicleName         string `json:"vehicle_name"`
+	Data                string `json:"vehicle_data,omitempty"`
 }
 
 // DeviceDetails ....
