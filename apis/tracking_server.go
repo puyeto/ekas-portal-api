@@ -2,10 +2,8 @@ package apis
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/ekas-portal-api/app"
-	"github.com/ekas-portal-api/errors"
 	"github.com/ekas-portal-api/models"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 )
@@ -35,14 +33,14 @@ func ServeTrackingServerResource(rg *routing.RouteGroup, service trackingServerS
 }
 
 func (r *trackingServerResource) trackingServerLogin(c *routing.Context) error {
-	version := c.Query("ver")
+	// version := c.Query("ver")
 	// fmt.Printf("version %v\n", version)
 
-	now := time.Now()
-	secs := now.Unix()
-	if secs > 1601935924 && version != "5.0" {
-		return errors.BadRequest("Update your system")
-	}
+	// now := time.Now()
+	// secs := now.Unix()
+	// if secs > 1601935924 && version != "5.0" {
+	// 	return errors.BadRequest("Update your system")
+	// }
 
 	var model models.TrackingServerAuth
 	if err := c.Read(&model); err != nil {
