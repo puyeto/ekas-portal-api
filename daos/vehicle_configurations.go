@@ -145,7 +145,7 @@ func (dao *VehicleDAO) CountViolations(rs app.RequestScope, deviceid string, rea
 func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error) {
 	tdetails := []models.SearchDetails{}
 
-	q := rs.Tx().Select("DISTINCT(vehicle_configuration.vehicle_id) AS vehicle_name", "data").
+	q := rs.Tx().Select("DISTINCT(vehicle_configuration.vehicle_id) AS vehicle_name", "vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.vehicle_reg_no", "data").
 		From("vehicle_configuration").LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vehicle_configuration.vehicle_id"))
 	if qtype == "ntsa" {
 		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_configuration.vehicle_string_id": searchterm}, dbx.NewExp("send_to_ntsa=1")),
