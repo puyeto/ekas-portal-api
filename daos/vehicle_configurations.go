@@ -272,6 +272,7 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 	return err
 }
 
+// CheckIfSerialNoExists ...
 func (dao *VehicleDAO) CheckIfSerialNoExists(rs app.RequestScope, cd *models.Vehicle) error {
 	var vehiclestringid = strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1))
 	var exists int

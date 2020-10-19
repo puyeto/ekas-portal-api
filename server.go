@@ -95,7 +95,7 @@ func main() {
 	}
 	tlsConfig.BuildNameToCertificate()
 
-	// Create a Server instance to listen on port 8443 with the TLS config
+	// Create a Server instance to listen on port 8082 with the TLS config
 	server := &http.Server{
 		Addr: ":8082",
 		// TLSConfig: tlsConfig,
