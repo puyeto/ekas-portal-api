@@ -40,7 +40,7 @@ func NewDevice(did int64, dname, dsno, sno, mno, tech string) *Devices {
 		DeviceName:         dname,
 		DeviceSerialNo:     dsno,
 		DeviceModelNo:      "Ekas FK 2017",
-		DeviceManufacturer: "Ekkas Technologies",
+		DeviceManufacturer: "Ekas Technologies",
 		SimNumber:          sno,
 		MotherboardNO:      mno,
 		Technician:         tech,

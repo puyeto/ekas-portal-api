@@ -279,10 +279,34 @@ func (dao *VehicleDAO) CheckIfSerialNoExists(rs app.RequestScope, cd *models.Veh
 	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_configuration WHERE vehicle_string_id!='" + vehiclestringid + "' AND serial_no='" + cd.DeviceDetails.SerialNO + "' LIMIT 1) AS exist")
 	err := q.Row(&exists)
 	if err != nil {
-		return errors.New("Check failed try again.")
+		return errors.New("serial check failed try again")
 	}
 	if exists > 0 {
-		return errors.New("Serial No already exist with a different vehicle.")
+		return errors.New("serial No already exist with a different vehicle")
+	}
+
+	return nil
+}
+
+// CheckIfVehicleIsExpired ...
+func (dao *VehicleDAO) CheckIfVehicleIsExpired(rs app.RequestScope, cd *models.Vehicle, daystoexpiry int) error {
+	now := time.Now()
+
+	// get date of expiry
+	var vehiclestringid = strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1))
+	var expiry time.Time
+	query := "SELECT DATE_ADD(DATE_ADD(COALESCE(renewal_date, created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date FROM vehicle_details WHERE vehicle_string_id='" + vehiclestringid + "'"
+	err := rs.Tx().NewQuery(query).Row(&expiry)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return nil
+		}
+		return errors.New("expiry check failed try again")
+	}
+
+	diff := expiry.Sub(now).Hours() / 24
+	if int(diff) <= daystoexpiry {
+		return errors.New("This vehicle has expired or yet to expire")
 	}
 
 	return nil

@@ -40,6 +40,7 @@ type vehicleDAO interface {
 	// CreateDevice saves a new device in the storage.
 	CreateDevice(rs app.RequestScope, device *models.Devices) error
 	CheckIfSerialNoExists(rs app.RequestScope, device *models.Vehicle) error
+	CheckIfVehicleIsExpired(rs app.RequestScope, device *models.Vehicle, daystoexpiry int) error
 }
 
 // VehicleService provides services related with vehicles.
@@ -293,6 +294,12 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	// }
 	userid := model.UserID
 
+	// check if vehicle is expired (-30 days to expiry)
+	if err := s.dao.CheckIfVehicleIsExpired(rs, model, 30); err != nil {
+		return 0, err
+	}
+
+	// check if serial_no exists
 	if err := s.dao.CheckIfSerialNoExists(rs, model); err != nil {
 		return 0, err
 	}
