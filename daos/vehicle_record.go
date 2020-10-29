@@ -3,6 +3,7 @@ package daos
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -190,10 +191,13 @@ func (dao *VehicleRecordDAO) VehicleExists(rs app.RequestScope, id uint32) (int,
 // RenewVehicle ...
 func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) (uint32, error) {
 	m.Status = 1
-	if err := rs.Tx().Model(m).Insert(); err != nil {
+	m.CreatedOn = time.Now()
+	m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
+	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, -1)
+	if err := rs.Tx().Model(m).Exclude("VehicleRegNo", "DeviceSerialNo").Insert(); err != nil {
 		return m.ID, err
 	}
-	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, 0)
+
 	if _, err := rs.Tx().Update("vehicle_details", dbx.Params{
 		"renew":        m.Status,
 		"renewal_date": m.ExpiryDate},
@@ -210,6 +214,25 @@ func (dao *VehicleRecordDAO) CreateReminder(rs app.RequestScope, v *models.Remin
 	err := rs.Tx().Model(v).Insert()
 	return v.ID, err
 
+}
+
+// ListVehicleRenewals retrieves the renewal records with the specified offset and limit from the database.
+func (dao *VehicleRecordDAO) ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error) {
+	r := []models.VehicleRenewals{}
+	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
+		From("vehicle_renewals AS vr").
+		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vr.vehicle_id")).
+		LeftJoin("vehicle_configuration AS vc", dbx.NewExp("vc.vehicle_id = vr.vehicle_id")).
+		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&r)
+	return r, err
+}
+
+// CountRenewals returns the number of the renewals records in the database.
+func (dao *VehicleRecordDAO) CountRenewals(rs app.RequestScope) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(*)").From("vehicle_renewals").Row(&count)
+
+	return count, err
 }
 
 // CountReminders returns the number of the vehicleRecord records in the database.

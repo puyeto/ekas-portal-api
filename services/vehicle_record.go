@@ -23,7 +23,9 @@ type vehicleRecordDAO interface {
 	Delete(rs app.RequestScope, id uint32) error
 	// CreateVehicle create new vehicle
 	CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
+	ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error)
 	RenewVehicle(rs app.RequestScope, model *models.VehicleRenewals) (uint32, error)
+	CountRenewals(rs app.RequestScope) (int, error)
 	CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 	CountReminders(rs app.RequestScope, uid int) (int, error)
 	GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
@@ -107,6 +109,11 @@ func (s *VehicleRecordService) RenewVehicle(rs app.RequestScope, model *models.V
 	return s.dao.RenewVehicle(rs, model)
 }
 
+// RenewVehicle renew a vehicle.
+func (s *VehicleRecordService) ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error) {
+	return s.dao.ListVehicleRenewals(rs, offset, limit)
+}
+
 // CreateReminder creates a new reminder.
 func (s *VehicleRecordService) CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error) {
 	if err := model.ValidateReminders(); err != nil {
@@ -114,6 +121,11 @@ func (s *VehicleRecordService) CreateReminder(rs app.RequestScope, model *models
 	}
 
 	return s.dao.CreateReminder(rs, model)
+}
+
+// Count returns the number of vehicleRecords.
+func (s *VehicleRecordService) CountRenewals(rs app.RequestScope) (int, error) {
+	return s.dao.CountRenewals(rs)
 }
 
 // CountReminders returns the number of reminderRecords.
