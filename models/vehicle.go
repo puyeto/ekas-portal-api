@@ -259,8 +259,10 @@ type CurrentViolations struct {
 // VehicleRenewals ...
 type VehicleRenewals struct {
 	ID              uint32    `json:"id" db:"id"`
+	VehicleRegNo    string    `json:"vehicle_reg_no,omitempty" db:"vehicle_reg_no"`
 	VehicleID       int       `json:"vehicle_id" db:"vehicle_id"`
 	VehicleStringID string    `json:"vehicle_string_id" db:"vehicle_string_id"`
+	DeviceSerialNo  string    `json:"device_serial_no,omitempty" db:"device_serial_no"`
 	Status          int8      `json:"status" db:"status"`
 	AddedBy         string    `json:"added_by" db:"added_by"`
 	RenewalDate     time.Time `json:"renewal_date" db:"renewal_date"`

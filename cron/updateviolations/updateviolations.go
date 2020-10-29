@@ -33,18 +33,17 @@ type Devices struct {
 
 func getAllOfflines() {
 	devices, _ := getVehicleID()
-	for i, dev := range devices {
-		fmt.Println(i)
+	for _, dev := range devices {
 		// filter := bson.D{{Key: "deviceid", Value: int(dev.DeviceID)}}
 		count, err := Count(strconv.Itoa(int(dev.DeviceID)), bson.D{}, nil)
 		if err != nil {
 			continue
 		}
 
-		if count <= 1 {
+		if count <= 2 {
 			fmt.Printf("vehicle %v count %v\n", dev.DeviceID, count)
 
-			if count == 1 {
+			if count > 0 && count <= 5 {
 
 				// Delete collection
 				collection := app.MongoDB.Collection("data_" + strconv.Itoa(int(dev.DeviceID)))
@@ -54,15 +53,17 @@ func getAllOfflines() {
 			var m models.DeviceData
 			m.DeviceID = uint32(dev.DeviceID)
 			m.Offline = true
+			diff := time.Now().Sub(dev.LastSeen)
+			if diff.Hours() > 168 {
+				m.Disconnect = true
+			}
 			m.TransmissionReason = 255
 			m.DateTime = dev.LastSeen
 			m.DateTimeStamp = dev.LastSeen.Unix()
 			if err := LogCurrentViolationSeenMongoDB(m); err != nil {
-				fmt.Printf("error 1 = %v", err)
 				continue
 			}
 			if err := LogToMongoDB(m); err != nil {
-				fmt.Printf("error 2 = %v", err)
 				continue
 			}
 		}
