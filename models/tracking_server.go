@@ -8,7 +8,7 @@ type TrackingServerAuth struct {
 	Password string `json:"password"`
 }
 
-// ValidateTrackingServerLogin validates the TrackingServerAuth fields.
+// Validate validates the TrackingServerAuth fields.
 func (m TrackingServerAuth) Validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.Email, validation.Required, validation.Length(0, 120)),

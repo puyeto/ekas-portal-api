@@ -2,9 +2,7 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/ekas-portal-api/models"
@@ -75,7 +73,7 @@ func GetDeviceDataLogsMongo(deviceid string, filter primitive.D, opts *options.F
 		tdetails = append(tdetails, item)
 		i++
 	}
-	fmt.Println("Found a document: ", strconv.Itoa(i))
+	// fmt.Println("Found a document: ", strconv.Itoa(i))
 	if err := cur.Err(); err != nil {
 		return tdetails, err
 	}
