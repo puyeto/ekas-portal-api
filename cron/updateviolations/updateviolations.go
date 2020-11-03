@@ -2,7 +2,6 @@ package updateviolations
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -40,32 +39,27 @@ func getAllOfflines() {
 			continue
 		}
 
-		if count <= 2 {
-			fmt.Printf("vehicle %v count %v\n", dev.DeviceID, count)
-
-			if count > 0 && count <= 5 {
-
-				// Delete collection
-				collection := app.MongoDB.Collection("data_" + strconv.Itoa(int(dev.DeviceID)))
-				ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-				collection.DeleteMany(ctx, bson.D{})
-			}
-			var m models.DeviceData
-			m.DeviceID = uint32(dev.DeviceID)
-			m.Offline = true
-			diff := time.Now().Sub(dev.LastSeen)
-			if diff.Hours() > 168 {
-				m.Disconnect = true
-			}
-			m.TransmissionReason = 255
-			m.DateTime = dev.LastSeen
-			m.DateTimeStamp = dev.LastSeen.Unix()
-			if err := LogCurrentViolationSeenMongoDB(m); err != nil {
-				continue
-			}
-			if err := LogToMongoDB(m); err != nil {
-				continue
-			}
+		if count > 0 && count <= 5 {
+			// Delete collection
+			collection := app.MongoDB.Collection("data_" + strconv.Itoa(int(dev.DeviceID)))
+			ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+			collection.DeleteMany(ctx, bson.D{})
+		}
+		var m models.DeviceData
+		m.DeviceID = uint32(dev.DeviceID)
+		m.Offline = true
+		diff := time.Now().Sub(dev.LastSeen)
+		if diff.Hours() > 168 {
+			m.Disconnect = true
+		}
+		m.TransmissionReason = 255
+		m.DateTime = dev.LastSeen
+		m.DateTimeStamp = dev.LastSeen.Unix()
+		if err := LogCurrentViolationSeenMongoDB(m); err != nil {
+			continue
+		}
+		if err := LogToMongoDB(m); err != nil {
+			continue
 		}
 	}
 }
