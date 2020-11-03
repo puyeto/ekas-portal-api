@@ -1,6 +1,7 @@
 package daos
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -194,10 +195,24 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 	m.CreatedOn = time.Now()
 	m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
 	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, -1)
+
+	// check if cert has been renewed
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + m.CertificateNo + "' LIMIT 1) AS exist")
+	if err := q.Row(&exists); err != nil {
+		return m.ID, err
+	}
+
+	if exists == 1 {
+		return m.ID, errors.New("Certificate has been renewed")
+	}
+
+	// Save renewal details
 	if err := rs.Tx().Model(m).Exclude("VehicleRegNo", "DeviceSerialNo").Insert(); err != nil {
 		return m.ID, err
 	}
 
+	// update vehicle details
 	if _, err := rs.Tx().Update("vehicle_details", dbx.Params{
 		"renew":        m.Status,
 		"renewal_date": m.ExpiryDate},
