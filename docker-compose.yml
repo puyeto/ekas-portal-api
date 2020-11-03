@@ -3,7 +3,7 @@ services:
   api:
     image: omollo/ekas-portal-api-prod
     deploy:
-      replicas: 3
+      replicas: 5
     ports:
       - "8082:8082"
       - "8081:8081"
