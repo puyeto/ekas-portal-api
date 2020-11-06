@@ -215,7 +215,7 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 	// update vehicle details
 	if _, err := rs.Tx().Update("vehicle_details", dbx.Params{
 		"renew":        m.Status,
-		"renewal_date": m.ExpiryDate},
+		"renewal_date": m.RenewalDate},
 		dbx.HashExp{"vehicle_id": m.VehicleID}).Execute(); err != nil {
 		rs.Rollback()
 		return m.ID, err
