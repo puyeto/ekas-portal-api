@@ -22,7 +22,7 @@ func InitializeRedis() error {
 	// 	redisURL = "db-redis-cluster-do-user-4666162-0.db.ondigitalocean.com:25061"
 	// }
 
-	opt, _ := redis.ParseURL("rediss://:wdbsxehbizfl5kbu@db-redis-cluster-do-user-4666162-0.db.ondigitalocean.com:25061/1")
+	opt, _ := redis.ParseURL("rediss://:wdbsxehbizfl5kbu@db-redis-cluster-do-user-4666162-0.db.ondigitalocean.com:25061/3")
 	opt.PoolSize = 100
 	opt.MaxRetries = 2
 	opt.ReadTimeout = -1
@@ -32,6 +32,7 @@ func InitializeRedis() error {
 
 	ping, err := redisClient.Ping().Result()
 	if err == nil && len(ping) > 0 {
+		FlushAll()
 		println("Connected to Redis")
 		return nil
 	}
@@ -164,6 +165,11 @@ func IncrementValue(key string) int64 {
 // DelKey ...
 func DelKey(key string) error {
 	return redisClient.Del(key).Err()
+}
+
+// FlushAll ...
+func FlushAll() error {
+	return redisClient.FlushAll().Err()
 }
 
 // ListKeys ...
