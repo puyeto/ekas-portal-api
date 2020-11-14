@@ -20,22 +20,30 @@ type Status struct {
 
 // Run LastSeen.Run() will get triggered automatically.
 func (c Status) Run() {
+	// go deletedata()
 	populatedata()
-	// deletedata()
 }
 
 func populatedata() {
 	// Select data between dates 1166676296
-	data, _ := getTripDataByDeviceIDBtwDates("1114211591", 1604640200, 1604850200, 8686, 10)
-	var previous time.Time
+	// data, _ := getTripDataByDeviceIDBtwDates("1166676296", 1604642200, 1604850200, 5001, 500)
+	data, _ := getTripDataByDeviceIDBtwDates("1166676296", 1604753192, 1604850200, 0, 2000)
 	log.Println(len(data))
+	var previous time.Time
 	for i := 0; i < len(data); i++ {
 		if previous != data[i].DateTime {
 			data[i].DeviceID = 1829209633
+			data[i].GroundSpeed = 0.00
+			if data[i].Latitude < -5000000 {
+				data[i].Latitude = data[i].Latitude + 4000000
+			} else if data[i].Latitude > -4000000 {
+				data[i].Latitude = data[i].Latitude + 2000000
+			}
 			fmt.Println(i, len(data), data[i].DateTime, data[i].Latitude, data[i].Longitude, data[i].GroundSpeed)
-			// app.LogToMongoDB(data[i])
-			// app.LoglastSeenMongoDB(data[i])
-			// previous = data[i].DateTime
+			LogToRedis(data[i])
+			app.LogToMongoDB(data[i])
+			app.LoglastSeenMongoDB(data[i])
+			previous = data[i].DateTime
 		}
 	}
 }
@@ -56,7 +64,7 @@ func getTripDataByDeviceIDBtwDates(deviceid string, from, to int64, offset, limi
 
 func deletedata() {
 	// Select data between dates
-	data, _ := filterTripDataByDeviceIDBtwDates(1829209633, 1604886200, 1604887200)
+	data, _ := filterTripDataByDeviceIDBtwDates(1829209633, 1604722200, 1605887200)
 	log.Println(data)
 }
 
@@ -77,4 +85,39 @@ func filterTripDataByDeviceIDBtwDates(id, from, to uint32) (int, error) {
 	}
 
 	return int(res.DeletedCount), nil
+}
+
+// LogToRedis log data to redis
+func LogToRedis(m models.DeviceData) {
+	var device = strconv.FormatUint(uint64(m.DeviceID), 10)
+	lastSeen(m, "lastseen:"+device)
+	lastSeen(m, "lastseen")
+	// if m.TransmissionReason != 255 && m.GroundSpeed != 0 {
+	SetRedisLog(m, "data:"+device)
+	// }
+}
+
+// SetRedisLog log to redis
+func SetRedisLog(m models.DeviceData, key string) {
+	err := app.ZAdd(key, m.DateTimeStamp, m)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+type lastSeenStruct struct {
+	DateTime   time.Time
+	DeviceData models.DeviceData
+}
+
+func lastSeen(m models.DeviceData, key string) {
+	var data = lastSeenStruct{
+		DateTime:   m.DateTime,
+		DeviceData: m,
+	}
+	// SET object
+	_, err := app.SetValue(key, data)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
