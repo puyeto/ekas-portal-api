@@ -32,7 +32,7 @@ func InitializeRedis() error {
 
 	ping, err := redisClient.Ping().Result()
 	if err == nil && len(ping) > 0 {
-		FlushAll()
+		// FlushAll()
 		println("Connected to Redis")
 		return nil
 	}

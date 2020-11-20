@@ -148,38 +148,7 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) (models.Devic
 	if err != nil {
 		return d, err
 	}
-	fmt.Printf("Name is %v", res[0].Data.Name)
-
-	// if value.SystemCode == "MCPG" {
-	// 	var (
-	// 		message          string
-	// 		messageid        int
-	// 		violationMessage = make(chan models.MessageDetails)
-	// 	)
-
-	// 	go app.SendViolationSMSMessages(violationMessage)
-
-	// 	// fmt.Println("device_id", value.DeviceID)
-	// 	if value.Offline {
-	// 		message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 4
-	// 	} else if value.Disconnect {
-	// 		message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 3
-	// 	} else if value.Failsafe {
-	// 		message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 2
-	// 	} else if value.GroundSpeed > 80 {
-	// 		message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 1
-	// 	}
-
-	// 	fmt.Println(messageid, message)
-	// 	// violationMessage <- models.MessageDetails{messageid, message}
-	// 	vd := s.dao.GetVehicleName(rs, int(value.DeviceID))
-	// 	value.Name = vd.Name
-	// 	deviceData = append(deviceData, value)
-	// }
+	// fmt.Printf("Name is %v", res[0].Data.Name)
 
 	return res[0].Data, err
 }

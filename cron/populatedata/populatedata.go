@@ -25,20 +25,18 @@ func (c Status) Run() {
 }
 
 func populatedata() {
-	// Select data between dates 1166676296
-	// data, _ := getTripDataByDeviceIDBtwDates("1166676296", 1604642200, 1604850200, 5001, 500)
-	data, _ := getTripDataByDeviceIDBtwDates("1166676296", 1604753192, 1604850200, 0, 2000)
-	log.Println(len(data))
+	// Select data between dates
+	data, _ := getTripDataByDeviceIDBtwDates("1728208958", 1599220800, 1604491200, 10000, 5000)
 	var previous time.Time
 	for i := 0; i < len(data); i++ {
 		if previous != data[i].DateTime {
-			data[i].DeviceID = 1829209633
-			data[i].GroundSpeed = 0.00
-			if data[i].Latitude < -5000000 {
-				data[i].Latitude = data[i].Latitude + 4000000
-			} else if data[i].Latitude > -4000000 {
-				data[i].Latitude = data[i].Latitude + 2000000
-			}
+			data[i].DeviceID = 2004205614
+			// data[i].GroundSpeed = 0.00
+			// if data[i].Latitude < -5000000 {
+			// 	data[i].Latitude = data[i].Latitude + 4000000
+			// } else if data[i].Latitude > -4000000 {
+			// 	data[i].Latitude = data[i].Latitude + 2000000
+			// }
 			fmt.Println(i, len(data), data[i].DateTime, data[i].Latitude, data[i].Longitude, data[i].GroundSpeed)
 			LogToRedis(data[i])
 			app.LogToMongoDB(data[i])

@@ -4,6 +4,12 @@ services:
     image: omollo/ekas-portal-api-prod
     deploy:
       replicas: 5
+      restart_policy:
+        max_attempts: 3
+        condition: on-failure       
+      update_config:
+        parallelism: 3
+        delay: 10s
     ports:
       - "8082:8082"
       - "8081:8081"
