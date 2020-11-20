@@ -72,35 +72,35 @@ func (s *VehicleService) CountTripDataByDeviceID(deviceid string) (int, error) {
 func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error) {
 
 	var deviceData []models.DeviceData
-	var data []string
-	var err error
+	// var data []string
+	// var err error
 
-	if orderby == "asc" {
-		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit+offset-1))
-	} else {
-		data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit+offset-1))
+	// if orderby == "asc" {
+	// 	data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit+offset-1))
+	// } else {
+	// 	data, err = app.ZRevRange("data:"+deviceid, int64(offset), int64(limit+offset-1))
+	// }
+	// if err != nil {
+	// 	fmt.Println("Getting Keys Failed : " + err.Error())
+	// }
+
+	// if len(data) < limit {
+	deviceData, err := s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
+	for _, rec := range deviceData {
+		go app.ZAdd("data:"+deviceid, rec.DateTimeStamp, rec)
 	}
-	if err != nil {
-		fmt.Println("Getting Keys Failed : " + err.Error())
-	}
+	return deviceData, err
+	// }
 
-	if len(data) < limit {
-		deviceData, err := s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
-		for _, rec := range deviceData {
-			go app.ZAdd("data:"+deviceid, rec.DateTimeStamp, rec)
-		}
-		return deviceData, err
-	}
+	// for i := 0; i < len(data); i++ {
 
-	for i := 0; i < len(data); i++ {
+	// 	if data[i] != "0" {
+	// 		var deserializedValue models.DeviceData
+	// 		json.Unmarshal([]byte(data[i]), &deserializedValue)
+	// 		deviceData = append(deviceData, deserializedValue)
+	// 	}
 
-		if data[i] != "0" {
-			var deserializedValue models.DeviceData
-			json.Unmarshal([]byte(data[i]), &deserializedValue)
-			deviceData = append(deviceData, deserializedValue)
-		}
-
-	}
+	// }
 
 	return deviceData, err
 }
