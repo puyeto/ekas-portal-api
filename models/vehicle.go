@@ -29,7 +29,7 @@ type VehicleConfigDetails struct {
 	VehicleID           uint32    `json:"vehicle_id,omitempty"`
 	VehicleRegistration string    `json:"registration_no,omitempty"`
 	UserID              uint32    `json:"user_id" db:"user_id"`
-	Fitter              string    `json:"fitter,omitempty" db:"-"` // person who fitted the device from userid
+	Fitter              string    `json:"fitter" db:"-"` // person who fitted the device from userid
 	VehicleStatus       int8      `json:"vehicle_status" db:"vehicle_status"`
 	NTSAShow            int8      `json:"ntsa_show" db:"send_to_ntsa"`
 	DeviceStatus        string    `json:"device_status" db:"device_status"`
@@ -39,6 +39,7 @@ type VehicleConfigDetails struct {
 	NotificationEmail   string    `json:"notification_email,omitempty"`
 	NotificationNO      string    `json:"notification_no,omitempty"`
 	SimNO               string    `json:"sim_no,omitempty"`
+	SerialNo            string    `json:"serial_no"`
 	Data                string    `json:"vehicle_data,omitempty"`
 	CreatedOn           time.Time `json:"created_on,omitempty" db:"created_on"`
 	Renew               int8      `json:"renew" db:"renew"`
