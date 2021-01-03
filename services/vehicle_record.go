@@ -74,7 +74,7 @@ func (s *VehicleRecordService) Count(rs app.RequestScope, uid int, typ string) (
 	return s.dao.Count(rs, uid, typ)
 }
 
-// Count returns the number of filtered vehicleRecords.
+// CountFilter returns the number of filtered vehicleRecords.
 func (s *VehicleRecordService) CountFilter(rs app.RequestScope, model *models.FilterVehicles) (int, error) {
 	return s.dao.CountFilter(rs, model)
 }
@@ -109,7 +109,7 @@ func (s *VehicleRecordService) RenewVehicle(rs app.RequestScope, model *models.V
 	return s.dao.RenewVehicle(rs, model)
 }
 
-// RenewVehicle renew a vehicle.
+// ListVehicleRenewals renew a vehicle.
 func (s *VehicleRecordService) ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error) {
 	return s.dao.ListVehicleRenewals(rs, offset, limit)
 }
@@ -123,7 +123,7 @@ func (s *VehicleRecordService) CreateReminder(rs app.RequestScope, model *models
 	return s.dao.CreateReminder(rs, model)
 }
 
-// Count returns the number of vehicleRecords.
+// CountRenewals returns the number of vehicleRecords.
 func (s *VehicleRecordService) CountRenewals(rs app.RequestScope) (int, error) {
 	return s.dao.CountRenewals(rs)
 }

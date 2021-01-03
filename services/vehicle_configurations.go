@@ -41,6 +41,7 @@ type vehicleDAO interface {
 	CreateDevice(rs app.RequestScope, device *models.Devices) error
 	CheckIfSerialNoExists(rs app.RequestScope, device *models.Vehicle) error
 	CheckIfVehicleIsExpired(rs app.RequestScope, device *models.Vehicle, daystoexpiry int) error
+	GetFitterIDByAgentIDNo(rs app.RequestScope, agentid int) uint32
 }
 
 // VehicleService provides services related with vehicles.
@@ -89,7 +90,6 @@ func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit in
 	for _, rec := range deviceData {
 		go app.ZAdd("data:"+deviceid, rec.DateTimeStamp, rec)
 	}
-	return deviceData, err
 	// }
 
 	// for i := 0; i < len(data); i++ {
@@ -271,6 +271,11 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	// check if serial_no exists
 	if err := s.dao.CheckIfSerialNoExists(rs, model); err != nil {
 		return 0, err
+	}
+
+	if model.FitterID == 0 {
+		// get fitterid by agent id Number
+		model.FitterID = s.dao.GetFitterIDByAgentIDNo(rs, model.DeviceDetails.AgentID)
 	}
 
 	// Add Device Details

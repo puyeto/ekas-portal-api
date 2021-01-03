@@ -531,3 +531,12 @@ func (dao *VehicleDAO) CreateDevice(rs app.RequestScope, device *models.Devices)
 
 	return err
 }
+
+// GetFitterIDByAgentIDNo ...
+func (dao *VehicleDAO) GetFitterIDByAgentIDNo(rs app.RequestScope, agentid int) uint32 {
+	var aid uint32
+	query := "SELECT company_id FROM companies WHERE contact_id='" + strconv.Itoa(agentid) + "' LIMIT 1"
+	rs.Tx().NewQuery(query).Row(&aid)
+
+	return aid
+}
