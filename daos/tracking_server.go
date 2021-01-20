@@ -17,7 +17,7 @@ func NewTrackingServerDAO() *TrackingServerDAO {
 }
 
 // GetTrackingServerUserLoginIDByEmail ...
-func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, int, error) {
+func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (interface{}, error) {
 	var res struct {
 		AuthUserID   uint32
 		AuthUserRole int
@@ -29,7 +29,7 @@ func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.Request
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
 		Where(dbx.HashExp{"auth_user_email": email}).Limit(1).One(&res)
 
-	return res.AuthUserID, res.AuthUserRole, res.CompanyID, err
+	return res, err
 }
 
 // SaveTrackingServerLoginDetails saves a new user record in the database.
@@ -62,6 +62,18 @@ func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) 
 		Where(dbx.HashExp{"auth_user_email": email}).One(&usr)
 
 	return usr, err
+}
+
+// GetCompanyDetailsByEmail
+func (dao *TrackingServerDAO) GetCompanyDetailsByEmail(rs app.RequestScope, email string) (models.Companies, error) {
+	com := models.Companies{}
+	err := rs.Tx().Select("companies.*").
+		From("companies").
+		LeftJoin("company_users", dbx.NewExp("company_users.company_id = companies.company_id")).
+		LeftJoin("auth_users", dbx.NewExp("auth_users.auth_user_id = company_users.user_id")).
+		Where(dbx.HashExp{"auth_user_email": email}).One(&com)
+
+	return com, err
 }
 
 // GetUserByUserHash reads the user with the specified email from the database.

@@ -41,7 +41,7 @@ func SendSMSMessagesTwilio(message chan models.MessageDetails) {
 					accountSid := "ACeab16ebd80a48c1f4318f09c6ad6e33e"
 					authToken := "8812492c587bf5cda4ee01a0bfedff3d"
 					urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"
-					fmt.Println("accountSid = ", accountSid)
+					// fmt.Println("accountSid = ", accountSid)
 
 					// Pack up the data for our message
 					msgData := url.Values{}

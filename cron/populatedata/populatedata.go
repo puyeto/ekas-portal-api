@@ -26,12 +26,12 @@ func (c Status) Run() {
 
 func populatedata() {
 	// Select data between dates
-	data, _ := getTripDataByDeviceIDBtwDates("1728208958", 1599220800, 1604491200, 10000, 5000)
+	data, _ := getTripDataByDeviceIDBtwDates("1529203311", 1610261047, 1610485668, 3020, 5000)
 	var previous time.Time
 	for i := 0; i < len(data); i++ {
 		if previous != data[i].DateTime {
-			data[i].DeviceID = 2004205614
-			// data[i].GroundSpeed = 0.00
+			data[i].DeviceID = 2023202064
+			data[i].GroundSpeed = 0.00
 			// if data[i].Latitude < -5000000 {
 			// 	data[i].Latitude = data[i].Latitude + 4000000
 			// } else if data[i].Latitude > -4000000 {
@@ -62,11 +62,11 @@ func getTripDataByDeviceIDBtwDates(deviceid string, from, to int64, offset, limi
 
 func deletedata() {
 	// Select data between dates
-	data, _ := filterTripDataByDeviceIDBtwDates(1829209633, 1604722200, 1605887200)
+	data, _ := deleteTripDataByDeviceIDBtwDates(2023202064, 1610256527, 1610472527)
 	log.Println(data)
 }
 
-func filterTripDataByDeviceIDBtwDates(id, from, to uint32) (int, error) {
+func deleteTripDataByDeviceIDBtwDates(id, from, to uint32) (int, error) {
 	filter := bson.D{
 		{Key: "datetimestamp", Value: bson.D{{Key: "$gte", Value: from}}},
 		{Key: "datetimestamp", Value: bson.D{{Key: "$lte", Value: to}}},
