@@ -295,6 +295,21 @@ func (dao *VehicleDAO) CheckIfSerialNoExists(rs app.RequestScope, cd *models.Veh
 	return nil
 }
 
+// CheckIfDeviceIDExists ...
+func (dao *VehicleDAO) CheckIfDeviceIDExists(rs app.RequestScope, cd *models.Vehicle) error {
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_configuration WHERE device_id='" + cd.GovernorDetails.DeviceID + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	if err != nil {
+		return errors.New("Device ID check failed try again")
+	}
+	if exists > 0 {
+		return errors.New("Device ID already exist. Please unplug your device and try again")
+	}
+
+	return nil
+}
+
 // CheckIfVehicleIsExpired ...
 func (dao *VehicleDAO) CheckIfVehicleIsExpired(rs app.RequestScope, cd *models.Vehicle, daystoexpiry int) error {
 	now := time.Now()
