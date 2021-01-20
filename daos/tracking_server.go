@@ -64,7 +64,7 @@ func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) 
 	return usr, err
 }
 
-// GetCompanyDetailsByEmail
+// GetCompanyDetailsByEmail ...
 func (dao *TrackingServerDAO) GetCompanyDetailsByEmail(rs app.RequestScope, email string) (models.Companies, error) {
 	com := models.Companies{}
 	err := rs.Tx().Select("companies.*").
