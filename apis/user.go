@@ -182,6 +182,7 @@ func (r *userResource) OTPRequest(c *routing.Context) error {
 	app.MessageChan <- app.MessageDetails{
 		Message:  strconv.Itoa(otp),
 		ToNumber: phone,
+		Type:     "OTPRequest",
 	}
 
 	return c.Write(map[string]int{

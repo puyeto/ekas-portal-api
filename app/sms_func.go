@@ -60,14 +60,12 @@ func SendViolationSMSMessages(message chan models.MessageDetails) {
 						if err == nil {
 							// Save sent message
 							var savedata = models.SaveMessageDetails{
-								MessageID:   message.MessageID,
-								Message:     data["body"].(string),
-								DateTime:    time.Now(),
-								From:        data["from"].(string),
-								To:          data["to"].(string),
-								DateCreated: data["date_created"].(string),
-								SID:         data["sid"].(string),
-								Status:      data["status"].(string),
+								MessageID: message.MessageID,
+								Message:   data["body"].(string),
+								DateTime:  time.Now(),
+								From:      data["from"].(string),
+								To:        data["to"].(string),
+								Status:    data["status"].(string),
 							}
 							saveSentMessages(savedata)
 						}
@@ -100,13 +98,11 @@ func checkViolationMessages(tonumber string) (SMSCheck, error) {
 // save sent messages
 func saveSentMessages(m models.SaveMessageDetails) {
 	DBCon.Insert("saved_messages", dbx.Params{
-		"message_id":   m.MessageID,
-		"message":      m.Message,
-		"date_time":    m.DateTime,
-		"from":         m.From,
-		"to":           m.To,
-		"date_created": m.DateCreated,
-		"sid":          m.SID,
-		"status":       m.Status,
+		"message_id": m.MessageID,
+		"message":    m.Message,
+		"date_time":  m.DateTime,
+		"from":       m.From,
+		"to":         m.To,
+		"status":     m.Status,
 	}).Execute()
 }

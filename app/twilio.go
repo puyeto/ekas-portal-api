@@ -66,14 +66,12 @@ func SendSMSMessagesTwilio(message chan models.MessageDetails) {
 						if err == nil {
 							// Save sent message
 							var savedata = models.SaveMessageDetails{
-								MessageID:   message.MessageID,
-								Message:     data["body"].(string),
-								DateTime:    time.Now(),
-								From:        data["from"].(string),
-								To:          data["to"].(string),
-								DateCreated: data["date_created"].(string),
-								SID:         data["sid"].(string),
-								Status:      data["status"].(string),
+								MessageID: message.MessageID,
+								Message:   data["body"].(string),
+								DateTime:  time.Now(),
+								From:      data["from"].(string),
+								To:        data["to"].(string),
+								Status:    data["status"].(string),
 							}
 							saveSentMessages(savedata)
 						}

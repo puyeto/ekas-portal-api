@@ -37,10 +37,9 @@ type MessageDetails struct {
 type SaveMessageDetails struct {
 	MessageID   int
 	Message     string
+	MessageType string
 	DateTime    time.Time
-	SID         string
 	Status      string
-	DateCreated string
 	From        string
 	To          string
 }
