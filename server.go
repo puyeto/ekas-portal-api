@@ -67,7 +67,7 @@ func main() {
 		jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
 		jobrunner.Schedule("@every 60m", lastseen.Status{})
 		jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
-		jobrunner.In(2*time.Second, reportvioloations.Status{})
+		// jobrunner.In(2*time.Second, reportvioloations.Status{})
 	} else {
 		jobrunner.In(2*time.Second, reportvioloations.Status{})
 	}
