@@ -19,7 +19,7 @@ type Status struct {
 // Run LastSeen.Run() will get triggered automatically.
 func (c Status) Run() {
 	// select all deviceids
-	getAllViolations(0, 500)
+	getAllViolations(0, 50000)
 }
 
 func sendSMS(message, tonumber string) {
