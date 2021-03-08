@@ -2,6 +2,7 @@ package reportvioloations
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
@@ -22,29 +23,32 @@ func (c Status) Run() {
 	getAllViolations(0, 50000)
 }
 
-func sendSMS(message, tonumber string) {
+func sendSMS(vid, did int32, message, tonumber, violtype string) {
 	check, _ := app.CheckMessages(tonumber, "Violations")
 	duration := time.Now().Sub(check.DateTime)
 	// fmt.Printf("difference %d days", int(duration.Hours()/24) )
 	if int(duration.Hours()/24) < 4 {
 		return
-	} else {
-		app.MessageChan <- app.MessageDetails{
-			Message:  message,
-			ToNumber: tonumber,
-			Type:     "Violations",
-		}
-
-		// save sms
-		go saveSMS(message, tonumber)
 	}
+
+	app.MessageChan <- app.MessageDetails{
+		Message:  message,
+		ToNumber: tonumber,
+		Type:     violtype,
+	}
+
+	// save sms
+	go saveSMS(vid, did, message, tonumber, violtype)
+
 }
 
-func saveSMS(message, tonumber string) {
+func saveSMS(vid, did int32, message, tonumber, violtype string) {
 	details := models.SaveMessageDetails{
 		MessageID:   0,
-		Message:     "",
-		MessageType: "Violations",
+		Message:     message,
+		MessageType: violtype,
+		VehicleID:   vid,
+		DeviceID:    did,
 		DateTime:    time.Now(),
 		Status:      "Sent",
 		From:        "EKASTECH",
@@ -84,22 +88,30 @@ func getAllViolations(offset, limit int) ([]models.XMLResults, error) {
 		dData.VehicleOwner = vd.VehicleOwner
 		dData.OwnerTel = vd.OwnerTel
 
+		var msg = ""
 		if item.Data.Failsafe {
-			dData.ViolationType = "Dear Customer, your vehicle " + vd.Name + " had a signal disconnect on " + dData.DateOfViolation
+			msg = "Dear Customer, your vehicle " + vd.Name + " had a signal disconnect on " + dData.DateOfViolation
+			dData.ViolationType = "Failsafe"
 		} else if item.Data.Disconnect {
-			dData.ViolationType = "Dear Customer, your vehicle " + vd.Name + " had a power disconnect on " + dData.DateOfViolation
+			msg = "Dear Customer, your vehicle " + vd.Name + " had a power disconnect on " + dData.DateOfViolation
+			dData.ViolationType = "Disconnect"
 		} else if item.Data.Offline {
-			dData.ViolationType = "Dear Customer, your vehicle " + vd.Name + " was offline on " + dData.DateOfViolation
+			msg = "Dear Customer, your vehicle " + vd.Name + " was offline on " + dData.DateOfViolation
+			dData.ViolationType = "Offline"
 		} else {
-			dData.ViolationType = "Dear Customer, your vehicle " + vd.Name + " was overspeeding on " + dData.DateOfViolation
+			msg = "Dear Customer, your vehicle " + vd.Name + " was overspeeding on " + dData.DateOfViolation
+			dData.ViolationType = "Overspeeding"
 		}
-		dData.ViolationType += ". Kindly Contact your limiter dealer immediately."
+		msg += ". Kindly Contact your limiter dealer immediately."
 
-		go sendSMS(dData.ViolationType, dData.OwnerTel)
-
-		if dData.VehicleRegistration != "" {
-			vdetails = append(vdetails, dData)
+		if dData.VehicleRegistration == "" {
+			return vdetails, errors.New("error")
 		}
+
+		time.Sleep(3 * time.Second)
+
+		vdetails = append(vdetails, dData)
+		sendSMS(vd.VehicleID, item.DeviceID, msg, dData.OwnerTel, dData.ViolationType)
 	}
 
 	if err := cur.Err(); err != nil {
@@ -112,11 +124,11 @@ func getAllViolations(offset, limit int) ([]models.XMLResults, error) {
 // GetVehicleDetails ...
 func getVehicleDetails(deviceid int) models.VDetails {
 	var vd models.VDetails
-	query := "SELECT send_to_ntsa, vehicle_reg_no, json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
+	query := "SELECT vehicle_details.vehicle_id, send_to_ntsa, vehicle_reg_no, json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
 	query += " FROM vehicle_configuration "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vehicle_configuration.vehicle_string_id) "
 	query += " WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
-	app.DBCon.NewQuery(query).Row(&vd.SendToNTSA, &vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
+	app.DBCon.NewQuery(query).Row(&vd.VehicleID, &vd.SendToNTSA, &vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
 
 	return vd
 }

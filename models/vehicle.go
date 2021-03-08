@@ -146,6 +146,7 @@ type VehicleDetails struct {
 
 // VDetails ...
 type VDetails struct {
+	VehicleID    int32
 	Name         string
 	VehicleOwner string
 	OwnerTel     string

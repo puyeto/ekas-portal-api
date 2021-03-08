@@ -56,6 +56,8 @@ func CheckMessages(tonumber, messagetype string) (SMSCheck, error) {
 func SaveSentMessages(m models.SaveMessageDetails) {
 	_, err := DBCon.Insert("saved_messages", dbx.Params{
 		"message_id":   m.MessageID,
+		"vehicle_id":   m.VehicleID,
+		"device_id":    m.DeviceID,
 		"message":      m.Message,
 		"message_type": m.MessageType,
 		"date_time":    m.DateTime,

@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
@@ -63,13 +62,11 @@ func main() {
 		// run cronjobs
 		// go jobrunner.Schedule("@every 60m", checkdata.Status{})
 		jobrunner.Schedule("@every 60m", lastseen.Status{})
-		// go jobrunner.In(10*time.Second, updateviolations.Status{})
 		jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
-		jobrunner.Schedule("@every 60m", lastseen.Status{})
-		jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
-		// jobrunner.In(2*time.Second, reportvioloations.Status{})
+		// jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
+		jobrunner.Schedule("@every 60m", reportvioloations.Status{})
 	} else {
-		jobrunner.In(2*time.Second, reportvioloations.Status{})
+		// jobrunner.In(2*time.Second, reportvioloations.Status{})
 	}
 
 	// wire up API routing

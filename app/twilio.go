@@ -73,7 +73,7 @@ func SendSMSMessagesTwilio(message chan models.MessageDetails) {
 								To:        data["to"].(string),
 								Status:    data["status"].(string),
 							}
-							saveSentMessages(savedata)
+							SaveSentMessages(savedata)
 						}
 					} else {
 						fmt.Println(resp.Status)
