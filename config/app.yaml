@@ -2,8 +2,8 @@
 # Make sure you override this in production with the environment variable: RESTFUL_DSN
 # dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
 # local_dsn: "root:@tcp(127.0.0.1:3307)/ekas_portal?parseTime=true"
-local_dsn: "remote:Safcom-2030@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
-server_dns: "remote:Safcom-2030@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
+local_dsn: "remote:2030-Ekas12@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
+server_dns: "remote:2030-Ekas12@tcp(159.65.92.201:3306)/ekas_portal?parseTime=true"
 tracking_server_url: "https://tracking.ekastech.com/api/"
 server_port: "8081"
 mongo_db_dns: "mongodb://root:safcom2012@68.183.39.248:27017/?authSource=admin"
