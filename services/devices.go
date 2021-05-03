@@ -24,6 +24,8 @@ type deviceDAO interface {
 	Delete(rs app.RequestScope, id int32) error
 	CountConfiguredDevices(rs app.RequestScope, vehicleid int, deviceid int64) (int, error)
 	ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid int, deviceid int64) ([]models.DeviceConfiguration, error)
+	SearchDevices(rs app.RequestScope, searchterm string, offset, limit int) ([]models.Devices, error)
+	CountSearches(rs app.RequestScope, searchterm string) (int, error)
 }
 
 // DeviceService provides services related with devices.
@@ -101,4 +103,14 @@ func (s *DeviceService) CountConfiguredDevices(rs app.RequestScope, vehicleid in
 // ConfiguredDevices ...
 func (s *DeviceService) ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid int, deviceid int64) ([]models.DeviceConfiguration, error) {
 	return s.dao.ConfiguredDevices(rs, offset, limit, vehicleid, deviceid)
+}
+
+// SearchDevices ...
+func (s *DeviceService) SearchDevices(rs app.RequestScope, searchterm string, offset, limit int) ([]models.Devices, error) {
+	return s.dao.SearchDevices(rs, searchterm, offset, limit)
+}
+
+// CountSearches Count returns the number of search records.
+func (s *DeviceService) CountSearches(rs app.RequestScope, searchterm string) (int, error) {
+	return s.dao.CountSearches(rs, searchterm)
 }

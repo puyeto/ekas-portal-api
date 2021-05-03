@@ -36,6 +36,7 @@ func (dao *DeviceDAO) Create(rs app.RequestScope, device *models.Devices) error 
 		"device_model":        strings.ToUpper(device.DeviceModelNo),
 		"device_manufacturer": strings.ToUpper(device.DeviceManufacturer),
 		"sim_serial_no":       device.SimSerialNo,
+		"certificate_no":      device.CertificateNo,
 		"sim_number":          device.SimNumber,
 		"motherboard_no":      device.MotherboardNO,
 		"technician":          device.Technician,
@@ -55,7 +56,23 @@ func (dao *DeviceDAO) Update(rs app.RequestScope, id int32, device *models.Devic
 		return err
 	}
 	device.ID = id
-	return rs.Tx().Model(device).Exclude("Id").Update()
+	// return rs.Tx().Model(device).Exclude("ID", "CreatedOn", "Positions").Update()
+	_, err := rs.Tx().Update("device_details", dbx.Params{
+		"device_id":           device.DeviceID,
+		"device_name":         device.DeviceName,
+		"device_serial_no":    strings.ToUpper(device.DeviceSerialNo),
+		"device_model":        strings.ToUpper(device.DeviceModelNo),
+		"device_manufacturer": strings.ToUpper(device.DeviceManufacturer),
+		"sim_serial_no":       device.SimSerialNo,
+		"certificate_no":      device.CertificateNo,
+		"sim_number":          device.SimNumber,
+		"motherboard_no":      device.MotherboardNO,
+		"technician":          device.Technician,
+		"configured":          device.Configured,
+		"note":                device.Note},
+		dbx.HashExp{"id": id}).Execute()
+	return err
+
 }
 
 // Delete deletes an device with the specified ID from the database.
@@ -89,14 +106,14 @@ func (dao *DeviceDAO) Query(rs app.RequestScope, offset, limit, cid int) ([]mode
 	if cid == 0 {
 		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
 			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
-			"sim_serial_no", "sim_number", "motherboard_no", "technician", "status", "configured", "configuration_date", "status_reason", "created_on").
+			"sim_serial_no", "certificate_no", "sim_number", "motherboard_no", "technician", "status", "configured", "configuration_date", "status_reason", "created_on").
 			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
 			From("device_details").OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
 
 	} else {
 		err = rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
 			"COALESCE(company_name, '') AS company_name", "device_serial_no", "device_model", "device_manufacturer",
-			"sim_serial_no", "sim_number", "motherboard_no", "technician", "status", "configured", "configuration_date", "status_reason", "created_on").
+			"sim_serial_no", "certificate_no", "sim_number", "motherboard_no", "technician", "status", "configured", "configuration_date", "status_reason", "created_on").
 			LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
 			From("device_details").Where(dbx.HashExp{"device_details.company_id": cid}).
 			OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
@@ -221,6 +238,26 @@ func (dao *DeviceDAO) ConfiguredDevices(rs app.RequestScope, offset, limit, vehi
 	query += " ORDER BY conf_id DESC LIMIT " + strconv.Itoa(offset) + ", " + strconv.Itoa(limit)
 	q := rs.Tx().NewQuery(query)
 	err := q.All(&devices)
+
+	return devices, err
+}
+
+// CountSearches ///
+func (dao *DeviceDAO) CountSearches(rs app.RequestScope, searchterm string) (int, error) {
+	var count int
+	err := rs.Tx().Select("COUNT(*)").From("device_details").Where(dbx.HashExp{"device_serial_no": searchterm}).Row(&count)
+	return count, err
+}
+
+// SearchDevices retrieves the device records with the specified offset and limit from the database.
+func (dao *DeviceDAO) SearchDevices(rs app.RequestScope, searchterm string, offset, limit int) ([]models.Devices, error) {
+	devices := []models.Devices{}
+	err := rs.Tx().Select("id", "device_id", "vehicle_id", "device_name", "device_details.company_id",
+		"COALESCE(company_name, '') AS company_name", "certificate_no", "device_serial_no", "device_model", "device_manufacturer",
+		"sim_serial_no", "sim_number", "motherboard_no", "technician", "status", "configured", "configuration_date", "status_reason", "created_on").
+		LeftJoin("companies", dbx.NewExp("companies.company_id = device_details.company_id")).
+		From("device_details").Where(dbx.HashExp{"device_details.device_serial_no": searchterm}).
+		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&devices)
 
 	return devices, err
 }
