@@ -70,6 +70,13 @@ func (dao *UserDAO) ResetPassword(rs app.RequestScope, m *models.ResetPassword) 
 	return err
 }
 
+// QueryDepartments retrieves the company records with the specified offset and limit from the database.
+func (dao *UserDAO) QueryDepartments(rs app.RequestScope) ([]models.Departments, error) {
+	dep := []models.Departments{}
+	err := rs.Tx().Select("id", "name", "description").From("departments").OrderBy("id ASC").All(&dep)
+	return dep, err
+}
+
 // CreateCompanyUser create user relationship to company.
 func (dao *UserDAO) CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error {
 	_, err := rs.Tx().Insert("company_users", dbx.Params{

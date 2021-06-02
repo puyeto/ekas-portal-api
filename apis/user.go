@@ -24,6 +24,7 @@ type (
 		Count(rs app.RequestScope) (int, error)
 		Update(rs app.RequestScope, model *models.AuthUsers) (*models.AuthUsers, error)
 		ResetPassword(rs app.RequestScope, model *models.ResetPassword) error
+		QueryDepartments(rs app.RequestScope) ([]models.Departments, error)
 	}
 
 	// userResource defines the handlers for the CRUD APIs.
@@ -45,6 +46,7 @@ func ServeUserResource(rg *routing.RouteGroup, service userService) {
 	rg.Put("/users/update", r.update)
 	rg.Get("/ping", r.healthCheck)
 	rg.Get("/otp-request", r.OTPRequest)
+	rg.Get("/departments/list", r.queryDepartments)
 }
 
 func (r *userResource) query(c *routing.Context) error {
@@ -165,6 +167,15 @@ func (r *userResource) update(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+func (r *userResource) queryDepartments(c *routing.Context) error {
+	rs := app.GetRequestScope(c)
+	items, err := r.service.QueryDepartments(rs)
+	if err != nil {
+		return err
+	}
+	return c.Write(items)
 }
 
 // OTPRequest ...

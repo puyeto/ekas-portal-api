@@ -34,6 +34,7 @@ type userDAO interface {
 	CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
 	UpdateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
 	IfCompanyUserExists(rs app.RequestScope, companyid int32, userid uint32) (int, error)
+	QueryDepartments(rs app.RequestScope) ([]models.Departments, error)
 }
 
 // UserService provides services related with users.
@@ -238,6 +239,11 @@ func (u *UserService) SubmitUserRole(rs app.RequestScope, model *models.AdminUse
 func (u *UserService) Delete(rs app.RequestScope, id int32) error {
 	err := u.dao.Delete(rs, id)
 	return err
+}
+
+// QueryDepartments returns departments with the specified offset and limit.
+func (u *UserService) QueryDepartments(rs app.RequestScope) ([]models.Departments, error) {
+	return u.dao.QueryDepartments(rs)
 }
 
 // // sendConfirmationEmail Sends an email to the new registered user

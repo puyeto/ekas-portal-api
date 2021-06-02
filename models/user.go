@@ -178,6 +178,13 @@ type MailDetails struct {
 	Body    string
 }
 
+// Departments ....
+type Departments struct {
+	ID          int    `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
+}
+
 // CreateMail creates a new mail
 func CreateMail(from string, to string, subject string, body string) *MailDetails {
 	return &MailDetails{

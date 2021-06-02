@@ -12,7 +12,6 @@ import (
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
-	"github.com/ekas-portal-api/cron/lastseen"
 	"github.com/ekas-portal-api/cron/reportvioloations"
 	"github.com/ekas-portal-api/cron/updateviolations"
 	"github.com/ekas-portal-api/daos"
@@ -61,10 +60,10 @@ func main() {
 	if os.Getenv("GO_ENV") == "production" {
 		// run cronjobs
 		// go jobrunner.Schedule("@every 60m", checkdata.Status{})
-		jobrunner.Schedule("@every 60m", lastseen.Status{})
+		// jobrunner.Schedule("@every 60m", lastseen.Status{})
 		jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
-		// jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
-		jobrunner.Schedule("@every 60m", reportvioloations.Status{})
+		jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
+		// jobrunner.Schedule("@every 60m", reportvioloations.Status{})
 	} else {
 		// jobrunner.In(2*time.Second, reportvioloations.Status{})
 	}
