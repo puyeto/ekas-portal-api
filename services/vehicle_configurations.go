@@ -21,7 +21,7 @@ type vehicleDAO interface {
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) (uint32, error)
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) (uint32, error)
 	CreateFitter(rs app.RequestScope, fd *models.FitterDetails) error
-	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error
+	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error
 	UpdateConfigurationStatus(rs app.RequestScope, configid uint32, status int8) error
 	CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 	CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
@@ -312,7 +312,7 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, model.VehicleID, vd.VehicleStringID); err != nil {
+	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, model.VehicleID); err != nil {
 		return 0, err
 	}
 

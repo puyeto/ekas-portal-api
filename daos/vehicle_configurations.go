@@ -244,11 +244,11 @@ func (dao *VehicleDAO) VehicleExistsConfigurationByStringID(rs app.RequestScope,
 }
 
 //CreateConfiguration Add configuartion details to db
-func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error {
+func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error {
 	var vehiclestringid = strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1))
 
 	// Delete Previous Configuration
-	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehstringid}).Execute()
+	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehiclestringid}).Execute()
 	if err != nil {
 		return err
 	}
