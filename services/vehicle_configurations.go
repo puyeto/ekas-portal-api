@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ekas-portal-api/app"
@@ -283,6 +284,10 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		// get fitterid by agent id Number
 		model.FitterID = s.dao.GetFitterIDByAgentIDNo(rs, model.DeviceDetails.AgentID)
 	}
+
+	model.DeviceDetails.DeviceType = strings.ToUpper(model.DeviceDetails.DeviceType)
+	model.DeviceDetails.SerialNO = strings.ToUpper(model.DeviceDetails.SerialNO)
+	model.DeviceDetails.ChasisNO = strings.ToUpper(model.DeviceDetails.ChasisNO)
 
 	// Add Device Details
 	did, _ := strconv.ParseInt(model.GovernorDetails.DeviceID, 10, 64)
