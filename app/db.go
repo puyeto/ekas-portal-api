@@ -21,7 +21,7 @@ func InitializeDB(dns string) *dbx.DB {
 	// db.DB().SetConnMaxLifetime(time.Second * 10)
 	db.DB().SetConnMaxLifetime(0)
 	db.DB().SetMaxIdleConns(3)
-	db.DB().SetMaxOpenConns(300)
+	db.DB().SetMaxOpenConns(100)
 
 	DBCon = db
 	return db
