@@ -17,20 +17,28 @@ func NewUserDAO() *UserDAO {
 }
 
 // Count returns the number of the company records in the database.
-func (dao *UserDAO) Count(rs app.RequestScope) (int, error) {
+func (dao *UserDAO) Count(rs app.RequestScope, cid int) (int, error) {
 	var count int
-	err := rs.Tx().Select("COUNT(*)").From("auth_users").Row(&count)
+	q := rs.Tx().Select("COUNT(*)").From("auth_users")
+	if cid > 0 {
+		q.LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
+			Where(dbx.HashExp{"company_users.company_id": cid})
+	}
+	err := q.Row(&count)
 	return count, err
 }
 
 // Query retrieves the company records with the specified offset and limit from the database.
-func (dao *UserDAO) Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error) {
+func (dao *UserDAO) Query(rs app.RequestScope, offset, limit, cid int) ([]models.AuthUsers, error) {
 	users := []models.AuthUsers{}
-	err := rs.Tx().Select("auth_user_id", "auth_user_email", "auth_user_status", "auth_user_role", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
+	q := rs.Tx().Select("auth_user_id", "auth_user_email", "auth_user_status", "auth_user_role", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
 		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
-		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-		OrderBy("auth_user_id ASC").Offset(int64(offset)).Limit(int64(limit)).All(&users)
+		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id"))
+	if cid > 0 {
+		q.Where(dbx.HashExp{"company_users.company_id": cid})
+	}
+	err := q.OrderBy("auth_user_id ASC").Offset(int64(offset)).Limit(int64(limit)).All(&users)
 	return users, err
 }
 

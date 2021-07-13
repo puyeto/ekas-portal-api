@@ -27,8 +27,8 @@ type userDAO interface {
 	CreateNewEmailVerification(rs app.RequestScope, con *models.ConfirmationEmailDetails) error
 	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
 	// List users
-	Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
-	Count(rs app.RequestScope) (int, error)
+	Query(rs app.RequestScope, offset, limit, cid int) ([]models.AuthUsers, error)
+	Count(rs app.RequestScope, cid int) (int, error)
 	Update(rs app.RequestScope, model *models.AuthUsers) error
 	ResetPassword(rs app.RequestScope, model *models.ResetPassword) error
 	CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
@@ -55,13 +55,13 @@ func New() models.AdminUserDetails {
 }
 
 // Count returns the number of users.
-func (u *UserService) Count(rs app.RequestScope) (int, error) {
-	return u.dao.Count(rs)
+func (u *UserService) Count(rs app.RequestScope, cid int) (int, error) {
+	return u.dao.Count(rs, cid)
 }
 
 // Query returns users with the specified offset and limit.
-func (u *UserService) Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error) {
-	return u.dao.Query(rs, offset, limit)
+func (u *UserService) Query(rs app.RequestScope, offset, limit, cid int) ([]models.AuthUsers, error) {
+	return u.dao.Query(rs, offset, limit, cid)
 }
 
 // GetUser returns the user with the specified the user ID.
