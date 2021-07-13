@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 )
@@ -38,9 +40,18 @@ func (s *CertificateService) Get(rs app.RequestScope, id int) (*models.Certifica
 
 // Create creates a new certificate.
 func (s *CertificateService) Create(rs app.RequestScope, model *models.Certificates) (*models.Certificates, error) {
-	if err := model.ValidateCertificates(); err != nil {
+	if err := model.Validate(); err != nil {
 		return nil, err
 	}
+
+	if model.IssuedOn.IsZero() {
+		model.IssuedOn = time.Now()
+	}
+
+	if model.CertSerial == "" {
+		model.CertSerial = model.CertNo
+	}
+
 	if err := s.dao.Create(rs, model); err != nil {
 		return nil, err
 	}
@@ -49,7 +60,7 @@ func (s *CertificateService) Create(rs app.RequestScope, model *models.Certifica
 
 // Update updates the certificate with the specified ID.
 func (s *CertificateService) Update(rs app.RequestScope, id int, model *models.Certificates) (*models.Certificates, error) {
-	if err := model.ValidateCertificates(); err != nil {
+	if err := model.Validate(); err != nil {
 		return nil, err
 	}
 	if err := s.dao.Update(rs, id, model); err != nil {
