@@ -52,6 +52,7 @@ type AdminUserDetails struct {
 // AuthUsers ...
 type AuthUsers struct {
 	UserID      uint32 `json:"user_id" db:"pk,auth_user_id"`
+	FullName    string `json:"full_name" db:"full_name"`
 	FirstName   string `json:"first_name" db:"first_name"`
 	LastName    string `json:"last_name" db:"last_name"`
 	Email       string `json:"email" db:"auth_user_email"`
