@@ -37,7 +37,7 @@ type MessageDetails struct {
 type SaveMessageDetails struct {
 	MessageID   int
 	VehicleID   int32
-	DeviceID    int32
+	DeviceID    int64
 	Message     string
 	MessageType string
 	DateTime    time.Time

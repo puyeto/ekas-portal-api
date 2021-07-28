@@ -14,7 +14,7 @@ import (
 // vehicleDAO specifies the interface of the vehicle DAO needed by VehicleService.
 type vehicleDAO interface {
 	GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-	GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error)
+	GetConfigurationDetails(rs app.RequestScope, vehicleid int, deviceid int64) (*models.VehicleConfigDetails, error)
 	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error)
 	GetVehicleName(rs app.RequestScope, deviceid int) models.VDetails
@@ -62,7 +62,7 @@ func (s *VehicleService) GetVehicleByStrID(rs app.RequestScope, strid string) (*
 }
 
 // GetConfigurationDetails ...
-func (s *VehicleService) GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error) {
+func (s *VehicleService) GetConfigurationDetails(rs app.RequestScope, vehicleid int, deviceid int64) (*models.VehicleConfigDetails, error) {
 	return s.dao.GetConfigurationDetails(rs, vehicleid, deviceid)
 }
 

@@ -55,7 +55,7 @@ func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*mo
 }
 
 // GetConfigurationDetails ...
-func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error) {
+func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid int, deviceid int64) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
 	query := "SELECT conf_id, vc.device_id, vd.user_id, COALESCE(CONCAT(u.first_name , ' ' , u.last_name), '') AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
 	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, serial_no, last_seen, COALESCE(vr.renewal_date, vd.created_on) AS renewal_date, renew, "
@@ -65,9 +65,9 @@ func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, d
 	query += " LEFT JOIN vehicle_renewals AS vr ON (vr.vehicle_id = vd.vehicle_id) "
 
 	if deviceid > 0 && vehicleid > 0 {
-		query += " WHERE vc.status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' AND vc.device_id='" + strconv.Itoa(deviceid) + "' "
+		query += " WHERE vc.status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' AND vc.device_id='" + strconv.FormatInt(deviceid, 10) + "' "
 	} else if deviceid > 0 {
-		query += " WHERE vc.status=1 AND vc.device_id='" + strconv.Itoa(deviceid) + "' "
+		query += " WHERE vc.status=1 AND vc.device_id='" + strconv.FormatInt(deviceid, 10) + "' "
 	} else {
 		query += " WHERE vc.status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' "
 	}

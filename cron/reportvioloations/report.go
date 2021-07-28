@@ -23,7 +23,7 @@ func (c Status) Run() {
 	getAllViolations(0, 50000)
 }
 
-func sendSMS(vid, did int32, message, tonumber, violtype string) {
+func sendSMS(vid int32, did int64, message, tonumber, violtype string) {
 	check, _ := app.CheckMessages(tonumber, "Violations")
 	duration := time.Now().Sub(check.DateTime)
 	// fmt.Printf("difference %d days", int(duration.Hours()/24) )
@@ -42,7 +42,7 @@ func sendSMS(vid, did int32, message, tonumber, violtype string) {
 
 }
 
-func saveSMS(vid, did int32, message, tonumber, violtype string) {
+func saveSMS(vid int32, did int64, message, tonumber, violtype string) {
 	details := models.SaveMessageDetails{
 		MessageID:   0,
 		Message:     message,

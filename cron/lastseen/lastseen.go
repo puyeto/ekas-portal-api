@@ -81,7 +81,7 @@ func getAllDeviceIDFromMongoDb() {
 	fmt.Printf("count %v", i)
 }
 
-func getVehicleID(deviceID int32) (int32, error) {
+func getVehicleID(deviceID int64) (int32, error) {
 	var vid int32
 	err := app.DBCon.Select("vehicle_id").From("vehicle_configuration").
 		Where(dbx.HashExp{"device_id": deviceID}).Row(&vid)

@@ -25,7 +25,7 @@ type Vehicle struct {
 // VehicleConfigDetails ...
 type VehicleConfigDetails struct {
 	ConfigID            uint32    `json:"conf_id"`
-	DeviceID            uint32    `json:"device_id,omitempty"`
+	DeviceID            uint64    `json:"device_id,omitempty"`
 	VehicleID           uint32    `json:"vehicle_id,omitempty"`
 	VehicleRegistration string    `json:"registration_no,omitempty"`
 	UserID              uint32    `json:"user_id" db:"user_id"`
@@ -49,7 +49,7 @@ type VehicleConfigDetails struct {
 
 // SearchDetails ...
 type SearchDetails struct {
-	DeviceID            uint32 `json:"device_id,omitempty"`
+	DeviceID            uint64 `json:"device_id,omitempty"`
 	VehicleID           uint32 `json:"vehicle_id,omitempty"`
 	VehicleRegistration string `json:"registration_no" db:"vehicle_reg_no"`
 	VehicleName         string `json:"vehicle_name"`
@@ -110,7 +110,7 @@ type VehicleDetails struct {
 	UserID                 uint32    `json:"user_id" db:"user_id"`
 	OwnerID                uint32    `json:"owner_id" db:"owner_id"`
 	CompanyID              uint32    `json:"company_id" db:"company_id"`
-	DeviceID               uint32    `json:"device_id" db:"device_id"`
+	DeviceID               uint64    `json:"device_id" db:"device_id"`
 	CompanyName            string    `json:"company_name,omitempty"`
 	VehicleStringID        string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
 	VehicleRegNo           string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
@@ -196,7 +196,7 @@ type TripBetweenDates struct {
 type DeviceData struct {
 	SystemCode                     string    `json:"system_code,omitempty"`                      // 4 bytes
 	SystemMessage                  int       `json:"system_message,omitempty"`                   // 1 byte
-	DeviceID                       uint32    `json:"device_id,omitempty"`                        // 4 bytes
+	DeviceID                       uint64    `json:"device_id,omitempty"`                        // 4 bytes
 	CommunicationControlField      uint32    `json:"communication_control_field,omitempty"`      // 2 bytes
 	MessageNumerator               int       `json:"message_numerator,omitempty"`                // 1 byte
 	HardwareVersion                int       `json:"hardware_version,omitempty"`                 // 1 byte
@@ -250,7 +250,7 @@ type LastSeenStruct struct {
 
 // CurrentViolations ...
 type CurrentViolations struct {
-	DeviceID            int32      `json:"device_id" bson:"_id"`
+	DeviceID            int64      `json:"device_id" bson:"_id"`
 	DateTime            time.Time  `json:"date_time,omitempty" bson:"datetime"`
 	DateTimeStamp       int64      `json:"date_time_stamp,omitempty" bson:"datetimeunix"`
 	VehicleRegistration string     `json:"name,omitempty"`
@@ -310,7 +310,7 @@ type FilterVehicles struct {
 
 // XMLResults ...
 type XMLResults struct {
-	SerialNo            int32
+	SerialNo            int64
 	VehicleRegistration string
 	VehicleOwner        string
 	OwnerTel            string

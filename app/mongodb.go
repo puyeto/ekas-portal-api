@@ -132,7 +132,7 @@ func LoglastSeenMongoDB(m models.DeviceData) error {
 	return upsert(data, m.DeviceID, "a_device_lastseen")
 }
 
-func upsert(data bson.M, deviceID uint32, table string) error {
+func upsert(data bson.M, deviceID uint64, table string) error {
 	collection := MongoDB.Collection(table)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
