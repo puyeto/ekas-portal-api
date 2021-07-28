@@ -357,7 +357,7 @@ func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, devic
 
 // CountTripDataByDeviceID returns the number of trip records in the database.
 func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
-	id, _ := strconv.Atoi(deviceid)
+	id, _ := strconv.ParseInt(deviceid, 10, 64)
 	filter := bson.D{{Key: "deviceid", Value: id}}
 	return Count(deviceid, filter, nil)
 }
@@ -366,7 +366,7 @@ func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 func Count(deviceid string, filter primitive.D, opts *options.FindOptions) (int, error) {
 	app.CreateIndexMongo("data_" + deviceid)
 	collection := app.MongoDB.Collection("data_" + deviceid)
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel() // cancel when we are finished consuming integers
 	count, err := collection.CountDocuments(ctx, filter, nil)
 	return int(count), err
