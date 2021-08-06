@@ -202,7 +202,8 @@ func (r *vehicleResource) getOverspeedsByDeviceID(c *routing.Context) error {
 
 // delOverspeedsByDeviceID ...
 func (r *vehicleResource) delOverspeedsByDeviceID(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	// id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		return err
 	}
