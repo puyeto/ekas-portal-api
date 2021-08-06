@@ -24,7 +24,7 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
-		DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32) (int, error)
+		DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64) (int, error)
 		GetCurrentViolations(rs app.RequestScope) (models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
 		XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
@@ -207,7 +207,7 @@ func (r *vehicleResource) delOverspeedsByDeviceID(c *routing.Context) error {
 		return err
 	}
 
-	count, err := r.service.DeleteOverspeedsByDeviceID(app.GetRequestScope(c), uint32(id))
+	count, err := r.service.DeleteOverspeedsByDeviceID(app.GetRequestScope(c), uint64(id))
 	if err != nil {
 		return err
 	}
