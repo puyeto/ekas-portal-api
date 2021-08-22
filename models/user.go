@@ -40,7 +40,7 @@ type AdminUserDetails struct {
 	VerificationCode            string    `json:"Verification_code,omitempty" db:"Verification_code"`
 	Token                       string    `json:"token,omitempty"`
 	IsVerified                  int8      `json:"is_verified,omitempty"`
-	RoleID                      int32     `json:"role,omitempty" db:"role_id"`
+	RoleID                      int32     `json:"role,omitempty" db:"role"`
 	RoleName                    string    `json:"role_name,omitempty" db:"role_name"`
 	CompanyID                   int32     `json:"company_id" db:"company_id"`
 	CompanyName                 string    `json:"company_name,omitempty" db:"company_name"`
