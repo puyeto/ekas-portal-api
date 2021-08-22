@@ -171,6 +171,9 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 		}))
 	}
 
+	saccoDAO := daos.NewSaccoDAO()
+	apis.ServeSaccoResource(rg, services.NewSaccoService(saccoDAO))
+
 	deviceDAO := daos.NewDeviceDAO()
 	apis.ServeDeviceResource(rg, services.NewDeviceService(deviceDAO))
 
