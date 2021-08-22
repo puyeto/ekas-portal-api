@@ -153,6 +153,7 @@ func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, of
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"device_id": searchterm}, dbx.NewExp("send_to_ntsa=1"))))
 	} else {
 		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)),
+			dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.serial_no", searchterm)),
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"device_id": searchterm})))
 	}
 	err := q.OrderBy("vehicle_configuration.vehicle_id DESC").All(&tdetails)
@@ -169,6 +170,7 @@ func (dao *VehicleDAO) CountSearches(rs app.RequestScope, searchterm, qtype stri
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm}, dbx.NewExp("send_to_ntsa=1"))))
 	} else {
 		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)),
+			dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.serial_no", searchterm)),
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm})))
 
 	}
