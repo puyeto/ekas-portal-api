@@ -113,6 +113,7 @@ type VehicleDetails struct {
 	DeviceID               uint64    `json:"device_id" db:"device_id"`
 	CompanyName            string    `json:"company_name,omitempty"`
 	VehicleStringID        string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
+	SaccoID                uint32    `json:"sacco_id" db:"sacco_id"`
 	VehicleRegNo           string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
 	ChassisNo              string    `json:"chassis_no" db:"chassis_no"`
 	MakeType               string    `json:"make_type" db:"make_type"`

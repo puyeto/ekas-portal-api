@@ -83,7 +83,8 @@ func getAllViolations(offset, limit int) ([]models.XMLResults, error) {
 		// 	continue
 		// }
 		dData.SerialNo = item.DeviceID
-		dData.DateOfViolation = item.DateTime.Local().Format("2006-01-02 15:04:05")
+		dt := item.DateTime
+		dData.DateOfViolation = dt.Local().Format("2006-01-02 15:04:05")
 		dData.VehicleRegistration = vd.Name
 		dData.VehicleOwner = vd.VehicleOwner
 		dData.OwnerTel = vd.OwnerTel
