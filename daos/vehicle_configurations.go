@@ -44,13 +44,13 @@ func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*mo
 	var vdetails models.VehicleConfigDetails
 	query := "SELECT conf_id, vc.device_id, vd.user_id, COALESCE(CONCAT(u.first_name , ' ' , u.last_name), '') AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
 	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, serial_no, last_seen, COALESCE(vr.renewal_date, vd.created_on) AS renewal_date, renew, "
-	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, data FROM vehicle_configuration AS vc "
-	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
+	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, sacco_id, data FROM vehicle_configuration AS vc "
+	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_id = vc.vehicle_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
 	query += " LEFT JOIN vehicle_renewals AS vr ON (vr.vehicle_id = vd.vehicle_id) "
 	query += " WHERE vc.status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.SerialNo, &vdetails.LastSeen, &vdetails.RenewalDate, &vdetails.Renew, &vdetails.CreatedOn, &vdetails.ExpiryDate, &vdetails.DeviceStatus, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.SerialNo, &vdetails.LastSeen, &vdetails.RenewalDate, &vdetails.Renew, &vdetails.CreatedOn, &vdetails.ExpiryDate, &vdetails.DeviceStatus, &vdetails.SaccoID, &vdetails.Data)
 	return &vdetails, err
 }
 

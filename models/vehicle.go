@@ -25,8 +25,9 @@ type Vehicle struct {
 // VehicleConfigDetails ...
 type VehicleConfigDetails struct {
 	ConfigID            uint32    `json:"conf_id"`
-	DeviceID            uint64    `json:"device_id,omitempty"`
-	VehicleID           uint32    `json:"vehicle_id,omitempty"`
+	DeviceID            uint64    `json:"device_id"`
+	VehicleID           uint32    `json:"vehicle_id"`
+	SaccoID             uint32    `json:"sacco_id"`
 	VehicleRegistration string    `json:"registration_no,omitempty"`
 	UserID              uint32    `json:"user_id" db:"user_id"`
 	Fitter              string    `json:"fitter" db:"-"` // person who fitted the device from userid

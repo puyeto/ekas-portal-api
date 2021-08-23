@@ -63,7 +63,7 @@ func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int, typ string) (in
 // Query retrieves the vehicleRecord records with the specified offset and limit from the database.
 func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error) {
 	vehicleRecords := []models.VehicleDetails{}
-	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id",
+	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "sacco_id",
 		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model",
 		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "json_value(data, '$.device_detail.certificate') AS certificate", "serial_no AS limiter_serial").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
