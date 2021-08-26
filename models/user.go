@@ -60,6 +60,7 @@ type AuthUsers struct {
 	Status      int8   `json:"status,omitempty" db:"auth_user_status"`
 	RoleID      int32  `json:"role,omitempty" db:"auth_user_role"`
 	RoleName    string `json:"role_name" db:"role_name"`
+	SaccoID     int    `json:"sacco" db:"sacco_id"`
 	CompanyID   int    `json:"company_id" db:"company_id"`
 	CompanyName string `json:"company_name,omitempty" db:"company_name"`
 }

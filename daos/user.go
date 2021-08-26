@@ -31,7 +31,7 @@ func (dao *UserDAO) Count(rs app.RequestScope, cid int) (int, error) {
 // Query retrieves the company records with the specified offset and limit from the database.
 func (dao *UserDAO) Query(rs app.RequestScope, offset, limit, cid int) ([]models.AuthUsers, error) {
 	users := []models.AuthUsers{}
-	q := rs.Tx().Select("auth_user_id", "auth_user_email", "auth_user_status", "auth_user_role", "role_name", "COALESCE(CONCAT( first_name, ' ', last_name), '') AS full_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
+	q := rs.Tx().Select("auth_user_id", "auth_user_email", "auth_user_status", "auth_user_role", "sacco_id", "role_name", "COALESCE(CONCAT( first_name, ' ', last_name), '') AS full_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
 		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id"))
@@ -63,7 +63,8 @@ func (dao *UserDAO) Update(rs app.RequestScope, a *models.AuthUsers) error {
 		"auth_user_role":   a.RoleID,
 		"auth_user_status": a.Status,
 		"first_name":       a.FirstName,
-		"last_name":        a.LastName},
+		"last_name":        a.LastName,
+		"sacco_id":         a.SaccoID},
 		dbx.HashExp{"auth_user_id": a.UserID}).Execute()
 	return err
 }
