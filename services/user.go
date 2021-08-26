@@ -14,7 +14,7 @@ import (
 // userDAO specifies the interface of the user DAO needed by userService.
 type userDAO interface {
 	// GetUser returns the user with the specified user ID.
-	GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error)
+	GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error)
 	// GetUserByEmail returns the user with the specified user email.
 	// GetUserByEmail(rs app.RequestScope, email string) (*models.UserDetails, error)
 	GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error)
@@ -65,7 +65,7 @@ func (u *UserService) Query(rs app.RequestScope, offset, limit, cid int) ([]mode
 }
 
 // GetUser returns the user with the specified the user ID.
-func (u *UserService) GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error) {
+func (u *UserService) GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error) {
 	return u.dao.GetUser(rs, id)
 }
 

@@ -15,7 +15,7 @@ type (
 	// userService specifies the interface for the user service needed by userResource.
 	userService interface {
 		// GetUser returns the user with the specified user ID.
-		GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error)
+		GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error)
 		Register(rs app.RequestScope, usr *models.AdminUserDetails) (int32, error)
 		Login(rs app.RequestScope, usr *models.Credential) (*models.AdminUserDetails, error)
 		SubmitUserRole(rs app.RequestScope, usr *models.AdminUserRoles) (*models.AdminUserRoles, error)

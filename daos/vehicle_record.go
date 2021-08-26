@@ -42,26 +42,27 @@ func (dao *VehicleRecordDAO) Delete(rs app.RequestScope, id uint32) error {
 }
 
 // Count returns the number of the vehicleRecord records in the database.
-func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int, typ string) (int, error) {
+func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int, typ string, userdetails models.AuthUsers) (int, error) {
 	var count int
-	var err error
+	q := rs.Tx().Select("COUNT(*)").From("vehicle_details")
 	if uid > 0 {
-		err = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.HashExp{"user_id": uid}).Row(&count)
+		if userdetails.SaccoID > 0 {
+			q.Where(dbx.HashExp{"sacco_id": userdetails.SaccoID}).Row(&count)
+		} else {
+			q.Where(dbx.HashExp{"user_id": uid}).Row(&count)
+		}
 	} else {
 		if typ == "ntsa" {
-			err = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-				Where(dbx.HashExp{"send_to_ntsa": 1}).Row(&count)
-		} else {
-			err = rs.Tx().Select("COUNT(*)").From("vehicle_details").Row(&count)
+			q.Where(dbx.HashExp{"send_to_ntsa": 1}).Row(&count)
 		}
 	}
 
+	err := q.Row(&count)
 	return count, err
 }
 
 // Query retrieves the vehicleRecord records with the specified offset and limit from the database.
-func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error) {
+func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int, typ string, userdetails models.AuthUsers) ([]models.VehicleDetails, error) {
 	vehicleRecords := []models.VehicleDetails{}
 	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "sacco_id",
 		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model",
@@ -71,7 +72,11 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id"))
 	var err error
 	if uid > 0 {
-		q.Where(dbx.And(dbx.HashExp{"vehicle_details.user_id": uid}, dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0")))
+		if userdetails.SaccoID > 0 {
+			q.Where(dbx.And(dbx.HashExp{"vehicle_details.sacco_id": userdetails.SaccoID}, dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0")))
+		} else {
+			q.Where(dbx.And(dbx.HashExp{"vehicle_details.user_id": uid}, dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0")))
+		}
 	} else {
 		if typ == "ntsa" {
 			q.Where(dbx.HashExp{"send_to_ntsa": 1})
@@ -275,4 +280,18 @@ func (dao *VehicleRecordDAO) GetReminder(rs app.RequestScope, offset, limit int,
 		err = rs.Tx().Select().OrderBy("id desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	}
 	return vehicleRecords, err
+}
+
+// GetUser reads the full user details with the specified ID from the database.
+func (dao *VehicleRecordDAO) GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error) {
+	usr := models.AuthUsers{}
+	err := rs.Tx().Select("auth_user_id", "auth_user_email", "sacco_id", "auth_user_status", "auth_user_role", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
+		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
+		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
+		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).Model(id, &usr)
+	if err != nil {
+		return usr, err
+	}
+
+	return usr, err
 }

@@ -12,10 +12,10 @@ type vehicleRecordDAO interface {
 	// Get returns the vehicleRecord with the specified vehicleRecord ID.
 	Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
 	// Count returns the number of vehicleRecords.
-	Count(rs app.RequestScope, uid int, typ string) (int, error)
+	Count(rs app.RequestScope, uid int, typ string, userdetails models.AuthUsers) (int, error)
 	CountFilter(rs app.RequestScope, m *models.FilterVehicles) (int, error)
 	// Query returns the list of vehicleRecords with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error)
+	Query(rs app.RequestScope, offset, limit int, uid int, typ string, userdetails models.AuthUsers) ([]models.VehicleDetails, error)
 	QueryFilter(rs app.RequestScope, offset, limit int, m *models.FilterVehicles) ([]models.VehicleDetails, error)
 	// Update updates the vehicleRecord with given ID in the storage.
 	UpdateVehicle(rs app.RequestScope, vehicleRecord *models.VehicleDetails) error
@@ -29,6 +29,8 @@ type vehicleRecordDAO interface {
 	CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 	CountReminders(rs app.RequestScope, uid int) (int, error)
 	GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
+	// GetUser returns the user with the specified user ID.
+	GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error)
 }
 
 // VehicleRecordService provides services related with vehicleRecords.
@@ -70,8 +72,8 @@ func (s *VehicleRecordService) Delete(rs app.RequestScope, id uint32) error {
 }
 
 // Count returns the number of vehicleRecords.
-func (s *VehicleRecordService) Count(rs app.RequestScope, uid int, typ string) (int, error) {
-	return s.dao.Count(rs, uid, typ)
+func (s *VehicleRecordService) Count(rs app.RequestScope, uid int, typ string, userdetails models.AuthUsers) (int, error) {
+	return s.dao.Count(rs, uid, typ, userdetails)
 }
 
 // CountFilter returns the number of filtered vehicleRecords.
@@ -80,8 +82,8 @@ func (s *VehicleRecordService) CountFilter(rs app.RequestScope, model *models.Fi
 }
 
 // Query returns the vehicleRecords with the specified offset and limit.
-func (s *VehicleRecordService) Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error) {
-	return s.dao.Query(rs, offset, limit, uid, typ)
+func (s *VehicleRecordService) Query(rs app.RequestScope, offset, limit int, uid int, typ string, userdetails models.AuthUsers) ([]models.VehicleDetails, error) {
+	return s.dao.Query(rs, offset, limit, uid, typ, userdetails)
 }
 
 // QueryFilter returns the filtered vehicleRecords with the specified offset and limit.
@@ -136,4 +138,9 @@ func (s *VehicleRecordService) CountReminders(rs app.RequestScope, uid int) (int
 // GetReminder returns the reminderRecords with the specified offset and limit.
 func (s *VehicleRecordService) GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error) {
 	return s.dao.GetReminder(rs, offset, limit, uid)
+}
+
+// GetUser returns the user with the specified the user ID.
+func (u *VehicleRecordService) GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error) {
+	return u.dao.GetUser(rs, id)
 }
