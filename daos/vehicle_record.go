@@ -25,7 +25,7 @@ func (dao *VehicleRecordDAO) Get(rs app.RequestScope, id uint32) (*models.Vehicl
 
 	err := rs.Tx().Select("vehicle_id", "user_id", "owner_id", "company_id", "vehicle_string_id", "vehicle_reg_no",
 		"chassis_no", "make_type", "notification_email", "notification_no", "auto_invoicing", "invoice_due_date",
-		"created_on", "COALESCE(model, '')", "model_year", "COALESCE(manufacturer,'')").Model(id, &vehicleRecord)
+		"created_on", "COALESCE(model, '') AS model", "model_year", "COALESCE(manufacturer,'') AS manufacturer").Model(id, &vehicleRecord)
 	return &vehicleRecord, err
 }
 
@@ -81,7 +81,7 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 		if typ == "ntsa" {
 			q.Where(dbx.HashExp{"send_to_ntsa": 1})
 		} else {
-			q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"vehicle_details.vehicle_status": 1})).OrderBy("vehicle_details.invoice_due_date desc")
+			q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id > 0"), dbx.HashExp{"vehicle_details.vehicle_status": 1})).OrderBy("vehicle_details.invoice_due_date desc")
 		}
 	}
 	err = q.OrderBy("vehicle_details.invoice_due_date desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
