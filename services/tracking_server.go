@@ -22,6 +22,7 @@ type trackingServerDAO interface {
 	GetCompanyDetailsByEmail(rs app.RequestScope, email string) (models.Companies, error)
 	QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
 	GetUserByUserHash(rs app.RequestScope, userhash string) (models.AdminUserDetails, error)
+	GetSaccoName(rs app.RequestScope, id int) (string, error)
 }
 
 // TrackingServerService ---
@@ -155,6 +156,10 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 
 	// get company details
 	res.CompanyDetails, _ = s.dao.GetCompanyDetailsByEmail(rs, email)
+
+	if res.SaccoID > 0 {
+		res.SaccoName, _ = s.dao.GetSaccoName(rs, res.SaccoID)
+	}
 
 	res.Token, _ = app.CreateToken(&res)
 

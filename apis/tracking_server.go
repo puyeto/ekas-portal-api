@@ -33,15 +33,6 @@ func ServeTrackingServerResource(rg *routing.RouteGroup, service trackingServerS
 }
 
 func (r *trackingServerResource) trackingServerLogin(c *routing.Context) error {
-	// version := c.Query("ver")
-	// fmt.Printf("version %v\n", version)
-
-	// now := time.Now()
-	// secs := now.Unix()
-	// if secs > 1601935924 && version != "5.0" {
-	// 	return errors.BadRequest("Update your system")
-	// }
-
 	var model models.TrackingServerAuth
 	if err := c.Read(&model); err != nil {
 		return err

@@ -29,6 +29,7 @@ type Credential struct {
 //AdminUserDetails user structure
 type AdminUserDetails struct {
 	UserID                      int32     `json:"user_id" db:"pk,user_id"`
+	FullName                    string    `json:"full_name" db:"full_name"`
 	FirstName                   string    `json:"first_name" db:"first_name"`
 	LastName                    string    `json:"last_name" db:"last_name"`
 	Email                       string    `json:"user_email" db:"email"`
@@ -44,6 +45,8 @@ type AdminUserDetails struct {
 	RoleName                    string    `json:"role_name,omitempty" db:"role_name"`
 	CompanyID                   int32     `json:"company_id" db:"company_id"`
 	CompanyName                 string    `json:"company_name,omitempty" db:"company_name"`
+	SaccoID                     int       `json:"sacco" db:"sacco_id"`
+	SaccoName                   string    `json:"sacco_name,omitempty" db:"sacco_name"`
 	CompanyDetails              Companies `json:"company_details" db:"_"`
 	EnableGPSConfiguration      int8      `json:"enable_gps_configuration" db:"enable_gps_configuration"`
 	EnableFailsafeConfiguration int8      `json:"enable_failsafe_configuration" db:"enable_failsafe_configuration"`

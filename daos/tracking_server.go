@@ -2,6 +2,7 @@ package daos
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -54,7 +55,10 @@ func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope
 // GetUserByEmail reads the user with the specified email from the database.
 func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) (models.AdminUserDetails, error) {
 	usr := models.AdminUserDetails{}
-	err := rs.Tx().Select("COALESCE(first_name,'') AS first_name", "COALESCE(last_name,'') AS last_name", "auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role", "role_name", "COALESCE(company_users.company_id, 0) AS company_id", "COALESCE(company_name, '') AS company_name", "enable_gps_configuration", "enable_failsafe_configuration").
+	err := rs.Tx().Select("COALESCE(CONCAT( first_name, ' ', last_name), '') AS full_name", "COALESCE(first_name,'') AS first_name", "COALESCE(last_name,'') AS last_name",
+		"auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role", "role_name",
+		"COALESCE(company_users.company_id, 0) AS company_id", "COALESCE(company_name, '') AS company_name", "enable_gps_configuration",
+		"enable_failsafe_configuration", "sacco_id").
 		From("auth_users").
 		LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
@@ -119,4 +123,11 @@ func (dao *TrackingServerDAO) QueryVehicelsFromPortal(rs app.RequestScope, offse
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	}
 	return vehicleRecords, err
+}
+
+// Get reads the sacco with the specified ID from the database.
+func (dao *TrackingServerDAO) GetSaccoName(rs app.RequestScope, id int) (string, error) {
+	var sacconame string
+	err := rs.Tx().NewQuery("SELECT name FROM saccos WHERE id='" + strconv.Itoa(id) + "' LIMIT 1").Row(&sacconame)
+	return sacconame, err
 }
