@@ -29,6 +29,7 @@ type vehicleDAO interface {
 	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
 	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
 	DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64) (int, error)
+	DeleteFutureDataByDeviceID(rs app.RequestScope, id uint64) (int, error)
 	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
 	CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
 	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid int64, vehicleid uint32) error
@@ -126,6 +127,11 @@ func (s *VehicleService) CountRedisTripRecords(deviceid string) int {
 // GetOverspeedByDeviceID ...
 func (s *VehicleService) GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error) {
 	return s.dao.GetOverspeedByDeviceID(rs, deviceid, offset, limit)
+}
+
+// DeleteFutureDataByDeviceID ...
+func (s *VehicleService) DeleteFutureDataByDeviceID(rs app.RequestScope, id uint64) (int, error) {
+	return s.dao.DeleteFutureDataByDeviceID(rs, id)
 }
 
 // DeleteOverspeedsByDeviceID ...

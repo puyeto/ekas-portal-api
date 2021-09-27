@@ -17,6 +17,23 @@ services:
       - host
     volumes:
       - logs:/go/logs
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379"
+    networks:
+      - frontend
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
 volumes:
   logs:
 networks:

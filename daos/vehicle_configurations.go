@@ -105,6 +105,25 @@ func (dao *VehicleDAO) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64
 	return int(res.DeletedCount), nil
 }
 
+// DeleteFutureDataByDeviceID delete Records with with future from the database (mongodb).
+func (dao *VehicleDAO) DeleteFutureDataByDeviceID(rs app.RequestScope, id uint64) (int, error) {
+	now := time.Now()
+	nowTimestamp := now.Unix()
+	filter := bson.D{{Key: "datetimestamp", Value: bson.D{{Key: "$gt", Value: nowTimestamp}}}}
+
+	// Get collection
+	collection := app.MongoDB.Collection("data_" + strconv.FormatInt(int64(id), 10))
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(res.DeletedCount), nil
+}
+
 // CountOverspeed returns the number of overspeed records in the database.
 func (dao *VehicleDAO) CountOverspeed(rs app.RequestScope, deviceid string) (int, error) {
 	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 84}}}}
