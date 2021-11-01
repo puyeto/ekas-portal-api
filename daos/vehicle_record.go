@@ -199,7 +199,7 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 
 	// check if cert has been renewed
 	var exists int
-	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + m.CertificateNo + "' LIMIT 1) AS exist")
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + m.CertificateNo + "' AND vehicle_string_id != '" + m.VehicleStringID + "' LIMIT 1) AS exist")
 	if err := q.Row(&exists); err != nil {
 		return m.ID, err
 	}
