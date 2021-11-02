@@ -47,7 +47,7 @@ func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*mo
 	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, vd.sacco_id, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_id = vc.vehicle_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
-	query += " LEFT JOIN (SELECT * FROM vehicle_renewals ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) "
+	query += " LEFT JOIN (SELECT * FROM vehicle_renewals WHERE vehicle_string_id='" + strid + "' ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) "
 	query += " WHERE vc.status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
 	q := rs.Tx().NewQuery(query)
 	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.SerialNo, &vdetails.LastSeen, &vdetails.RenewalDate, &vdetails.Renew, &vdetails.CreatedOn, &vdetails.ExpiryDate, &vdetails.DeviceStatus, &vdetails.SaccoID, &vdetails.Data)
@@ -62,7 +62,7 @@ func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid in
 	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
-	query += " LEFT JOIN (SELECT * FROM vehicle_renewals ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) "
+	query += " LEFT JOIN (SELECT * FROM vehicle_renewals WHERE vehicle_id='" + strconv.Itoa(vehicleid) + "' ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) "
 
 	if deviceid > 0 && vehicleid > 0 {
 		query += " WHERE vc.status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' AND vc.device_id='" + strconv.FormatInt(deviceid, 10) + "' "
@@ -340,7 +340,7 @@ func (dao *VehicleDAO) CheckIfVehicleIsExpired(rs app.RequestScope, cd *models.V
 	var expiry time.Time
 	// query := "SELECT DATE_ADD(DATE_ADD(COALESCE(renewal_date, created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date FROM vehicle_details WHERE vehicle_string_id='" + vehiclestringid + "'"
 	query := "SELECT DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date "
-	query += " FROM vehicle_details AS vd LEFT JOIN (SELECT * FROM vehicle_renewals ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) WHERE vd.vehicle_string_id='" + vehiclestringid + "'"
+	query += " FROM vehicle_details AS vd LEFT JOIN (SELECT * FROM vehicle_renewals WHERE vehicle_string_id='" + vehiclestringid + "' ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) WHERE vd.vehicle_string_id='" + vehiclestringid + "'"
 	err := rs.Tx().NewQuery(query).Row(&expiry)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
