@@ -46,6 +46,7 @@ type AdminUserDetails struct {
 	CompanyID                   int32     `json:"company_id" db:"company_id"`
 	CompanyName                 string    `json:"company_name,omitempty" db:"company_name"`
 	SaccoID                     int       `json:"sacco" db:"sacco_id"`
+	MpesaRenewal                int8      `json:"mpesa_renewal" db:"mpesa_renewal"`
 	SaccoName                   string    `json:"sacco_name,omitempty" db:"sacco_name"`
 	CompanyDetails              Companies `json:"company_details" db:"_"`
 	EnableGPSConfiguration      int8      `json:"enable_gps_configuration" db:"enable_gps_configuration"`
