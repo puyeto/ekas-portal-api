@@ -194,7 +194,7 @@ func (dao *VehicleRecordDAO) VehicleExists(rs app.RequestScope, id uint32) (int,
 func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) (uint32, error) {
 	m.Status = 1
 	m.CreatedOn = time.Now()
-	m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
+	// m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
 	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, -1)
 
 	// check if cert has been renewed
@@ -240,7 +240,7 @@ func (dao *VehicleRecordDAO) CreateReminder(rs app.RequestScope, v *models.Remin
 // ListVehicleRenewals retrieves the renewal records with the specified offset and limit from the database.
 func (dao *VehicleRecordDAO) ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error) {
 	r := []models.VehicleRenewals{}
-	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
+	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "certificate_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
 		From("vehicle_renewals AS vr").Where(dbx.HashExp{"vr.status": 1}).
 		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vr.vehicle_id")).
 		LeftJoin("vehicle_configuration AS vc", dbx.NewExp("vc.vehicle_id = vr.vehicle_id")).

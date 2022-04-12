@@ -64,7 +64,7 @@ func (dao *CertificateDAO) Count(rs app.RequestScope, cid int, search string) (i
 func (dao *CertificateDAO) Query(rs app.RequestScope, offset, limit, cid int, search string) ([]models.Certificates, error) {
 	certificates := []models.Certificates{}
 	q := rs.Tx().Select("ce.id", "ce.company_id", "issued_on", "cert_no", "cert_serial", "created_on",
-		"fitter_id", "company_name AS company", "CONCAT(first_name , ' ', last_name) AS fitter").From("certificates AS ce").
+		"fitter_id", "COALESCE(company_name, 'N/A') AS company", "CONCAT(first_name , ' ', last_name) AS fitter").From("certificates AS ce").
 		LeftJoin("companies", dbx.NewExp("companies.company_id = ce.company_id")).
 		LeftJoin("auth_users", dbx.NewExp("auth_users.auth_user_id = ce.fitter_id"))
 
