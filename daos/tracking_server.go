@@ -35,7 +35,6 @@ func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.Request
 
 // SaveTrackingServerLoginDetails saves a new user record in the database.
 func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope, email string, hash string, status int8, data interface{}) error {
-	//return rs.Tx().Model(artist).Insert()
 	a, _ := json.Marshal(data)
 
 	// insert into auth_users

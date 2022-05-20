@@ -114,8 +114,7 @@ func lastSeen(m models.DeviceData, key string) {
 		DeviceData: m,
 	}
 	// SET object
-	_, err := app.SetValue(key, data)
-	if err != nil {
+	if err := app.SetValue(key, data); err != nil {
 		fmt.Println(err)
 	}
 }
