@@ -3,7 +3,6 @@ package services
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -17,11 +16,13 @@ type trackingServerDAO interface {
 	// Login to tracking server.
 	SaveTrackingServerLoginDetails(rs app.RequestScope, email string, hash string, status int8, data interface{}) error
 	TrackingServerUserEmailExists(rs app.RequestScope, email string) (int, error)
-	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, int, error)
+	GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (interface{}, error)
 	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
 	GetUserByEmail(rs app.RequestScope, email string) (models.AdminUserDetails, error)
+	GetCompanyDetailsByEmail(rs app.RequestScope, email string) (models.Companies, error)
 	QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
 	GetUserByUserHash(rs app.RequestScope, userhash string) (models.AdminUserDetails, error)
+	GetSaccoName(rs app.RequestScope, id int) (string, error)
 }
 
 // TrackingServerService ---
@@ -64,7 +65,7 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	if err != nil {
 		return m, err
 	}
-	fmt.Printf("login details %v", data)
+	// fmt.Printf("login details %v", data)
 
 	if data.Status == 0 {
 		return m, errors.New("Invalid Credentials :: Tracking System")
@@ -153,7 +154,12 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 		return res, err
 	}
 
-	fmt.Println(res)
+	// get company details
+	res.CompanyDetails, _ = s.dao.GetCompanyDetailsByEmail(rs, email)
+
+	if res.SaccoID > 0 {
+		res.SaccoName, _ = s.dao.GetSaccoName(rs, res.SaccoID)
+	}
 
 	res.Token, _ = app.CreateToken(&res)
 

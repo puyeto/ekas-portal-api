@@ -12,7 +12,9 @@ import (
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
+	"github.com/ekas-portal-api/cron/checkdata"
 	"github.com/ekas-portal-api/cron/lastseen"
+	"github.com/ekas-portal-api/cron/reportvioloations"
 	"github.com/ekas-portal-api/cron/updateviolations"
 	"github.com/ekas-portal-api/daos"
 	"github.com/ekas-portal-api/errors"
@@ -59,11 +61,13 @@ func main() {
 
 	if os.Getenv("GO_ENV") == "production" {
 		// run cronjobs
-		// jobrunner.Schedule("CRON_TZ=Africa/Nairobi * 8 * * *", checkexpired.Status{})
-		// go jobrunner.Schedule("@every 60m", checkdata.Status{})
-		jobrunner.Schedule("@every 60m", lastseen.Status{})
-		// go jobrunner.In(10*time.Second, updateviolations.Status{})
+		go jobrunner.Schedule("@every 60m", checkdata.Status{})
+		jobrunner.Schedule("@every 2h00m00s", lastseen.Status{})
 		jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
+		jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
+		// jobrunner.Schedule("@every 60m", reportvioloations.Status{})
+	} else {
+		// jobrunner.In(2*time.Second, reportvioloations.Status{})
 	}
 
 	// wire up API routing
@@ -167,6 +171,9 @@ func buildRouter(logger *logrus.Logger, db *dbx.DB) *routing.Router {
 			TokenHandler:  app.JWTHandler,
 		}))
 	}
+
+	saccoDAO := daos.NewSaccoDAO()
+	apis.ServeSaccoResource(rg, services.NewSaccoService(saccoDAO))
 
 	deviceDAO := daos.NewDeviceDAO()
 	apis.ServeDeviceResource(rg, services.NewDeviceService(deviceDAO))

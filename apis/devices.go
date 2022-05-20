@@ -22,6 +22,8 @@ type (
 		Delete(rs app.RequestScope, id int32) (*models.Devices, error)
 		CountConfiguredDevices(rs app.RequestScope, vehicleid int, deviceid int64) (int, error)
 		ConfiguredDevices(rs app.RequestScope, offset, limit, vehicleid int, deviceid int64) ([]models.DeviceConfiguration, error)
+		CountSearches(rs app.RequestScope, searchterm string) (int, error)
+		SearchDevices(rs app.RequestScope, searchterm string, offset, limit int) ([]models.Devices, error)
 	}
 
 	// deviceResource defines the handlers for the CRUD APIs.
@@ -39,8 +41,9 @@ func ServeDeviceResource(rg *routing.RouteGroup, service deviceService) {
 	rg.Get("/devices/count", r.count)
 	rg.Get("/devices/configured-devices", r.configuredDevices)
 	rg.Post("/devices/create", r.create)
-	rg.Put("/devices/<id>", r.update)
+	rg.Put("/devices/edit/<id>", r.update)
 	rg.Delete("/device/<id>", r.delete)
+	rg.Get("/devices/search/<term>", r.searchDevices)
 }
 
 func (r *deviceResource) get(c *routing.Context) error {
@@ -170,6 +173,23 @@ func (r *deviceResource) delete(c *routing.Context) error {
 	}
 
 	return c.Write(response)
+}
+
+// searchDevices ...
+func (r *deviceResource) searchDevices(c *routing.Context) error {
+	searchterm := c.Param("term")
+	rs := app.GetRequestScope(c)
+	count, err := r.service.CountSearches(rs, searchterm)
+	if err != nil {
+		return err
+	}
+	paginatedList := getPaginatedListFromRequest(c, count)
+	response, err := r.service.SearchDevices(rs, searchterm, paginatedList.Offset(), paginatedList.Limit())
+	if err != nil {
+		return err
+	}
+	paginatedList.Items = response
+	return c.Write(paginatedList)
 }
 
 func (r *deviceResource) configuredDevices(c *routing.Context) error {

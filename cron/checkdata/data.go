@@ -45,7 +45,7 @@ func (c Status) Run() {
 }
 
 type devices struct {
-	DeviceID  int32 `json:"device_id"`
+	DeviceID  int64 `json:"device_id"`
 	VehicleID int32 `json:"vehicle_id"`
 }
 

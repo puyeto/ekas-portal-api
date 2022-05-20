@@ -15,15 +15,16 @@ type (
 	// userService specifies the interface for the user service needed by userResource.
 	userService interface {
 		// GetUser returns the user with the specified user ID.
-		GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error)
+		GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error)
 		Register(rs app.RequestScope, usr *models.AdminUserDetails) (int32, error)
 		Login(rs app.RequestScope, usr *models.Credential) (*models.AdminUserDetails, error)
 		SubmitUserRole(rs app.RequestScope, usr *models.AdminUserRoles) (*models.AdminUserRoles, error)
 		Delete(rs app.RequestScope, id int32) error
-		Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
-		Count(rs app.RequestScope) (int, error)
+		Query(rs app.RequestScope, offset, limit, cid int) ([]models.AuthUsers, error)
+		Count(rs app.RequestScope, cid int) (int, error)
 		Update(rs app.RequestScope, model *models.AuthUsers) (*models.AuthUsers, error)
 		ResetPassword(rs app.RequestScope, model *models.ResetPassword) error
+		QueryDepartments(rs app.RequestScope) ([]models.Departments, error)
 	}
 
 	// userResource defines the handlers for the CRUD APIs.
@@ -45,16 +46,19 @@ func ServeUserResource(rg *routing.RouteGroup, service userService) {
 	rg.Put("/users/update", r.update)
 	rg.Get("/ping", r.healthCheck)
 	rg.Get("/otp-request", r.OTPRequest)
+	rg.Get("/departments/list", r.queryDepartments)
 }
 
 func (r *userResource) query(c *routing.Context) error {
+	cid, _ := strconv.Atoi(c.Query("cid", "0"))
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
+	count, err := r.service.Count(rs, cid)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), cid)
 	if err != nil {
 		return err
 	}
@@ -167,6 +171,15 @@ func (r *userResource) update(c *routing.Context) error {
 	return c.Write(response)
 }
 
+func (r *userResource) queryDepartments(c *routing.Context) error {
+	rs := app.GetRequestScope(c)
+	items, err := r.service.QueryDepartments(rs)
+	if err != nil {
+		return err
+	}
+	return c.Write(items)
+}
+
 // OTPRequest ...
 func (r *userResource) OTPRequest(c *routing.Context) error {
 	phone := c.Query("phone", "0")
@@ -182,6 +195,7 @@ func (r *userResource) OTPRequest(c *routing.Context) error {
 	app.MessageChan <- app.MessageDetails{
 		Message:  strconv.Itoa(otp),
 		ToNumber: phone,
+		Type:     "OTPRequest",
 	}
 
 	return c.Write(map[string]int{

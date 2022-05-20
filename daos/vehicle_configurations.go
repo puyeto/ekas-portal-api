@@ -42,36 +42,45 @@ func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.
 // GetVehicleByStrID ...
 func (dao *VehicleDAO) GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vc.device_id, vd.user_id, CONCAT(u.first_name , ' ' , u.last_name) AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
-	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, last_seen, COALESCE(renewal_date, vd.created_on) AS renewal_date, renew, "
-	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, data FROM vehicle_configuration AS vc "
-	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
+	query := "SELECT conf_id, vc.device_id, vd.user_id, COALESCE(CONCAT(u.first_name , ' ' , u.last_name), '') AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
+	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, serial_no, last_seen, COALESCE(vr.renewal_date, vd.created_on) AS renewal_date, renew, "
+	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, vd.sacco_id, data FROM vehicle_configuration AS vc "
+	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_id = vc.vehicle_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
-	query += " WHERE status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
+	query += " LEFT JOIN (SELECT * FROM vehicle_renewals WHERE vehicle_string_id='" + strid + "' ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) "
+	query += " WHERE vc.status=1 AND vc.vehicle_string_id='" + strid + "' LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.LastSeen, &vdetails.RenewalDate, &vdetails.Renew, &vdetails.CreatedOn, &vdetails.ExpiryDate, &vdetails.DeviceStatus, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.SerialNo, &vdetails.LastSeen, &vdetails.RenewalDate, &vdetails.Renew, &vdetails.CreatedOn, &vdetails.ExpiryDate, &vdetails.DeviceStatus, &vdetails.SaccoID, &vdetails.Data)
 	return &vdetails, err
 }
 
 // GetConfigurationDetails ...
-func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error) {
+func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid int, deviceid int64) (*models.VehicleConfigDetails, error) {
 	var vdetails models.VehicleConfigDetails
-	query := "SELECT conf_id, vc.device_id, vd.user_id, CONCAT(u.first_name , ' ' , u.last_name) AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
-	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, last_seen, COALESCE(renewal_date, vd.created_on) AS renewal_date, renew, "
-	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, data FROM vehicle_configuration AS vc "
+	var vid = vehicleid
+	if vid == 0 {
+		// get vehicle details
+		rs.Tx().Select("vehicle_id").Where(dbx.HashExp{"device_id": deviceid}).From("vehicle_configuration").OrderBy("conf_id DESC").Limit(1).Row(&vid)
+	}
+
+	query := "SELECT conf_id, vc.device_id, vd.user_id, COALESCE(CONCAT(u.first_name , ' ' , u.last_name), '') AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
+	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, serial_no, last_seen, COALESCE(vr.renewal_date, vd.created_on) AS renewal_date, renew, "
+	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, data FROM vehicle_configuration AS vc "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
+	query += " LEFT JOIN (SELECT * FROM vehicle_renewals WHERE vehicle_id='" + strconv.Itoa(vid) + "' ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) "
+
 	if deviceid > 0 && vehicleid > 0 {
-		query += " WHERE status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' AND vc.device_id='" + strconv.Itoa(deviceid) + "' "
+		query += " WHERE vc.status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' AND vc.device_id='" + strconv.FormatInt(deviceid, 10) + "' "
 	} else if deviceid > 0 {
-		query += " WHERE status=1 AND vc.device_id='" + strconv.Itoa(deviceid) + "' "
+		query += " WHERE vc.status=1 AND vc.device_id='" + strconv.FormatInt(deviceid, 10) + "' "
 	} else {
-		query += " WHERE status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' "
+		query += " WHERE vc.status=1 AND vc.vehicle_id='" + strconv.Itoa(vehicleid) + "' "
 	}
 
 	query += " LIMIT 1"
 	q := rs.Tx().NewQuery(query)
-	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.LastSeen, &vdetails.RenewalDate, &vdetails.Renew, &vdetails.CreatedOn, &vdetails.ExpiryDate, &vdetails.DeviceStatus, &vdetails.Data)
+	err := q.Row(&vdetails.ConfigID, &vdetails.DeviceID, &vdetails.UserID, &vdetails.Fitter, &vdetails.VehicleID, &vdetails.VehicleRegistration, &vdetails.VehicleStatus, &vdetails.NTSAShow, &vdetails.OwnerID, &vdetails.FitterID, &vdetails.NotificationEmail, &vdetails.NotificationNO, &vdetails.SimNO, &vdetails.SerialNo, &vdetails.LastSeen, &vdetails.RenewalDate, &vdetails.Renew, &vdetails.CreatedOn, &vdetails.ExpiryDate, &vdetails.DeviceStatus, &vdetails.Data)
 	return &vdetails, err
 }
 
@@ -86,11 +95,11 @@ func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid stri
 }
 
 // DeleteOverspeedsByDeviceID deletes an Record with the specified ID from the database (mongodb).
-func (dao *VehicleDAO) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32) (int, error) {
+func (dao *VehicleDAO) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64) (int, error) {
 	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 84}}}}
 
 	// Get collection
-	collection := app.MongoDB.Collection("data_" + strconv.Itoa(int(id)))
+	collection := app.MongoDB.Collection("data_" + strconv.FormatInt(int64(id), 10))
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -99,7 +108,24 @@ func (dao *VehicleDAO) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32
 		return 0, err
 	}
 
-	app.DelKey("data:" + strconv.Itoa(int(id)))
+	return int(res.DeletedCount), nil
+}
+
+// DeleteFutureDataByDeviceID delete Records with with future from the database (mongodb).
+func (dao *VehicleDAO) DeleteFutureDataByDeviceID(rs app.RequestScope, id uint64) (int, error) {
+	now := time.Now()
+	nowTimestamp := now.Unix()
+	filter := bson.D{{Key: "datetimestamp", Value: bson.D{{Key: "$gt", Value: nowTimestamp}}}}
+
+	// Get collection
+	collection := app.MongoDB.Collection("data_" + strconv.FormatInt(int64(id), 10))
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	res, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
 
 	return int(res.DeletedCount), nil
 }
@@ -152,6 +178,7 @@ func (dao *VehicleDAO) SearchVehicles(rs app.RequestScope, searchterm string, of
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"device_id": searchterm}, dbx.NewExp("send_to_ntsa=1"))))
 	} else {
 		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)),
+			dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.serial_no", searchterm)),
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"device_id": searchterm})))
 	}
 	err := q.OrderBy("vehicle_configuration.vehicle_id DESC").All(&tdetails)
@@ -168,6 +195,7 @@ func (dao *VehicleDAO) CountSearches(rs app.RequestScope, searchterm, qtype stri
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm}, dbx.NewExp("send_to_ntsa=1"))))
 	} else {
 		q.Where(dbx.Or(dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.vehicle_string_id", searchterm)),
+			dbx.And(dbx.NewExp("status=1"), dbx.Like("vehicle_configuration.serial_no", searchterm)),
 			dbx.And(dbx.NewExp("status=1"), dbx.HashExp{"device_id": searchterm})))
 
 	}
@@ -243,11 +271,11 @@ func (dao *VehicleDAO) VehicleExistsConfigurationByStringID(rs app.RequestScope,
 }
 
 //CreateConfiguration Add configuartion details to db
-func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error {
+func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error {
 	var vehiclestringid = strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1))
 
 	// Delete Previous Configuration
-	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehstringid}).Execute()
+	_, err := rs.Tx().Delete("vehicle_configuration", dbx.HashExp{"vehicle_string_id": vehiclestringid}).Execute()
 	if err != nil {
 		return err
 	}
@@ -294,6 +322,21 @@ func (dao *VehicleDAO) CheckIfSerialNoExists(rs app.RequestScope, cd *models.Veh
 	return nil
 }
 
+// CheckIfDeviceIDExists ...
+func (dao *VehicleDAO) CheckIfDeviceIDExists(rs app.RequestScope, cd *models.Vehicle) error {
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_configuration WHERE device_id='" + cd.GovernorDetails.DeviceID + "' LIMIT 1) AS exist")
+	err := q.Row(&exists)
+	if err != nil {
+		return errors.New("Device ID check failed try again")
+	}
+	if exists > 0 {
+		return errors.New("Device ID already exist. Please unplug your device and try again")
+	}
+
+	return nil
+}
+
 // CheckIfVehicleIsExpired ...
 func (dao *VehicleDAO) CheckIfVehicleIsExpired(rs app.RequestScope, cd *models.Vehicle, daystoexpiry int) error {
 	now := time.Now()
@@ -301,7 +344,9 @@ func (dao *VehicleDAO) CheckIfVehicleIsExpired(rs app.RequestScope, cd *models.V
 	// get date of expiry
 	var vehiclestringid = strings.ToLower(strings.Replace(cd.DeviceDetails.RegistrationNO, " ", "", -1))
 	var expiry time.Time
-	query := "SELECT DATE_ADD(DATE_ADD(COALESCE(renewal_date, created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date FROM vehicle_details WHERE vehicle_string_id='" + vehiclestringid + "'"
+	// query := "SELECT DATE_ADD(DATE_ADD(COALESCE(renewal_date, created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date FROM vehicle_details WHERE vehicle_string_id='" + vehiclestringid + "'"
+	query := "SELECT DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date "
+	query += " FROM vehicle_details AS vd LEFT JOIN (SELECT * FROM vehicle_renewals WHERE vehicle_string_id='" + vehiclestringid + "' ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) WHERE vd.vehicle_string_id='" + vehiclestringid + "'"
 	err := rs.Tx().NewQuery(query).Row(&expiry)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
@@ -339,7 +384,7 @@ func (dao *VehicleDAO) UpdatDeviceConfigurationStatus(rs app.RequestScope, devic
 
 // CountTripDataByDeviceID returns the number of trip records in the database.
 func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
-	id, _ := strconv.Atoi(deviceid)
+	id, _ := strconv.ParseInt(deviceid, 10, 64)
 	filter := bson.D{{Key: "deviceid", Value: id}}
 	return Count(deviceid, filter, nil)
 }
@@ -348,7 +393,7 @@ func (dao *VehicleDAO) CountTripDataByDeviceID(deviceid string) (int, error) {
 func Count(deviceid string, filter primitive.D, opts *options.FindOptions) (int, error) {
 	app.CreateIndexMongo("data_" + deviceid)
 	collection := app.MongoDB.Collection("data_" + deviceid)
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel() // cancel when we are finished consuming integers
 	count, err := collection.CountDocuments(ctx, filter, nil)
 	return int(count), err
@@ -527,4 +572,13 @@ func (dao *VehicleDAO) CreateDevice(rs app.RequestScope, device *models.Devices)
 	}).Execute()
 
 	return err
+}
+
+// GetFitterIDByAgentIDNo ...
+func (dao *VehicleDAO) GetFitterIDByAgentIDNo(rs app.RequestScope, agentid int) uint32 {
+	var aid uint32
+	query := "SELECT company_id FROM companies WHERE contact_id='" + strconv.Itoa(agentid) + "' LIMIT 1"
+	rs.Tx().NewQuery(query).Row(&aid)
+
+	return aid
 }

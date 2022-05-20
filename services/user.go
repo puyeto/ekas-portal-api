@@ -14,7 +14,7 @@ import (
 // userDAO specifies the interface of the user DAO needed by userService.
 type userDAO interface {
 	// GetUser returns the user with the specified user ID.
-	GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error)
+	GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error)
 	// GetUserByEmail returns the user with the specified user email.
 	// GetUserByEmail(rs app.RequestScope, email string) (*models.UserDetails, error)
 	GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error)
@@ -27,13 +27,14 @@ type userDAO interface {
 	CreateNewEmailVerification(rs app.RequestScope, con *models.ConfirmationEmailDetails) error
 	CreateLoginSession(rs app.RequestScope, ls *models.UserLoginSessions) error
 	// List users
-	Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error)
-	Count(rs app.RequestScope) (int, error)
+	Query(rs app.RequestScope, offset, limit, cid int) ([]models.AuthUsers, error)
+	Count(rs app.RequestScope, cid int) (int, error)
 	Update(rs app.RequestScope, model *models.AuthUsers) error
 	ResetPassword(rs app.RequestScope, model *models.ResetPassword) error
 	CreateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
 	UpdateCompanyUser(rs app.RequestScope, companyid int32, userid uint32) error
 	IfCompanyUserExists(rs app.RequestScope, companyid int32, userid uint32) (int, error)
+	QueryDepartments(rs app.RequestScope) ([]models.Departments, error)
 }
 
 // UserService provides services related with users.
@@ -54,17 +55,17 @@ func New() models.AdminUserDetails {
 }
 
 // Count returns the number of users.
-func (u *UserService) Count(rs app.RequestScope) (int, error) {
-	return u.dao.Count(rs)
+func (u *UserService) Count(rs app.RequestScope, cid int) (int, error) {
+	return u.dao.Count(rs, cid)
 }
 
 // Query returns users with the specified offset and limit.
-func (u *UserService) Query(rs app.RequestScope, offset, limit int) ([]models.AuthUsers, error) {
-	return u.dao.Query(rs, offset, limit)
+func (u *UserService) Query(rs app.RequestScope, offset, limit, cid int) ([]models.AuthUsers, error) {
+	return u.dao.Query(rs, offset, limit, cid)
 }
 
 // GetUser returns the user with the specified the user ID.
-func (u *UserService) GetUser(rs app.RequestScope, id uint32) (*models.AuthUsers, error) {
+func (u *UserService) GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error) {
 	return u.dao.GetUser(rs, id)
 }
 
@@ -238,6 +239,11 @@ func (u *UserService) SubmitUserRole(rs app.RequestScope, model *models.AdminUse
 func (u *UserService) Delete(rs app.RequestScope, id int32) error {
 	err := u.dao.Delete(rs, id)
 	return err
+}
+
+// QueryDepartments returns departments with the specified offset and limit.
+func (u *UserService) QueryDepartments(rs app.RequestScope) ([]models.Departments, error) {
+	return u.dao.QueryDepartments(rs)
 }
 
 // // sendConfirmationEmail Sends an email to the new registered user

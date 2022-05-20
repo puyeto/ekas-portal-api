@@ -25,11 +25,12 @@ type Vehicle struct {
 // VehicleConfigDetails ...
 type VehicleConfigDetails struct {
 	ConfigID            uint32    `json:"conf_id"`
-	DeviceID            uint32    `json:"device_id,omitempty"`
-	VehicleID           uint32    `json:"vehicle_id,omitempty"`
+	DeviceID            uint64    `json:"device_id"`
+	VehicleID           uint32    `json:"vehicle_id"`
+	SaccoID             uint32    `json:"sacco_id"`
 	VehicleRegistration string    `json:"registration_no,omitempty"`
 	UserID              uint32    `json:"user_id" db:"user_id"`
-	Fitter              string    `json:"fitter,omitempty" db:"-"` // person who fitted the device from userid
+	Fitter              string    `json:"fitter" db:"-"` // person who fitted the device from userid
 	VehicleStatus       int8      `json:"vehicle_status" db:"vehicle_status"`
 	NTSAShow            int8      `json:"ntsa_show" db:"send_to_ntsa"`
 	DeviceStatus        string    `json:"device_status" db:"device_status"`
@@ -39,6 +40,7 @@ type VehicleConfigDetails struct {
 	NotificationEmail   string    `json:"notification_email,omitempty"`
 	NotificationNO      string    `json:"notification_no,omitempty"`
 	SimNO               string    `json:"sim_no,omitempty"`
+	SerialNo            string    `json:"serial_no"`
 	Data                string    `json:"vehicle_data,omitempty"`
 	CreatedOn           time.Time `json:"created_on,omitempty" db:"created_on"`
 	Renew               int8      `json:"renew" db:"renew"`
@@ -48,7 +50,7 @@ type VehicleConfigDetails struct {
 
 // SearchDetails ...
 type SearchDetails struct {
-	DeviceID            uint32 `json:"device_id,omitempty"`
+	DeviceID            uint64 `json:"device_id,omitempty"`
 	VehicleID           uint32 `json:"vehicle_id,omitempty"`
 	VehicleRegistration string `json:"registration_no" db:"vehicle_reg_no"`
 	VehicleName         string `json:"vehicle_name"`
@@ -109,9 +111,10 @@ type VehicleDetails struct {
 	UserID                 uint32    `json:"user_id" db:"user_id"`
 	OwnerID                uint32    `json:"owner_id" db:"owner_id"`
 	CompanyID              uint32    `json:"company_id" db:"company_id"`
-	DeviceID               uint32    `json:"device_id" db:"device_id"`
+	DeviceID               uint64    `json:"device_id" db:"device_id"`
 	CompanyName            string    `json:"company_name,omitempty"`
 	VehicleStringID        string    `json:"vehicle_string_id,omitempty" db:"vehicle_string_id"`
+	SaccoID                uint32    `json:"sacco_id" db:"sacco_id"`
 	VehicleRegNo           string    `json:"vehicle_reg_no" db:"vehicle_reg_no"`
 	ChassisNo              string    `json:"chassis_no" db:"chassis_no"`
 	MakeType               string    `json:"make_type" db:"make_type"`
@@ -145,6 +148,7 @@ type VehicleDetails struct {
 
 // VDetails ...
 type VDetails struct {
+	VehicleID    int32
 	Name         string
 	VehicleOwner string
 	OwnerTel     string
@@ -194,7 +198,7 @@ type TripBetweenDates struct {
 type DeviceData struct {
 	SystemCode                     string    `json:"system_code,omitempty"`                      // 4 bytes
 	SystemMessage                  int       `json:"system_message,omitempty"`                   // 1 byte
-	DeviceID                       uint32    `json:"device_id,omitempty"`                        // 4 bytes
+	DeviceID                       uint64    `json:"device_id,omitempty"`                        // 4 bytes
 	CommunicationControlField      uint32    `json:"communication_control_field,omitempty"`      // 2 bytes
 	MessageNumerator               int       `json:"message_numerator,omitempty"`                // 1 byte
 	HardwareVersion                int       `json:"hardware_version,omitempty"`                 // 1 byte
@@ -248,7 +252,7 @@ type LastSeenStruct struct {
 
 // CurrentViolations ...
 type CurrentViolations struct {
-	DeviceID            int32      `json:"device_id" bson:"_id"`
+	DeviceID            int64      `json:"device_id" bson:"_id"`
 	DateTime            time.Time  `json:"date_time,omitempty" bson:"datetime"`
 	DateTimeStamp       int64      `json:"date_time_stamp,omitempty" bson:"datetimeunix"`
 	VehicleRegistration string     `json:"name,omitempty"`
@@ -308,7 +312,7 @@ type FilterVehicles struct {
 
 // XMLResults ...
 type XMLResults struct {
-	SerialNo            int32
+	SerialNo            int64
 	VehicleRegistration string
 	VehicleOwner        string
 	OwnerTel            string

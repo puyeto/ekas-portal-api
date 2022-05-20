@@ -26,7 +26,7 @@ func (c Status) Run() {
 
 // Devices ...
 type Devices struct {
-	DeviceID int32     `json:"device_id"`
+	DeviceID uint64    `json:"device_id"`
 	LastSeen time.Time `json:"last_seen"`
 }
 
@@ -46,7 +46,7 @@ func getAllOfflines() {
 			collection.DeleteMany(ctx, bson.D{})
 		}
 		var m models.DeviceData
-		m.DeviceID = uint32(dev.DeviceID)
+		m.DeviceID = dev.DeviceID
 		m.Offline = true
 		diff := time.Now().Sub(dev.LastSeen)
 		if diff.Hours() > 168 {
@@ -102,7 +102,7 @@ func LogCurrentViolationSeenMongoDB(m models.DeviceData) error {
 	return upsert(data, m.DeviceID, "current_violations")
 }
 
-func upsert(data bson.M, deviceID uint32, table string) error {
+func upsert(data bson.M, deviceID uint64, table string) error {
 	collection := app.MongoDB.Collection(table)
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	opts := options.Update().SetUpsert(true)

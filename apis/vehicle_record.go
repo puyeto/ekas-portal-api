@@ -1,6 +1,7 @@
 package apis
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/ekas-portal-api/app"
@@ -13,9 +14,9 @@ type (
 	vehicleRecordService interface {
 		Get(rs app.RequestScope, id uint32) (*models.VehicleDetails, error)
 		CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
-		Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error)
+		Query(rs app.RequestScope, offset, limit int, uid int, typ string, userdetails models.AuthUsers) ([]models.VehicleDetails, error)
 		QueryFilter(rs app.RequestScope, offset, limit int, m *models.FilterVehicles) ([]models.VehicleDetails, error)
-		Count(rs app.RequestScope, uid int, typ string) (int, error)
+		Count(rs app.RequestScope, uid int, typ string, userdetails models.AuthUsers) (int, error)
 		CountFilter(rs app.RequestScope, m *models.FilterVehicles) (int, error)
 		Update(rs app.RequestScope, model *models.VehicleDetails) error
 		Delete(rs app.RequestScope, id uint32) error
@@ -25,6 +26,7 @@ type (
 		CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 		CountReminders(rs app.RequestScope, uid int) (int, error)
 		GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
+		GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error)
 	}
 
 	// vehicleRecordResource defines the handlers for the CRUD APIs.
@@ -82,15 +84,19 @@ func (r *vehicleRecordResource) query(c *routing.Context) error {
 		return err
 	}
 
+	// get user details
+	userdetails, _ := r.service.GetUser(app.GetRequestScope(c), uint32(uid))
+	fmt.Println(userdetails)
+
 	typ := c.Query("type", "")
 
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs, uid, typ)
+	count, err := r.service.Count(rs, uid, typ, userdetails)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uid, typ)
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), uid, typ, userdetails)
 	if err != nil {
 		return err
 	}
@@ -151,13 +157,17 @@ func (r *vehicleRecordResource) delete(c *routing.Context) error {
 }
 
 func (r *vehicleRecordResource) count(c *routing.Context) error {
-	typ := c.Query("uid", "0")
+	typ := c.Query("type", "")
 	uid, err := strconv.Atoi(c.Query("uid", "0"))
 	if err != nil {
 		return err
 	}
 
-	response, err := r.service.Count(app.GetRequestScope(c), uid, typ)
+	// get user details
+	userdetails, _ := r.service.GetUser(app.GetRequestScope(c), uint32(uid))
+	fmt.Println(userdetails)
+
+	response, err := r.service.Count(app.GetRequestScope(c), uid, typ, userdetails)
 	if err != nil {
 		return err
 	}

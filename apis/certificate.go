@@ -12,10 +12,10 @@ type (
 	// certificateService specifies the interface for the certificate service needed by certificateResource.
 	certificateService interface {
 		Get(rs app.RequestScope, id int) (*models.Certificates, error)
-		Query(rs app.RequestScope, offset, limit int) ([]models.Certificates, error)
-		Count(rs app.RequestScope) (int, error)
+		Query(rs app.RequestScope, offset, limit, cid int, search string) ([]models.Certificates, error)
+		Count(rs app.RequestScope, cid int, search string) (int, error)
 		Create(rs app.RequestScope, model *models.Certificates) (*models.Certificates, error)
-		Update(rs app.RequestScope, id int, model *models.Certificates) (*models.Certificates, error)
+		Update(rs app.RequestScope, model *models.Certificates) (*models.Certificates, error)
 		Delete(rs app.RequestScope, id int) (*models.Certificates, error)
 	}
 
@@ -31,7 +31,7 @@ func ServeCertificateResource(rg *routing.RouteGroup, service certificateService
 	rg.Get("/certificates/get/<id>", r.get)
 	rg.Get("/certificates/list", r.query)
 	rg.Post("/certificates/create", r.create)
-	rg.Put("/certificates/update/<id>", r.update)
+	rg.Put("/certificates/update", r.update)
 	rg.Delete("/certificates/delete/<id>", r.delete)
 }
 
@@ -50,13 +50,16 @@ func (r *certificateResource) get(c *routing.Context) error {
 }
 
 func (r *certificateResource) query(c *routing.Context) error {
+	cid, _ := strconv.Atoi(c.Query("cid", "0"))
+	search := c.Query("search", "")
+
 	rs := app.GetRequestScope(c)
-	count, err := r.service.Count(rs)
+	count, err := r.service.Count(rs, cid, search)
 	if err != nil {
 		return err
 	}
 	paginatedList := getPaginatedListFromRequest(c, count)
-	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit())
+	items, err := r.service.Query(app.GetRequestScope(c), paginatedList.Offset(), paginatedList.Limit(), cid, search)
 	if err != nil {
 		return err
 	}
@@ -78,23 +81,11 @@ func (r *certificateResource) create(c *routing.Context) error {
 }
 
 func (r *certificateResource) update(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
+	var model models.Certificates
+	if err := c.Read(&model); err != nil {
 		return err
 	}
-
-	rs := app.GetRequestScope(c)
-
-	model, err := r.service.Get(rs, id)
-	if err != nil {
-		return err
-	}
-
-	if err := c.Read(model); err != nil {
-		return err
-	}
-
-	response, err := r.service.Update(rs, id, model)
+	response, err := r.service.Update(app.GetRequestScope(c), &model)
 	if err != nil {
 		return err
 	}

@@ -45,5 +45,6 @@ func sendSMS(message, tonumber string) {
 	app.MessageChan <- app.MessageDetails{
 		Message:  message,
 		ToNumber: tonumber,
+		Type:     "Expired",
 	}
 }

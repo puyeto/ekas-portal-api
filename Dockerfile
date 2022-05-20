@@ -17,6 +17,8 @@ ENV CGO_ENABLED=0
 # Copy the project in to the container
 ADD . /go/src/github.com/ekas-portal-api
 
+RUN go mod download 
+
 # Go get the project deps
 RUN go get github.com/ekas-portal-api
 

@@ -25,7 +25,7 @@ func (dao *VehicleRecordDAO) Get(rs app.RequestScope, id uint32) (*models.Vehicl
 
 	err := rs.Tx().Select("vehicle_id", "user_id", "owner_id", "company_id", "vehicle_string_id", "vehicle_reg_no",
 		"chassis_no", "make_type", "notification_email", "notification_no", "auto_invoicing", "invoice_due_date",
-		"created_on", "COALESCE(model, '')", "model_year", "COALESCE(manufacturer,'')").Model(id, &vehicleRecord)
+		"created_on", "COALESCE(model, '') AS model", "model_year", "COALESCE(manufacturer,'') AS manufacturer").Model(id, &vehicleRecord)
 	return &vehicleRecord, err
 }
 
@@ -42,52 +42,50 @@ func (dao *VehicleRecordDAO) Delete(rs app.RequestScope, id uint32) error {
 }
 
 // Count returns the number of the vehicleRecord records in the database.
-func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int, typ string) (int, error) {
+func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int, typ string, userdetails models.AuthUsers) (int, error) {
 	var count int
-	var err error
+	q := rs.Tx().Select("COUNT(*)").From("vehicle_details")
 	if uid > 0 {
-		err = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-			Where(dbx.HashExp{"user_id": uid}).Row(&count)
+		if userdetails.SaccoID > 0 {
+			q.Where(dbx.HashExp{"sacco_id": userdetails.SaccoID}).Row(&count)
+		} else {
+			q.Where(dbx.HashExp{"user_id": uid}).Row(&count)
+		}
 	} else {
 		if typ == "ntsa" {
-			err = rs.Tx().Select("COUNT(*)").From("vehicle_details").
-				Where(dbx.HashExp{"send_to_ntsa": 1}).Row(&count)
-		} else {
-			err = rs.Tx().Select("COUNT(*)").From("vehicle_details").Row(&count)
+			q.Where(dbx.HashExp{"send_to_ntsa": 1}).Row(&count)
 		}
 	}
 
+	err := q.Row(&count)
 	return count, err
 }
 
 // Query retrieves the vehicleRecord records with the specified offset and limit from the database.
-func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int, typ string) ([]models.VehicleDetails, error) {
+func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int, typ string, userdetails models.AuthUsers) ([]models.VehicleDetails, error) {
 	vehicleRecords := []models.VehicleDetails{}
+	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "sacco_id",
+		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model",
+		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "json_value(data, '$.device_detail.certificate') AS certificate", "serial_no AS limiter_serial").
+		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
+		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
+		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id"))
 	var err error
 	if uid > 0 {
-		// err = rs.Tx().Select().Where(dbx.HashExp{"user_id": uid}).OrderBy("created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
-		err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew").
-			LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
-			LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-			LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
-			Where(dbx.And(dbx.HashExp{"vehicle_details.user_id": uid}, dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0"))).
-			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+		if userdetails.SaccoID > 0 {
+			q.Where(dbx.And(dbx.HashExp{"vehicle_details.sacco_id": userdetails.SaccoID}, dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0")))
+		} else {
+			q.Where(dbx.And(dbx.HashExp{"vehicle_details.user_id": uid}, dbx.HashExp{"vehicle_details.vehicle_status": 1}, dbx.HashExp{"vehicle_configuration.status": 1}, dbx.NewExp("vehicle_configuration.device_id>0")))
+		}
 	} else {
 		if typ == "ntsa" {
-			err = rs.Tx().Select("vehicle_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew").
-				LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
-				LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-				Where(dbx.HashExp{"send_to_ntsa": 1}).OrderBy("vehicle_details.created_on desc").
-				Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+			q.Where(dbx.HashExp{"send_to_ntsa": 1})
 		} else {
-			err = rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew").
-				LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
-				LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-				LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
-				Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"vehicle_details.vehicle_status": 1})).OrderBy("vehicle_details.created_on desc").
-				Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+			q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id > 0"), dbx.HashExp{"vehicle_details.vehicle_status": 1})).OrderBy("vehicle_details.invoice_due_date desc")
 		}
 	}
+	err = q.OrderBy("vehicle_details.invoice_due_date desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
+
 	return vehicleRecords, err
 }
 
@@ -165,14 +163,17 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 		"vehicle_status":     v.VehicleStatus,
 		"send_to_ntsa":       v.NTSAShow,
 		"notification_email": v.NotificationEmail,
+		"sacco_id":           v.SaccoID,
 		"notification_no":    v.NotificationNO},
 		dbx.HashExp{"vehicle_id": v.VehicleID}).Execute(); err != nil {
 		return err
 	}
 
 	// update configuration details
-	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID
-	query += "', data = JSON_SET(DATA, '$.device_detail.registration_no', '" + v.VehicleRegNo + "', '$.device_detail.chasis_no', '" + v.ChassisNo + "', '$.device_detail.make_type', '" + v.MakeType + "')"
+	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID + "', serial_no = '" + v.LimiterSerial
+	query += "', data = JSON_SET(DATA, '$.device_detail.registration_no', '" + v.VehicleRegNo + "', '$.device_detail.chasis_no', '" + v.ChassisNo
+	query += "', '$.device_detail.make_type', '" + v.MakeType + "', '$.device_detail.serial_no', '" + v.LimiterSerial
+	query += "', '$.device_detail.certificate', '" + v.Certificate + "')"
 	query += " WHERE vehicle_id = " + strconv.Itoa(int(v.VehicleID))
 	if _, err := rs.Tx().NewQuery(query).Execute(); err != nil {
 		return err
@@ -193,12 +194,12 @@ func (dao *VehicleRecordDAO) VehicleExists(rs app.RequestScope, id uint32) (int,
 func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) (uint32, error) {
 	m.Status = 1
 	m.CreatedOn = time.Now()
-	m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
+	// m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
 	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, -1)
 
 	// check if cert has been renewed
 	var exists int
-	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + m.CertificateNo + "' LIMIT 1) AS exist")
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + m.CertificateNo + "' AND vehicle_string_id != '" + m.VehicleStringID + "' LIMIT 1) AS exist")
 	if err := q.Row(&exists); err != nil {
 		return m.ID, err
 	}
@@ -221,6 +222,11 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 		return m.ID, err
 	}
 
+	// update certificate details
+	query := "UPDATE vehicle_configuration SET data = JSON_SET(DATA, '$.device_detail.certificate', '" + m.CertificateNo + "')"
+	query += " WHERE vehicle_id = " + strconv.Itoa(int(m.VehicleID))
+	rs.Tx().NewQuery(query).Execute()
+
 	return m.ID, nil
 }
 
@@ -234,8 +240,8 @@ func (dao *VehicleRecordDAO) CreateReminder(rs app.RequestScope, v *models.Remin
 // ListVehicleRenewals retrieves the renewal records with the specified offset and limit from the database.
 func (dao *VehicleRecordDAO) ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error) {
 	r := []models.VehicleRenewals{}
-	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
-		From("vehicle_renewals AS vr").
+	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "certificate_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
+		From("vehicle_renewals AS vr").Where(dbx.HashExp{"vr.status": 1}).
 		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vr.vehicle_id")).
 		LeftJoin("vehicle_configuration AS vc", dbx.NewExp("vc.vehicle_id = vr.vehicle_id")).
 		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&r)
@@ -274,4 +280,18 @@ func (dao *VehicleRecordDAO) GetReminder(rs app.RequestScope, offset, limit int,
 		err = rs.Tx().Select().OrderBy("id desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	}
 	return vehicleRecords, err
+}
+
+// GetUser reads the full user details with the specified ID from the database.
+func (dao *VehicleRecordDAO) GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error) {
+	usr := models.AuthUsers{}
+	err := rs.Tx().Select("auth_user_id", "auth_user_email", "sacco_id", "auth_user_status", "auth_user_role", "role_name", "COALESCE( first_name, '') AS first_name", "COALESCE(last_name, '') AS last_name, COALESCE(companies.company_id, 0) AS company_id, COALESCE(company_name, '') AS company_name").
+		From("auth_users").LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
+		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
+		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).Model(id, &usr)
+	if err != nil {
+		return usr, err
+	}
+
+	return usr, err
 }

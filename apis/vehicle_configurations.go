@@ -13,7 +13,7 @@ type (
 	// vehicleService specifies the interface for the vehicle service needed by vehicleResource.
 	vehicleService interface {
 		GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-		GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error)
+		GetConfigurationDetails(rs app.RequestScope, vehicleid int, deviceid int64) (*models.VehicleConfigDetails, error)
 		GetTripDataByDeviceID(deviceid string, offset, limit int, orderby string) ([]models.DeviceData, error)
 		GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error)
 		Create(rs app.RequestScope, model *models.Vehicle) (int, error)
@@ -24,7 +24,8 @@ type (
 		CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 		GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
 		GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
-		DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32) (int, error)
+		DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64) (int, error)
+		DeleteFutureDataByDeviceID(rs app.RequestScope, id uint64) (int, error)
 		GetCurrentViolations(rs app.RequestScope) (models.DeviceData, error)
 		ListAllViolations(rs app.RequestScope, offset, limit int) ([]models.CurrentViolations, error)
 		XMLListAllViolations(rs app.RequestScope, offset, limit int) ([]models.XMLResults, error)
@@ -53,6 +54,7 @@ func ServeVehicleResource(rg *routing.RouteGroup, service vehicleService) {
 	rg.Get("/device/data-range/<id>", r.getTripDataByDeviceIDBtwDates)
 	rg.Get("/getoverspeed/<id>", r.getOverspeedsByDeviceID)
 	rg.Delete("/deloverspeed/<id>", r.delOverspeedsByDeviceID)
+	rg.Delete("/delfuturedata/<id>", r.deleteFutureDataByDeviceID)
 	rg.Get("/getfailsafe/<id>", r.getFailsafeByDeviceID)
 	rg.Get("/getdisconnects/<id>", r.getDisconnectsByDeviceID)
 	rg.Get("/currentviolation", r.getCurrentViolations)
@@ -69,7 +71,7 @@ func (r *vehicleResource) getConfigurationDetails(c *routing.Context) error {
 	// id := strings.ToLower(c.Param("id"))
 	// get vehicle and deviceid from query string
 	vid, _ := strconv.Atoi(c.Query("vid", "0"))
-	did, _ := strconv.Atoi(c.Query("did", "0"))
+	did, _ := strconv.ParseInt(c.Query("did", "0"), 10, 64)
 
 	response, err := r.service.GetConfigurationDetails(app.GetRequestScope(c), vid, did)
 	if err != nil {
@@ -202,12 +204,31 @@ func (r *vehicleResource) getOverspeedsByDeviceID(c *routing.Context) error {
 
 // delOverspeedsByDeviceID ...
 func (r *vehicleResource) delOverspeedsByDeviceID(c *routing.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	// id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		return err
 	}
 
-	count, err := r.service.DeleteOverspeedsByDeviceID(app.GetRequestScope(c), uint32(id))
+	count, err := r.service.DeleteOverspeedsByDeviceID(app.GetRequestScope(c), uint64(id))
+	if err != nil {
+		return err
+	}
+
+	return c.Write(map[string]int{
+		"deleted_count": count,
+	})
+}
+
+// deleteFutureDataByDeviceID ...
+func (r *vehicleResource) deleteFutureDataByDeviceID(c *routing.Context) error {
+	// id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	count, err := r.service.DeleteFutureDataByDeviceID(app.GetRequestScope(c), uint64(id))
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
 )
@@ -10,13 +12,13 @@ type certificateDAO interface {
 	// Get returns the certificate with the specified certificate ID.
 	Get(rs app.RequestScope, id int) (*models.Certificates, error)
 	// Count returns the number of certificates.
-	Count(rs app.RequestScope) (int, error)
+	Count(rs app.RequestScope, cid int, search string) (int, error)
 	// Query returns the list of certificates with the given offset and limit.
-	Query(rs app.RequestScope, offset, limit int) ([]models.Certificates, error)
+	Query(rs app.RequestScope, offset, limit, cid int, search string) ([]models.Certificates, error)
 	// Create saves a new certificate in the storage.
 	Create(rs app.RequestScope, certificate *models.Certificates) error
 	// Update updates the certificate with given ID in the storage.
-	Update(rs app.RequestScope, id int, certificate *models.Certificates) error
+	Update(rs app.RequestScope, certificate *models.Certificates) error
 	// Delete removes the certificate with given ID from the storage.
 	Delete(rs app.RequestScope, id int) error
 }
@@ -38,9 +40,18 @@ func (s *CertificateService) Get(rs app.RequestScope, id int) (*models.Certifica
 
 // Create creates a new certificate.
 func (s *CertificateService) Create(rs app.RequestScope, model *models.Certificates) (*models.Certificates, error) {
-	if err := model.ValidateCertificates(); err != nil {
+	if err := model.Validate(); err != nil {
 		return nil, err
 	}
+
+	if model.IssuedOn.IsZero() {
+		model.IssuedOn = time.Now()
+	}
+
+	if model.CertSerial == "" {
+		model.CertSerial = model.CertNo
+	}
+
 	if err := s.dao.Create(rs, model); err != nil {
 		return nil, err
 	}
@@ -48,14 +59,23 @@ func (s *CertificateService) Create(rs app.RequestScope, model *models.Certifica
 }
 
 // Update updates the certificate with the specified ID.
-func (s *CertificateService) Update(rs app.RequestScope, id int, model *models.Certificates) (*models.Certificates, error) {
-	if err := model.ValidateCertificates(); err != nil {
+func (s *CertificateService) Update(rs app.RequestScope, model *models.Certificates) (*models.Certificates, error) {
+	if err := model.Validate(); err != nil {
 		return nil, err
 	}
-	if err := s.dao.Update(rs, id, model); err != nil {
+
+	if model.IssuedOn.IsZero() {
+		model.IssuedOn = time.Now()
+	}
+
+	if model.CertSerial == "" {
+		model.CertSerial = model.CertNo
+	}
+
+	if err := s.dao.Update(rs, model); err != nil {
 		return nil, err
 	}
-	return s.dao.Get(rs, id)
+	return s.dao.Get(rs, model.ID)
 }
 
 // Delete deletes the certificate with the specified ID.
@@ -69,11 +89,11 @@ func (s *CertificateService) Delete(rs app.RequestScope, id int) (*models.Certif
 }
 
 // Count returns the number of certificates.
-func (s *CertificateService) Count(rs app.RequestScope) (int, error) {
-	return s.dao.Count(rs)
+func (s *CertificateService) Count(rs app.RequestScope, cid int, search string) (int, error) {
+	return s.dao.Count(rs, cid, search)
 }
 
 // Query returns the certificates with the specified offset and limit.
-func (s *CertificateService) Query(rs app.RequestScope, offset, limit int) ([]models.Certificates, error) {
-	return s.dao.Query(rs, offset, limit)
+func (s *CertificateService) Query(rs app.RequestScope, offset, limit, cid int, search string) ([]models.Certificates, error) {
+	return s.dao.Query(rs, offset, limit, cid, search)
 }

@@ -2,6 +2,7 @@ package daos
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -17,7 +18,7 @@ func NewTrackingServerDAO() *TrackingServerDAO {
 }
 
 // GetTrackingServerUserLoginIDByEmail ...
-func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (uint32, int, int, error) {
+func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.RequestScope, email string) (interface{}, error) {
 	var res struct {
 		AuthUserID   uint32
 		AuthUserRole int
@@ -29,12 +30,11 @@ func (dao *TrackingServerDAO) GetTrackingServerUserLoginIDByEmail(rs app.Request
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
 		Where(dbx.HashExp{"auth_user_email": email}).Limit(1).One(&res)
 
-	return res.AuthUserID, res.AuthUserRole, res.CompanyID, err
+	return res, err
 }
 
 // SaveTrackingServerLoginDetails saves a new user record in the database.
 func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope, email string, hash string, status int8, data interface{}) error {
-	//return rs.Tx().Model(artist).Insert()
 	a, _ := json.Marshal(data)
 
 	// insert into auth_users
@@ -54,7 +54,10 @@ func (dao *TrackingServerDAO) SaveTrackingServerLoginDetails(rs app.RequestScope
 // GetUserByEmail reads the user with the specified email from the database.
 func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) (models.AdminUserDetails, error) {
 	usr := models.AdminUserDetails{}
-	err := rs.Tx().Select("COALESCE(first_name,'') AS first_name", "COALESCE(last_name,'') AS last_name", "auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role_id", "role_name", "COALESCE(company_users.company_id, 0) AS company_id", "COALESCE(company_name, '') AS company_name", "enable_gps_configuration", "enable_failsafe_configuration").
+	err := rs.Tx().Select("COALESCE(CONCAT( first_name, ' ', last_name), '') AS full_name", "COALESCE(first_name,'') AS first_name", "COALESCE(last_name,'') AS last_name",
+		"auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role", "role_name",
+		"COALESCE(company_users.company_id, 0) AS company_id", "COALESCE(company_name, '') AS company_name", "enable_gps_configuration", "mpesa_renewal",
+		"enable_failsafe_configuration", "sacco_id").
 		From("auth_users").
 		LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
@@ -62,6 +65,18 @@ func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) 
 		Where(dbx.HashExp{"auth_user_email": email}).One(&usr)
 
 	return usr, err
+}
+
+// GetCompanyDetailsByEmail ...
+func (dao *TrackingServerDAO) GetCompanyDetailsByEmail(rs app.RequestScope, email string) (models.Companies, error) {
+	com := models.Companies{}
+	err := rs.Tx().Select("companies.*").
+		From("companies").
+		LeftJoin("company_users", dbx.NewExp("company_users.company_id = companies.company_id")).
+		LeftJoin("auth_users", dbx.NewExp("auth_users.auth_user_id = company_users.user_id")).
+		Where(dbx.HashExp{"auth_user_email": email}).One(&com)
+
+	return com, err
 }
 
 // GetUserByUserHash reads the user with the specified email from the database.
@@ -107,4 +122,11 @@ func (dao *TrackingServerDAO) QueryVehicelsFromPortal(rs app.RequestScope, offse
 			OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
 	}
 	return vehicleRecords, err
+}
+
+// Get reads the sacco with the specified ID from the database.
+func (dao *TrackingServerDAO) GetSaccoName(rs app.RequestScope, id int) (string, error) {
+	var sacconame string
+	err := rs.Tx().NewQuery("SELECT name FROM saccos WHERE id='" + strconv.Itoa(id) + "' LIMIT 1").Row(&sacconame)
+	return sacconame, err
 }

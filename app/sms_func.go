@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ekas-portal-api/models"
-	dbx "github.com/go-ozzo/ozzo-dbx"
 )
 
 // check if messages have been sent
@@ -60,16 +59,14 @@ func SendViolationSMSMessages(message chan models.MessageDetails) {
 						if err == nil {
 							// Save sent message
 							var savedata = models.SaveMessageDetails{
-								MessageID:   message.MessageID,
-								Message:     data["body"].(string),
-								DateTime:    time.Now(),
-								From:        data["from"].(string),
-								To:          data["to"].(string),
-								DateCreated: data["date_created"].(string),
-								SID:         data["sid"].(string),
-								Status:      data["status"].(string),
+								MessageID: message.MessageID,
+								Message:   data["body"].(string),
+								DateTime:  time.Now(),
+								From:      data["from"].(string),
+								To:        data["to"].(string),
+								Status:    data["status"].(string),
 							}
-							saveSentMessages(savedata)
+							SaveSentMessages(savedata)
 						}
 					} else {
 						fmt.Println(resp.Status)
@@ -95,18 +92,4 @@ func checkViolationMessages(tonumber string) (SMSCheck, error) {
 	err := q.One(&data)
 
 	return data, err
-}
-
-// save sent messages
-func saveSentMessages(m models.SaveMessageDetails) {
-	DBCon.Insert("saved_messages", dbx.Params{
-		"message_id":   m.MessageID,
-		"message":      m.Message,
-		"date_time":    m.DateTime,
-		"from":         m.From,
-		"to":           m.To,
-		"date_created": m.DateCreated,
-		"sid":          m.SID,
-		"status":       m.Status,
-	}).Execute()
 }

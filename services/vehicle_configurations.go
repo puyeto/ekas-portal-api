@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ekas-portal-api/app"
@@ -13,7 +14,7 @@ import (
 // vehicleDAO specifies the interface of the vehicle DAO needed by VehicleService.
 type vehicleDAO interface {
 	GetVehicleByStrID(rs app.RequestScope, strid string) (*models.VehicleConfigDetails, error)
-	GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error)
+	GetConfigurationDetails(rs app.RequestScope, vehicleid int, deviceid int64) (*models.VehicleConfigDetails, error)
 	CountTripRecords(rs app.RequestScope, deviceid string) (int, error)
 	GetTripDataByDeviceIDBtwDates(deviceid string, offset, limit int, from, to int64) ([]models.DeviceData, error)
 	GetVehicleName(rs app.RequestScope, deviceid int) models.VDetails
@@ -21,13 +22,14 @@ type vehicleDAO interface {
 	CreateVehicle(rs app.RequestScope, vehicle *models.VehicleDetails) (uint32, error)
 	CreateVehicleOwner(rs app.RequestScope, vo *models.VehicleOwner) (uint32, error)
 	CreateFitter(rs app.RequestScope, fd *models.FitterDetails) error
-	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32, vehstringid string) error
+	CreateConfiguration(rs app.RequestScope, vehicle *models.Vehicle, ownerid uint32, fitterid uint32, vehicleid uint32) error
 	UpdateConfigurationStatus(rs app.RequestScope, configid uint32, status int8) error
 	CountOverspeed(rs app.RequestScope, deviceid string) (int, error)
 	CountViolations(rs app.RequestScope, deviceid string, reason string) (int, error)
 	GetViolationsByDeviceID(rs app.RequestScope, deviceid string, reason string, offset, limit int) ([]models.DeviceData, error)
 	GetOverspeedByDeviceID(rs app.RequestScope, deviceid string, offset, limit int) ([]models.DeviceData, error)
-	DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32) (int, error)
+	DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64) (int, error)
+	DeleteFutureDataByDeviceID(rs app.RequestScope, id uint64) (int, error)
 	SearchVehicles(rs app.RequestScope, searchterm string, offset, limit int, qtype string) ([]models.SearchDetails, error)
 	CountSearches(rs app.RequestScope, searchterm, qtype string) (int, error)
 	UpdatDeviceConfigurationStatus(rs app.RequestScope, deviceid int64, vehicleid uint32) error
@@ -40,7 +42,9 @@ type vehicleDAO interface {
 	// CreateDevice saves a new device in the storage.
 	CreateDevice(rs app.RequestScope, device *models.Devices) error
 	CheckIfSerialNoExists(rs app.RequestScope, device *models.Vehicle) error
+	CheckIfDeviceIDExists(rs app.RequestScope, device *models.Vehicle) error
 	CheckIfVehicleIsExpired(rs app.RequestScope, device *models.Vehicle, daystoexpiry int) error
+	GetFitterIDByAgentIDNo(rs app.RequestScope, agentid int) uint32
 }
 
 // VehicleService provides services related with vehicles.
@@ -59,7 +63,7 @@ func (s *VehicleService) GetVehicleByStrID(rs app.RequestScope, strid string) (*
 }
 
 // GetConfigurationDetails ...
-func (s *VehicleService) GetConfigurationDetails(rs app.RequestScope, vehicleid, deviceid int) (*models.VehicleConfigDetails, error) {
+func (s *VehicleService) GetConfigurationDetails(rs app.RequestScope, vehicleid int, deviceid int64) (*models.VehicleConfigDetails, error) {
 	return s.dao.GetConfigurationDetails(rs, vehicleid, deviceid)
 }
 
@@ -85,7 +89,7 @@ func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit in
 	}
 
 	if len(data) < limit {
-		deviceData, err := s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
+		deviceData, err = s.dao.GetTripDataByDeviceID(deviceid, offset, limit, orderby)
 		for _, rec := range deviceData {
 			go app.ZAdd("data:"+deviceid, rec.DateTimeStamp, rec)
 		}
@@ -93,7 +97,6 @@ func (s *VehicleService) GetTripDataByDeviceID(deviceid string, offset, limit in
 	}
 
 	for i := 0; i < len(data); i++ {
-
 		if data[i] != "0" {
 			var deserializedValue models.DeviceData
 			json.Unmarshal([]byte(data[i]), &deserializedValue)
@@ -126,8 +129,13 @@ func (s *VehicleService) GetOverspeedByDeviceID(rs app.RequestScope, deviceid st
 	return s.dao.GetOverspeedByDeviceID(rs, deviceid, offset, limit)
 }
 
+// DeleteFutureDataByDeviceID ...
+func (s *VehicleService) DeleteFutureDataByDeviceID(rs app.RequestScope, id uint64) (int, error) {
+	return s.dao.DeleteFutureDataByDeviceID(rs, id)
+}
+
 // DeleteOverspeedsByDeviceID ...
-func (s *VehicleService) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint32) (int, error) {
+func (s *VehicleService) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64) (int, error) {
 	return s.dao.DeleteOverspeedsByDeviceID(rs, id)
 }
 
@@ -148,38 +156,7 @@ func (s *VehicleService) GetCurrentViolations(rs app.RequestScope) (models.Devic
 	if err != nil {
 		return d, err
 	}
-	fmt.Printf("Name is %v", res[0].Data.Name)
-
-	// if value.SystemCode == "MCPG" {
-	// 	var (
-	// 		message          string
-	// 		messageid        int
-	// 		violationMessage = make(chan models.MessageDetails)
-	// 	)
-
-	// 	go app.SendViolationSMSMessages(violationMessage)
-
-	// 	// fmt.Println("device_id", value.DeviceID)
-	// 	if value.Offline {
-	// 		message = value.Name + " offline at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 4
-	// 	} else if value.Disconnect {
-	// 		message = value.Name + " power disconnectd at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 3
-	// 	} else if value.Failsafe {
-	// 		message = value.Name + " signal disconnectd at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 2
-	// 	} else if value.GroundSpeed > 80 {
-	// 		message = value.Name + " was overspeeding at " + value.DateTime.Format(time.RFC3339)
-	// 		messageid = 1
-	// 	}
-
-	// 	fmt.Println(messageid, message)
-	// 	// violationMessage <- models.MessageDetails{messageid, message}
-	// 	vd := s.dao.GetVehicleName(rs, int(value.DeviceID))
-	// 	value.Name = vd.Name
-	// 	deviceData = append(deviceData, value)
-	// }
+	// fmt.Printf("Name is %v", res[0].Data.Name)
 
 	return res[0].Data, err
 }
@@ -304,6 +281,20 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
+	// check if deviceID exists
+	if err := s.dao.CheckIfDeviceIDExists(rs, model); err != nil {
+		return 0, err
+	}
+
+	if model.FitterID == 0 {
+		// get fitterid by agent id Number
+		model.FitterID = s.dao.GetFitterIDByAgentIDNo(rs, model.DeviceDetails.AgentID)
+	}
+
+	model.DeviceDetails.DeviceType = strings.ToUpper(model.DeviceDetails.DeviceType)
+	model.DeviceDetails.SerialNO = strings.ToUpper(model.DeviceDetails.SerialNO)
+	model.DeviceDetails.ChasisNO = strings.ToUpper(model.DeviceDetails.ChasisNO)
+
 	// Add Device Details
 	did, _ := strconv.ParseInt(model.GovernorDetails.DeviceID, 10, 64)
 	dm := models.NewDevice(did, model.DeviceDetails.DeviceType, model.DeviceDetails.SerialNO, model.SimNO, model.MotherboardNO, model.Technician)
@@ -332,7 +323,7 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, model.VehicleID, vd.VehicleStringID); err != nil {
+	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, model.VehicleID); err != nil {
 		return 0, err
 	}
 

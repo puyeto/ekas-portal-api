@@ -15,6 +15,7 @@ type Devices struct {
 	CompanyID          int          `json:"company_id" db:"company_id"`
 	CompanyName        string       `json:"company_name,omitempty" db:"company_name"`
 	DeviceSerialNo     string       `json:"device_serial_no,omitempty" db:"device_serial_no"`
+	CertificateNo      string       `json:"certificate_no,omitempty" db:"certificate_no"`
 	DeviceModelNo      string       `json:"device_model_no,omitempty" db:"device_model"`
 	MotherboardNO      string       `json:"motherboard_no,omitempty" db:"motherboard_no"`
 	Technician         string       `json:"technician,omitempty" db:"technician"`
@@ -61,7 +62,7 @@ func (m Devices) ValidateDevices() error {
 // DeviceConfiguration ...
 type DeviceConfiguration struct {
 	ConfigID            int32     `json:"conf_id" db:"pk,conf_id"`
-	DeviceID            int32     `json:"device_id" db:"device_id"`
+	DeviceID            uint64    `json:"device_id" db:"device_id"`
 	DeviceName          string    `json:"device_name,omitempty" db:"dveame"`
 	ChassisNo           string    `json:"chassis_no,omitempty" db:"chis_no"`
 	MakeType            string    `json:"make_type" db:"make_type"`
