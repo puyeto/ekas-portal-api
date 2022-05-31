@@ -30,3 +30,4 @@ coverage-all.out
 server
 
 # vendor
+/.vscode
