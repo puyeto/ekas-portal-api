@@ -13,8 +13,6 @@ services:
     ports:
       - "8082:8082"
       - "8081:8081"
-    networks:
-      - host
     volumes:
       - logs:/go/logs
       
