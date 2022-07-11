@@ -1,7 +1,9 @@
 package daos
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -190,27 +192,25 @@ func (dao *VehicleRecordDAO) VehicleExists(rs app.RequestScope, id uint32) (int,
 	return exists, err
 }
 
+func (dao *VehicleRecordDAO) IsCertificateExist(rs app.RequestScope, certno, vehiclestringid string) int {
+	// check if cert has been renewed
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + certno + "' AND vehicle_string_id != '" + vehiclestringid + "' LIMIT 1) AS exist")
+	q.Row(&exists)
+
+	return exists
+}
+
 // RenewVehicle ...
-func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) (uint32, error) {
+func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) error {
 	m.Status = 1
 	m.CreatedOn = time.Now()
 	// m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
 	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, -1)
 
-	// check if cert has been renewed
-	var exists int
-	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + m.CertificateNo + "' AND vehicle_string_id != '" + m.VehicleStringID + "' LIMIT 1) AS exist")
-	if err := q.Row(&exists); err != nil {
-		return m.ID, err
-	}
-
-	if exists == 1 {
-		return m.ID, errors.New("Certificate has been renewed")
-	}
-
 	// Save renewal details
 	if err := rs.Tx().Model(m).Exclude("VehicleRegNo", "DeviceSerialNo").Insert(); err != nil {
-		return m.ID, err
+		return err
 	}
 
 	// update vehicle details
@@ -219,7 +219,7 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 		"renewal_date": m.RenewalDate},
 		dbx.HashExp{"vehicle_id": m.VehicleID}).Execute(); err != nil {
 		rs.Rollback()
-		return m.ID, err
+		return err
 	}
 
 	// update certificate details
@@ -227,7 +227,126 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 	query += " WHERE vehicle_id = " + strconv.Itoa(int(m.VehicleID))
 	rs.Tx().NewQuery(query).Execute()
 
-	return m.ID, nil
+	return nil
+}
+
+// MpesaSTKCheckout Mpesa STKPush checkout
+func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.TransInvoices, c chan models.ProcessTransJobs) (int, error) {
+	dt := time.Now()
+	svc, err := app.New(app.APPKEY, app.APPSECRET, app.SANDBOX)
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := svc.Simulation(models.Express{
+		BusinessShortCode: app.SHORTCODE,
+		Password:          app.PASSWORD,
+		Timestamp:         app.TIMESTAMP,
+		TransactionType:   "CustomerPayBillOnline",
+		// Amount:            model.Amount,
+		Amount:           "1",
+		PartyA:           model.PhoneNumber,
+		PartyB:           app.SHORTCODE,
+		PhoneNumber:      model.PhoneNumber,
+		CallBackURL:      app.CALLBACKURL,
+		AccountReference: model.TransID,
+		TransactionDesc:  "Renewal Payment",
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	in := []byte(res)
+	var response map[string]string
+	json.Unmarshal(in, &response)
+
+	if response["ResponseCode"] != "0" {
+		return 0, errors.New("An error has occured")
+	}
+
+	model.RequestCheckOutID = response["CheckoutRequestID"]
+	_, err = app.DBCon.Insert("payments", dbx.Params{
+		"transaction_type":     model.PaymentOption,
+		"trans_id":             model.TransID,
+		"trans_time":           dt.Format("01-02-2006 15:04:05"),
+		"trans_amount":         model.Amount,
+		"business_short_code":  app.SHORTCODE,
+		"bill_ref_number":      model.VehicleID,
+		"invoice_number":       model.TransID,
+		"org_account_bance":    0,
+		"third_party_trans_id": model.RequestCheckOutID,
+		"msisdn":               model.PhoneNumber,
+		"first_name":           model.PhoneNumber,
+		"middle_name":          model.PhoneNumber,
+		"last_name":            model.PhoneNumber,
+		"vehicle_id":           model.VehicleID,
+		"status":               "Pending",
+		"result_code":          response["ResponseCode"],
+		"result_desc":          "Incomplete Payment",
+		"added_by":             model.AddedBy,
+	}).Execute()
+
+	if model.RequestCheckOutID != "" {
+		transinvoice := models.NewTransInvoices(model.ID, model.VehicleID, model.AddedBy, model.Amount, model.TransID, model.PaymentOption, model.PhoneNumber, "Renewal Payment", model.RequestCheckOutID)
+		fmt.Println(transinvoice)
+		c <- models.ProcessTransJobs{
+			ProcessJobs: transinvoice,
+		}
+	}
+
+	return 1, err
+
+}
+
+// MpesaCheckoutConfirmation ...
+func (dao *VehicleRecordDAO) MpesaCheckoutConfirmation(rs app.RequestScope, checkout chan models.ProcessTransJobs, finished chan map[string]interface{}) error {
+	clientJob := <-checkout
+	<-time.After(30 * time.Second)
+
+	svc, err := app.New(app.APPKEY, app.APPSECRET, app.SANDBOX)
+	if err != nil {
+		return err
+	}
+
+	res, err := svc.TransactionStatus(models.Status{
+		BusinessShortCode: app.SHORTCODE,
+		Password:          app.PASSWORD,
+		Timestamp:         app.TIMESTAMP,
+		CheckoutRequestID: clientJob.ProcessJobs.RequestCheckOutID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	in := []byte(res)
+	var response map[string]interface{}
+	json.Unmarshal(in, &response)
+
+	// update transaction after mpesa feedback
+	// err = dao.updateMpesaMerchantDetails(rs, clientJob.ProcessJobs, response)
+
+	finished <- response
+	return err
+}
+
+// UpdateMpesaMerchantDetails update transaction after mpesa feedback
+func (dao *VehicleRecordDAO) UpdateMpesaMerchantDetails(rs app.RequestScope, details map[string]interface{}) error {
+
+	status := "Cancelled"
+	if details["ResultCode"] == "0" {
+		status = "Paid"
+	}
+
+	_, err := app.DBCon.Update("payments", dbx.Params{
+		"status":              status,
+		"merchant_request_id": details["MerchantRequestID"],
+		"result_code":         details["ResultCode"],
+		"result_desc":         details["ResultDesc"],
+	}, dbx.HashExp{"third_party_trans_id": details["CheckoutRequestID"]}).Execute()
+
+	return err
 }
 
 // CreateReminder saves a new reminder record in the database.

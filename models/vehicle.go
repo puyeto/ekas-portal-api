@@ -320,3 +320,26 @@ type XMLResults struct {
 	DateOfViolation     string
 	ActionTaken         string
 }
+
+// TransInvoices ...
+type TransInvoices struct {
+	ID                int     `json:"id" db:"id"`
+	TransID           string  `json:"trans_id" db:"trans_id"`
+	VehicleID         uint32  `json:"vehicle_id"`
+	AddedBy           int     `json:"added_by" db:"added_by"`
+	PaymentOption     string  `json:"payment_option" db:"payment_option"`
+	PhoneNumber       string  `json:"phone_number" db:"phone_number"`
+	Amount            float64 `json:"amount" db:"amount"`
+	TransDescription  string  `json:"trans_description" db:"trans_description"`
+	RequestCheckOutID string  `json:"request_checkout_id" db:"third_party_trans_id"`
+}
+
+// NewTransInvoices ...
+func NewTransInvoices(id int, vehicleid uint32, addedby int, amount float64, transid, paymentoption, phone, transdescription, checkoutid string) TransInvoices {
+	return TransInvoices{id, transid, vehicleid, addedby, paymentoption, phone, amount, transdescription, checkoutid}
+}
+
+// ProcessTransJobs ...
+type ProcessTransJobs struct {
+	ProcessJobs TransInvoices
+}
