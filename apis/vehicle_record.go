@@ -21,6 +21,7 @@ type (
 		Update(rs app.RequestScope, model *models.VehicleDetails) error
 		Delete(rs app.RequestScope, id uint32) error
 		RenewVehicle(rs app.RequestScope, model *models.VehicleRenewals) error
+		RenewVehicleInvoice(rs app.RequestScope, model *models.VehicleRenewals) error
 		ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error)
 		CountRenewals(rs app.RequestScope) (int, error)
 		CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
@@ -183,9 +184,15 @@ func (r *vehicleRecordResource) renewVehicle(c *routing.Context) error {
 		return err
 	}
 
-	err := r.service.RenewVehicle(app.GetRequestScope(c), &model)
-	if err != nil {
-		return err
+	if model.RenewalType == "Invoiced" {
+		if err := r.service.RenewVehicleInvoice(app.GetRequestScope(c), &model); err != nil {
+			return err
+		}
+
+	} else {
+		if err := r.service.RenewVehicle(app.GetRequestScope(c), &model); err != nil {
+			return err
+		}
 	}
 
 	return c.Write(map[string]string{

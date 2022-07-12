@@ -28,16 +28,18 @@ type vehicleRecordDAO interface {
 	CreateVehicle(rs app.RequestScope, model *models.VehicleDetails) (uint32, error)
 	ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error)
 	RenewVehicle(rs app.RequestScope, model *models.VehicleRenewals) error
+	// RenewVehicleInvoice(rs app.RequestScope, model *models.VehicleRenewals) error
 	CountRenewals(rs app.RequestScope) (int, error)
 	CreateReminder(rs app.RequestScope, model *models.Reminders) (uint32, error)
 	CountReminders(rs app.RequestScope, uid int) (int, error)
 	GetReminder(rs app.RequestScope, offset, limit int, uid int) ([]models.Reminders, error)
 	// GetUser returns the user with the specified user ID.
 	GetUser(rs app.RequestScope, id uint32) (models.AuthUsers, error)
-	MpesaSTKCheckout(rs app.RequestScope, model models.TransInvoices, c chan models.ProcessTransJobs) (int, error)
+	MpesaSTKCheckout(rs app.RequestScope, model models.TransInvoices, c chan models.ProcessTransJobs) error
 	MpesaCheckoutConfirmation(rs app.RequestScope, checkout chan models.ProcessTransJobs, response chan map[string]interface{}) error
 	UpdateMpesaMerchantDetails(rs app.RequestScope, details map[string]interface{}) error
 	IsCertificateExist(rs app.RequestScope, certno, vehiclestringid string) int
+	SaveRenewalInvoice(rs app.RequestScope, model models.TransInvoices) error
 }
 
 // VehicleRecordService provides services related with vehicleRecords.
@@ -130,11 +132,11 @@ func (s *VehicleRecordService) RenewVehicle(rs app.RequestScope, model *models.V
 	transmodel.TransID = app.GenerateNewStringID()
 	transmodel.PhoneNumber = model.AddedBy
 	transmodel.VehicleID = uint32(model.VehicleID)
-	transmodel.Amount = 100.00
+	transmodel.Amount = 4500.00
 	transmodel.AddedBy, _ = strconv.Atoi(rs.UserID())
 
 	// initialized Mpesa STK Push
-	_, err := s.dao.MpesaSTKCheckout(rs, transmodel, c)
+	err := s.dao.MpesaSTKCheckout(rs, transmodel, c)
 	if err != nil {
 		return err
 	}
@@ -152,6 +154,28 @@ func (s *VehicleRecordService) RenewVehicle(rs app.RequestScope, model *models.V
 	}
 
 	fmt.Println("Main: Completed")
+
+	return s.dao.RenewVehicle(rs, model)
+}
+
+// RenewVehicle renew a vehicle.
+func (s *VehicleRecordService) RenewVehicleInvoice(rs app.RequestScope, model *models.VehicleRenewals) error {
+	if err := model.Validate(); err != nil {
+		return err
+	}
+
+	exists := s.dao.IsCertificateExist(rs, model.CertificateNo, model.VehicleStringID)
+	if exists == 1 {
+		return errors.New("Certificate has been renewed")
+	}
+
+	transid := app.GenerateNewStringID()
+	addedby, _ := strconv.Atoi(model.AddedBy)
+	transinvoice := models.NewTransInvoices(0, uint32(model.VehicleID), addedby, 4500.00, transid, "Invoiced", model.AddedBy, "Renewal Invoice", transid)
+
+	if err := s.dao.SaveRenewalInvoice(rs, transinvoice); err != nil {
+		return err
+	}
 
 	return s.dao.RenewVehicle(rs, model)
 }

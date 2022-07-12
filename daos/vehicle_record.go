@@ -201,6 +201,22 @@ func (dao *VehicleRecordDAO) IsCertificateExist(rs app.RequestScope, certno, veh
 	return exists
 }
 
+// SaveRenewalInvoice
+func (dao *VehicleRecordDAO) SaveRenewalInvoice(rs app.RequestScope, m models.TransInvoices) error {
+	_, err := app.DBCon.Insert("invoices", dbx.Params{
+		"trans_id":          m.TransID,
+		"vehicle_id":        m.VehicleID,
+		"added_by":          m.AddedBy,
+		"amount":            m.Amount,
+		"payment_option":    m.PaymentOption,
+		"phone_number":      m.PhoneNumber,
+		"trans_description": m.TransDescription,
+	}).Execute()
+
+	return err
+
+}
+
 // RenewVehicle ...
 func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) error {
 	m.Status = 1
@@ -231,11 +247,16 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 }
 
 // MpesaSTKCheckout Mpesa STKPush checkout
-func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.TransInvoices, c chan models.ProcessTransJobs) (int, error) {
+func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.TransInvoices, c chan models.ProcessTransJobs) error {
 	dt := time.Now()
 	svc, err := app.New(app.APPKEY, app.APPSECRET, app.SANDBOX)
 	if err != nil {
-		return 0, err
+		return err
+	}
+
+	amount := "1"
+	if svc.Env == app.PRODUCTION {
+		amount = fmt.Sprintf("%f", model.Amount)
 	}
 
 	res, err := svc.Simulation(models.Express{
@@ -243,18 +264,17 @@ func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.
 		Password:          app.PASSWORD,
 		Timestamp:         app.TIMESTAMP,
 		TransactionType:   "CustomerPayBillOnline",
-		// Amount:            model.Amount,
-		Amount:           "1",
-		PartyA:           model.PhoneNumber,
-		PartyB:           app.SHORTCODE,
-		PhoneNumber:      model.PhoneNumber,
-		CallBackURL:      app.CALLBACKURL,
-		AccountReference: model.TransID,
-		TransactionDesc:  "Renewal Payment",
+		Amount:            amount,
+		PartyA:            model.PhoneNumber,
+		PartyB:            app.SHORTCODE,
+		PhoneNumber:       model.PhoneNumber,
+		CallBackURL:       app.CALLBACKURL,
+		AccountReference:  model.TransID,
+		TransactionDesc:   "Renewal Payment",
 	})
 
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	in := []byte(res)
@@ -262,7 +282,7 @@ func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.
 	json.Unmarshal(in, &response)
 
 	if response["ResponseCode"] != "0" {
-		return 0, errors.New("An error has occured")
+		return errors.New("An error has occured")
 	}
 
 	model.RequestCheckOutID = response["CheckoutRequestID"]
@@ -295,7 +315,7 @@ func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.
 		}
 	}
 
-	return 1, err
+	return err
 
 }
 

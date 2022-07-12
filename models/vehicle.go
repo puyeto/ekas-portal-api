@@ -270,6 +270,7 @@ type VehicleRenewals struct {
 	DeviceSerialNo  string    `json:"device_serial_no,omitempty" db:"device_serial_no"`
 	Status          int8      `json:"status" db:"status"`
 	AddedBy         string    `json:"added_by" db:"added_by"`
+	RenewalType     string    `json:"renewal_type" db:"renewal_type"`
 	RenewalDate     time.Time `json:"renewal_date" db:"renewal_date"`
 	ExpiryDate      time.Time `json:"expiry_date" db:"expiry_date"`
 	RenewalCode     int       `json:"renewal_code" db:"renewal_code"`
@@ -283,6 +284,7 @@ func (v VehicleRenewals) Validate() error {
 		validation.Field(&v.VehicleID, validation.Required),
 		validation.Field(&v.VehicleStringID, validation.Required),
 		validation.Field(&v.AddedBy, validation.Required),
+		validation.Field(&v.RenewalType, validation.Required),
 		validation.Field(&v.RenewalDate, validation.Required),
 		validation.Field(&v.CertificateNo, validation.Required),
 	)
