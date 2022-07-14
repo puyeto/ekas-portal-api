@@ -132,7 +132,7 @@ func (s *VehicleRecordService) RenewVehicle(rs app.RequestScope, model *models.V
 	transmodel.TransID = app.GenerateNewStringID()
 	transmodel.PhoneNumber = model.AddedBy
 	transmodel.VehicleID = uint32(model.VehicleID)
-	transmodel.Amount = 4500.00
+	transmodel.Amount = 4500
 	transmodel.AddedBy, _ = strconv.Atoi(rs.UserID())
 
 	// initialized Mpesa STK Push

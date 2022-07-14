@@ -249,15 +249,18 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 // MpesaSTKCheckout Mpesa STKPush checkout
 func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.TransInvoices, c chan models.ProcessTransJobs) error {
 	dt := time.Now()
-	svc, err := app.New(app.APPKEY, app.APPSECRET, app.SANDBOX)
+	svc, err := app.New(app.APPKEY, app.APPSECRET, app.PRODUCTION)
 	if err != nil {
 		return err
 	}
 
 	amount := "1"
+
 	if svc.Env == app.PRODUCTION {
-		amount = fmt.Sprintf("%f", model.Amount)
+		amount = fmt.Sprintf("%.0f", model.Amount)
 	}
+
+	fmt.Println(amount)
 
 	res, err := svc.Simulation(models.Express{
 		BusinessShortCode: app.SHORTCODE,
@@ -282,6 +285,9 @@ func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.
 	json.Unmarshal(in, &response)
 
 	if response["ResponseCode"] != "0" {
+		if response["errorMessage"] != "" {
+			return errors.New(response["errorMessage"])
+		}
 		return errors.New("An error has occured")
 	}
 
@@ -324,7 +330,7 @@ func (dao *VehicleRecordDAO) MpesaCheckoutConfirmation(rs app.RequestScope, chec
 	clientJob := <-checkout
 	<-time.After(30 * time.Second)
 
-	svc, err := app.New(app.APPKEY, app.APPSECRET, app.SANDBOX)
+	svc, err := app.New(app.APPKEY, app.APPSECRET, app.PRODUCTION)
 	if err != nil {
 		return err
 	}
