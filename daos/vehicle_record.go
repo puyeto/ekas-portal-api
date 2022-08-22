@@ -71,7 +71,7 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "json_value(data, '$.device_detail.certificate') AS certificate", "serial_no AS limiter_serial").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id"))
+		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"))
 	var err error
 	if uid > 0 {
 		if userdetails.SaccoID > 0 {
@@ -100,7 +100,7 @@ func (dao *VehicleRecordDAO) QueryFilter(rs app.RequestScope, offset, limit int,
 		"COALESCE(model, make_type) AS model", "limiter_type", "JSON_VALUE(data, '$.device_detail.owner_phone_number') AS vehicle_owner_tel", "JSON_VALUE(data, '$.device_detail.agent_location') AS fitting_location", "vehicle_details.created_on", "last_seen").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id"))
+		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"))
 
 	if model.MinTimeStamp != "" && model.MaxTimeStamp != "" && model.FilterNTSA != 2 && model.FilterStatus != 2 {
 		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.Between("vehicle_details.created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}, dbx.HashExp{"vehicle_status": model.FilterStatus}))

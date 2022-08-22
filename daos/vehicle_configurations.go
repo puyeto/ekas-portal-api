@@ -32,7 +32,7 @@ func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.
 	var vd models.VDetails
 	query := "SELECT send_to_ntsa, vehicle_reg_no, json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
 	query += " FROM vehicle_configuration "
-	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vehicle_configuration.vehicle_string_id) "
+	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_id = vehicle_configuration.vehicle_id) "
 	query += " WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
 	rs.Tx().NewQuery(query).Row(&vd.SendToNTSA, &vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
 
@@ -66,7 +66,7 @@ func (dao *VehicleDAO) GetConfigurationDetails(rs app.RequestScope, vehicleid in
 	query := "SELECT conf_id, vc.device_id, vd.user_id, COALESCE(CONCAT(u.first_name , ' ' , u.last_name), '') AS fitter, vd.vehicle_id, vd.vehicle_reg_no, vehicle_status, send_to_ntsa AS ntsa_show, vc.owner_id, "
 	query += " fitter_id, notification_email, notification_no, COALESCE(JSON_VALUE(data, '$.device_detail.sim_no'), '') AS sim_no, serial_no, last_seen, COALESCE(vr.renewal_date, vd.created_on) AS renewal_date, renew, "
 	query += " vd.created_on, DATE_ADD(DATE_ADD(COALESCE(vr.renewal_date, vd.created_on), INTERVAL -1 DAY), INTERVAL 1 YEAR) AS expiry_date, device_status, data FROM vehicle_configuration AS vc "
-	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vc.vehicle_string_id) "
+	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_id = vc.vehicle_id) "
 	query += " LEFT JOIN auth_users AS u ON (u.auth_user_id = vd.user_id) "
 	query += " LEFT JOIN (SELECT * FROM vehicle_renewals WHERE vehicle_id='" + strconv.Itoa(vid) + "' ORDER BY id DESC LIMIT 1) AS vr ON (vr.vehicle_id = vd.vehicle_id) "
 
