@@ -21,7 +21,7 @@ var (
 func InitializeRedis() error {
 	// new redis client
 	redisClient = redis.NewClient(&redis.Options{
-		Addr:     "api.equscabanus.com:6379",
+		Addr:     "144.76.140.105:6379",
 		Password: "",
 		DB:       3,
 	})

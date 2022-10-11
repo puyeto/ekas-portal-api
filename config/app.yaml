@@ -3,11 +3,11 @@
 # dsn: "postgres://postgres:postgres@127.0.0.1:5432/go_restful?sslmode=disable"
 local_dsn: "root:@tcp(127.0.0.1:3307)/ekas_portal?parseTime=true"
 # local_dsn: "remote:2030-Ekas1@tcp(138.197.205.177:3306)/ekas_portal?parseTime=true"
-server_dns: "root:Ekas-254@tcp(127.0.0.1:3306)/ekas_portal?parseTime=true"
+server_dns: "root:Ekas-254@tcp(144.76.140.105:3306)/ekas_portal?parseTime=true"
 # server_dns: "remote:2030-Ekas1@tcp(138.197.205.177:3306)/ekas_portal?parseTime=true"
 tracking_server_url: "http://equscabanus.com/api/"
 server_port: "8081"
-mongo_db_dns: "mongodb://root:safcom2012@127.0.0.1:27017/?authSource=admin"
+mongo_db_dns: "mongodb://root:safcom2012@144.76.140.105:27017/?authSource=admin"
 mongo_db_name: "ekas_portal"
 # These are secret keys used for JWT signing and verification.
 # Make sure you override these keys in production by the following environment variables:
