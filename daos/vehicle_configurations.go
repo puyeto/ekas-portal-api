@@ -286,6 +286,10 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 		"vehicle_id":        vehicleid,
 		"created_on":        time.Now()}).Execute()
 
+	rs.Tx().Update("vehicle_details", dbx.Params{
+		"send_to_ntsa": 0},
+		dbx.HashExp{"vehicle_id": vehicleid}).Execute()
+
 	a, _ := json.Marshal(cd)
 	_, err = rs.Tx().Insert("vehicle_configuration", dbx.Params{
 		"user_id":           cd.UserID,
