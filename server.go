@@ -8,12 +8,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/bamzi/jobrunner"
 	"github.com/ekas-portal-api/apis"
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/cron/checkdata"
 	"github.com/ekas-portal-api/cron/lastseen"
+	"github.com/ekas-portal-api/cron/populatedata"
 	"github.com/ekas-portal-api/cron/reportvioloations"
 	"github.com/ekas-portal-api/cron/updateviolations"
 	"github.com/ekas-portal-api/daos"
@@ -67,7 +69,7 @@ func main() {
 		jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
 		// jobrunner.Schedule("@every 60m", reportvioloations.Status{})
 	} else {
-		// jobrunner.In(2*time.Second, reportvioloations.Status{})
+		jobrunner.In(2*time.Second, populatedata.Status{})
 	}
 
 	// wire up API routing
@@ -99,9 +101,9 @@ func main() {
 	}
 	tlsConfig.BuildNameToCertificate()
 
-	// Create a Server instance to listen on port 8082 with the TLS config
+	// Create a Server instance to listen on port 8084 with the TLS config
 	server := &http.Server{
-		Addr: ":8082",
+		Addr: ":8084",
 		// TLSConfig: tlsConfig,
 		Handler: buildRouter(logger, db),
 	}

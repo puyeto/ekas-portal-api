@@ -54,7 +54,7 @@ ENTRYPOINT ./ekas-portal-api
 
 #Expose the port specific to the ekas API Application.
 EXPOSE 8081
-EXPOSE 8082
+EXPOSE 8084
 
 
 # FROM golang as builder

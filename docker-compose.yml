@@ -11,7 +11,7 @@ services:
       #   parallelism: 3
       #   delay: 10s
     ports:
-      - "8082:8082"
+      - "8084:8084"
       - "8081:8081"
     networks:
       - host
