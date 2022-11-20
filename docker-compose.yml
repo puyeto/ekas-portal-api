@@ -1,7 +1,8 @@
-version: "3"
+version: "3.7"
 services:
   api:
     image: omollo/ekas-portal-api-prod
+    restart: always
     deploy:
       replicas: 3
       # restart_policy:

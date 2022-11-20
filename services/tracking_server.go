@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -47,46 +48,46 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	if err := model.Validate(); err != nil {
 		return m, err
 	}
-	// URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
-	// res, err := http.Get(URL)
-	// if err != nil {
-	// 	return m, err
-	// }
+	URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
+	res, err := http.Get(URL)
+	if err != nil {
+		return m, err
+	}
 
-	// body, err := ioutil.ReadAll(res.Body)
-	// if err != nil {
-	// 	return m, err
-	// }
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return m, err
+	}
 
-	// data := &loginData{}
+	data := &loginData{}
 
-	// err = json.Unmarshal(body, &data)
-	// if err != nil {
-	// 	return m, err
-	// }
-	// // fmt.Printf("login details %v", data)
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return m, err
+	}
+	// fmt.Printf("login details %v", data)
 
-	// if data.Status == 0 {
-	// 	return m, errors.New("Invalid Credentials :: Tracking System")
-	// }
+	if data.Status == 0 {
+		return m, errors.New("Invalid Credentials :: Tracking System")
+	}
 
-	// var hash = data.UserAPIHash
-	// var status = data.Status
-	// data.Email = model.Email
-	// data.UserRole = 10005
+	var hash = data.UserAPIHash
+	var status = data.Status
+	data.Email = model.Email
+	data.UserRole = 10005
 
-	// exists, err := s.dao.TrackingServerUserEmailExists(rs, model.Email)
-	// if err != nil {
-	// 	return m, err
-	// }
+	exists, err := s.dao.TrackingServerUserEmailExists(rs, model.Email)
+	if err != nil {
+		return m, err
+	}
 
-	// if exists == 0 {
-	// 	// Save Results to db
-	// 	err = s.dao.SaveTrackingServerLoginDetails(rs, model.Email, hash, status, data)
-	// 	if err != nil {
-	// 		return m, err
-	// 	}
-	// }
+	if exists == 0 {
+		// Save Results to db
+		err = s.dao.SaveTrackingServerLoginDetails(rs, model.Email, hash, status, data)
+		if err != nil {
+			return m, err
+		}
+	}
 
 	return s.Login(rs, model.Email, model.Password)
 }

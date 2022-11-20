@@ -389,6 +389,7 @@ func (dao *VehicleRecordDAO) ListVehicleRenewals(rs app.RequestScope, offset, li
 		From("vehicle_renewals AS vr").Where(dbx.HashExp{"vr.status": 1}).
 		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vr.vehicle_id")).
 		LeftJoin("vehicle_configuration AS vc", dbx.NewExp("vc.vehicle_id = vr.vehicle_id")).
+		Where(dbx.NewExp("id>5000")).
 		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&r)
 	return r, err
 }
