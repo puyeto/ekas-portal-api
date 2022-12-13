@@ -26,12 +26,12 @@ func (c Status) Run() {
 
 func populatedata() {
 	// Select data between dates
-	data, _ := getTripDataByDeviceIDBtwDates("1812221856", 1666108112, 1666108212, 0, 1440)
+	data, _ := getTripDataByDeviceIDBtwDates("1921225606", 1669923933, 1770040060, 151, 100)
 	// var previous time.Time
 	fmt.Println(len(data))
 	for i := len(data) - 1; i >= 0; i-- {
 		// if previous != data[i].DateTime {
-		data[i].DeviceID = 1701229664
+		data[i].DeviceID = 1921225605
 		// data[i].GroundSpeed = 0.00
 		// if data[i].Latitude < -5000000 {
 		// 	data[i].Latitude = data[i].Latitude + 4000000
@@ -39,14 +39,25 @@ func populatedata() {
 		// 	data[i].Latitude = data[i].Latitude + 2000000
 		// }
 
-		// dt := data[i].DateTime
+		data[i].UTCTimeDay = data[i].UTCTimeDay - 2
+		data[i].UTCTimeHours = data[i].UTCTimeHours - 1
 
-		// data[i].DateTime = dt.AddDate(0, 0, 4)
-		// data[i].DeviceTime = dt.AddDate(0, 0, 4)
-		// data[i].UTCTimeDay = data[i].UTCTimeDay + 4
-		// data[i].DateTimeStamp = data[i].DateTime.Unix()
+		dt := data[i].DateTime
 
-		fmt.Println(data[i].DateTime, data[i].DateTimeStamp)
+		data[i].DateTime = dt.AddDate(0, 0, -2)
+		data[i].DeviceTime = dt.AddDate(0, 0, -2)
+
+		data[i].DateTime = data[i].DateTime.Add(-time.Hour * 1)
+		data[i].DeviceTime = data[i].DeviceTime.Add(-time.Hour * 1)
+
+		if data[i].UTCTimeMinutes > 30 {
+			data[i].UTCTimeMinutes = data[i].UTCTimeMinutes - 30
+			data[i].DateTime = data[i].DateTime.Add(-time.Minute * 30)
+			data[i].DeviceTime = data[i].DeviceTime.Add(-time.Minute * 30)
+		}
+		data[i].DateTimeStamp = data[i].DateTime.Unix()
+
+		fmt.Println(data[i].DateTime, data[i].DateTimeStamp, data[i].UTCTimeHours, data[i].UTCTimeMinutes)
 		LogToRedis(data[i])
 		app.LogToMongoDB(data[i])
 		app.LoglastSeenMongoDB(data[i])

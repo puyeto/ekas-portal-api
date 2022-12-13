@@ -43,8 +43,15 @@ type loginData struct {
 	UserRole    int    `json:"user_role"`
 }
 
-// TrackingServerLogin login to the tracking server
 func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *models.TrackingServerAuth) (m models.AdminUserDetails, err error) {
+	if err := model.Validate(); err != nil {
+		return m, err
+	}
+	return s.Login(rs, model.Email, model.Password)
+}
+
+// TrackingServerLogin login to the tracking server
+func (s *TrackingServerService) TrackingServerLogin2(rs app.RequestScope, model *models.TrackingServerAuth) (m models.AdminUserDetails, err error) {
 	if err := model.Validate(); err != nil {
 		return m, err
 	}
@@ -91,60 +98,6 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 
 	return s.Login(rs, model.Email, model.Password)
 }
-
-// TrackingServerLogin2 login to the tracking server
-// func (s *TrackingServerService) TrackingServerLogin2(rs app.RequestScope, model *models.TrackingServerAuth) (models.AdminUserDetails, error) {
-// 	// if err := model.ValidateTrackingServerLogin(); err != nil {
-// 	// 	return nil, err
-// 	// }
-// 	URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
-// 	res, err := http.Get(URL)
-// 	if err != nil {
-// 		// return nil, err
-// 		return s.Login(rs, model.Email, model.Password)
-// 	}
-
-// 	body, err := ioutil.ReadAll(res.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var data map[string]interface{}
-// 	err = json.Unmarshal(body, &data)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var id = app.GenerateNewID()
-// 	var hash = data["user_api_hash"].(string)
-// 	var status = int8(data["status"].(float64))
-// 	data["user_email"] = model.Email
-// 	data["user_id"] = id
-// 	data["user_role"] = 10005
-
-// 	exists, err := s.dao.TrackingServerUserEmailExists(rs, model.Email)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if exists == 1 {
-// 		uid, role, cid, err := s.dao.GetTrackingServerUserLoginIDByEmail(rs, model.Email)
-// 		data["user_id"] = uid
-// 		data["user_role"] = role
-// 		data["company_id"] = cid
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	} else {
-// 		// Save Results to db
-// 		err = s.dao.SaveTrackingServerLoginDetails(rs, id, model.Email, hash, status, data)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
-
-// 	return data, nil
-// }
 
 // Login a user  from portal
 func (s *TrackingServerService) Login(rs app.RequestScope, email, password string) (models.AdminUserDetails, error) {
