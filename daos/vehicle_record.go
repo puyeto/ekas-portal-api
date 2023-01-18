@@ -239,7 +239,7 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 	}
 
 	// update certificate details
-	query := "UPDATE vehicle_configuration SET data = JSON_SET(DATA, '$.device_detail.certificate', '" + m.CertificateNo + "')"
+	query := "UPDATE vehicle_configuration SET certificate_no = '" + m.CertificateNo + "', data = JSON_SET(DATA, '$.device_detail.certificate', '" + m.CertificateNo + "')"
 	query += " WHERE vehicle_id = " + strconv.Itoa(int(m.VehicleID))
 	rs.Tx().NewQuery(query).Execute()
 
