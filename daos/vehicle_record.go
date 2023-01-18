@@ -385,7 +385,7 @@ func (dao *VehicleRecordDAO) CreateReminder(rs app.RequestScope, v *models.Remin
 // ListVehicleRenewals retrieves the renewal records with the specified offset and limit from the database.
 func (dao *VehicleRecordDAO) ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error) {
 	r := []models.VehicleRenewals{}
-	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "COALESCE(vc.certificate_no, 'N/A')", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
+	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "vr.certificate_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
 		From("vehicle_renewals AS vr").Where(dbx.HashExp{"vr.status": 1}).
 		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vr.vehicle_id")).
 		LeftJoin("vehicle_configuration AS vc", dbx.NewExp("vc.vehicle_id = vr.vehicle_id")).
