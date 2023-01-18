@@ -317,6 +317,7 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 		"fail_safe":         cd.GovernorDetails.FailSafe,
 		"apn":               cd.GovernorDetails.APN,
 		"serial_no":         cd.DeviceDetails.SerialNO,
+		"certificate_no":    cd.DeviceDetails.Certificate,
 		"sim_no":            cd.SimNO,
 		"data":              string(a)}).Execute()
 	return err
