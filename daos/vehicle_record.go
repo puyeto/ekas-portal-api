@@ -67,8 +67,8 @@ func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int, typ string, use
 func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int, typ string, userdetails models.AuthUsers) ([]models.VehicleDetails, error) {
 	vehicleRecords := []models.VehicleDetails{}
 	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "sacco_id",
-		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model",
-		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "json_value(data, '$.device_detail.certificate') AS certificate", "serial_no AS limiter_serial").
+		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "sim_no",
+		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "certificate_no AS certificate", "serial_no AS limiter_serial").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"))
@@ -96,7 +96,7 @@ func (dao *VehicleRecordDAO) QueryFilter(rs app.RequestScope, offset, limit int,
 	vehicleRecords := []models.VehicleDetails{}
 	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id",
 		"COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "JSON_VALUE(data, '$.device_detail.owner_name') AS vehicle_owner",
-		"notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "JSON_VALUE(data, '$.device_detail.serial_no') AS limiter_serial", "JSON_VALUE(data, '$.device_detail.certificate') AS certificate",
+		"notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "serial_no AS limiter_serial", "certificate_no AS certificate", "sim_no",
 		"COALESCE(model, make_type) AS model", "limiter_type", "JSON_VALUE(data, '$.device_detail.owner_phone_number') AS vehicle_owner_tel", "JSON_VALUE(data, '$.device_detail.agent_location') AS fitting_location", "vehicle_details.created_on", "last_seen").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
@@ -172,7 +172,7 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 	}
 
 	// update configuration details
-	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID + "', serial_no = '" + v.LimiterSerial
+	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID + "', certificate_no = '" + v.Certificate + "', serial_no = '" + v.LimiterSerial
 	query += "', data = JSON_SET(DATA, '$.device_detail.registration_no', '" + v.VehicleRegNo + "', '$.device_detail.chasis_no', '" + v.ChassisNo
 	query += "', '$.device_detail.make_type', '" + v.MakeType + "', '$.device_detail.serial_no', '" + v.LimiterSerial
 	query += "', '$.device_detail.certificate', '" + v.Certificate + "')"

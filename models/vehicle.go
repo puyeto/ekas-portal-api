@@ -136,6 +136,7 @@ type VehicleDetails struct {
 	DefaultTripType        int       `json:"default_trip_type,omitempty" db:"default_trip_type"`
 
 	Certificate       string    `json:"certificate"`
+	SIMNo             string    `json:"sim_no,omitempty" db:"sim_no"`
 	LimiterType       string    `json:"limiter_type,omitempty" db:"limiter_type"`
 	LimiterSerial     string    `json:"limiter_serial,omitempty" db:"limiter_serial"`
 	VehicleOwner      string    `json:"vehicle_owner,omitempty" db:"vehicle_owner"`
