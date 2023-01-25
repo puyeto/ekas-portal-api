@@ -1,8 +1,12 @@
 package daos
 
 import (
+	"crypto/sha1"
 	"encoding/json"
+	"fmt"
+	"io"
 	"strconv"
+	"time"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -57,7 +61,7 @@ func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) 
 	err := rs.Tx().Select("COALESCE(CONCAT( first_name, ' ', last_name), '') AS full_name", "COALESCE(first_name,'') AS first_name", "COALESCE(last_name,'') AS last_name",
 		"auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role", "role_name",
 		"COALESCE(company_users.company_id, 0) AS company_id", "COALESCE(company_name, '') AS company_name", "enable_gps_configuration", "mpesa_renewal",
-		"enable_failsafe_configuration", "sacco_id").
+		"enable_failsafe_configuration", "sacco_id", "auth_user_password AS user_password", "auth_user_salt AS salt").
 		From("auth_users").
 		LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
@@ -129,4 +133,33 @@ func (dao *TrackingServerDAO) GetSaccoName(rs app.RequestScope, id int) (string,
 	var sacconame string
 	err := rs.Tx().NewQuery("SELECT name FROM saccos WHERE id='" + strconv.Itoa(id) + "' LIMIT 1").Row(&sacconame)
 	return sacconame, err
+}
+
+// ResetPassword Reset admin password.
+func (dao *TrackingServerDAO) ResetPassword(rs app.RequestScope, password string, userid int32) error {
+	h := sha1.New()
+	io.WriteString(h, strconv.Itoa(int(time.Now().UnixNano())))
+	salt := fmt.Sprintf("%x", h.Sum(nil))
+	hashpassword := app.CalculatePassHash(password, salt)
+
+	_, err := rs.Tx().Update("auth_users", dbx.Params{
+		"auth_user_password": hashpassword,
+		"auth_user_salt":     salt},
+		dbx.HashExp{"auth_user_id": userid}).Execute()
+
+	return err
+}
+
+func (dao *TrackingServerDAO) ResetPassword2(rs app.RequestScope, password string, userid int32) (hashpassword, salt string, err error) {
+	h := sha1.New()
+	io.WriteString(h, strconv.Itoa(int(time.Now().UnixNano())))
+	salt = fmt.Sprintf("%x", h.Sum(nil))
+	hashpassword = app.CalculatePassHash(password, salt)
+
+	_, err = rs.Tx().Update("auth_users", dbx.Params{
+		"auth_user_password": hashpassword,
+		"auth_user_salt":     salt},
+		dbx.HashExp{"auth_user_id": userid}).Execute()
+
+	return hashpassword, salt, err
 }

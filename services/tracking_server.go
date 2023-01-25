@@ -23,6 +23,8 @@ type trackingServerDAO interface {
 	QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
 	GetUserByUserHash(rs app.RequestScope, userhash string) (models.AdminUserDetails, error)
 	GetSaccoName(rs app.RequestScope, id int) (string, error)
+	ResetPassword(rs app.RequestScope, password string, userid int32) error
+	ResetPassword2(rs app.RequestScope, password string, userid int32) (hashpassword, salt string, err error)
 }
 
 // TrackingServerService ---
@@ -107,6 +109,19 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 		return res, err
 	}
 
+	//---Temporary--//
+	// store entered password
+	if res.Password == "" {
+		p, s, _ := s.dao.ResetPassword2(rs, password, res.UserID)
+		res.Salt = s
+		res.Password = p
+	}
+	//--Tempoarry End--//
+
+	if res.Password != app.CalculatePassHash(password, res.Salt) {
+		return res, errors.New("invalid credential")
+	}
+
 	// get company details
 	res.CompanyDetails, _ = s.dao.GetCompanyDetailsByEmail(rs, email)
 
@@ -117,6 +132,7 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 	res.Token, _ = app.CreateToken(&res)
 
 	s.storeLoginSession(rs, &res)
+	reset(&res)
 
 	return res, nil
 }

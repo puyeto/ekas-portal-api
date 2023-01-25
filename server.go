@@ -63,7 +63,7 @@ func main() {
 	if os.Getenv("GO_ENV") == "production" {
 		// run cronjobs
 		go jobrunner.Schedule("@every 60m", checkdata.Status{})
-		go jobrunner.Schedule("@every 180m", revetdeviceids.Status{})
+		go jobrunner.Schedule("@every 12h00m00s", revetdeviceids.Status{})
 		jobrunner.Schedule("@every 2h00m00s", lastseen.Status{})
 		jobrunner.Schedule("@midnight", updateviolations.Status{}) // every midnight do this..
 		jobrunner.Schedule("CRON_TZ=Africa/Nairobi 0 8 * * *", reportvioloations.Status{})
