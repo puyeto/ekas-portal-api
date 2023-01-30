@@ -154,6 +154,8 @@ type VDetails struct {
 	VehicleOwner string
 	OwnerTel     string
 	SendToNTSA   int8
+	DeviceID     int32
+	DeviceSIMNo  string `json:"sim_no,omitempty"`
 }
 
 // ValidateVehicleDetails validates fields.
@@ -322,6 +324,7 @@ type XMLResults struct {
 	ViolationType       string
 	DateOfViolation     string
 	ActionTaken         string
+	DeviceSIMNO         string
 }
 
 // TransInvoices ...

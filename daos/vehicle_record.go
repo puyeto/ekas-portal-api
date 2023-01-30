@@ -68,7 +68,7 @@ func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid i
 	vehicleRecords := []models.VehicleDetails{}
 	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "sacco_id",
 		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "sim_no",
-		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "certificate_no AS certificate", "serial_no AS limiter_serial").
+		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "COALESCE(certificate_no, '') AS certificate", "serial_no AS limiter_serial").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
 		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"))

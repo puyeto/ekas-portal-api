@@ -30,11 +30,11 @@ func NewVehicleDAO() *VehicleDAO {
 // GetVehicleName ...
 func (dao *VehicleDAO) GetVehicleName(rs app.RequestScope, deviceid int) models.VDetails {
 	var vd models.VDetails
-	query := "SELECT send_to_ntsa, vehicle_reg_no, json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
+	query := "SELECT send_to_ntsa, device_id, sim_no, vehicle_reg_no, json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
 	query += " FROM vehicle_configuration "
 	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_id = vehicle_configuration.vehicle_id) "
 	query += " WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
-	rs.Tx().NewQuery(query).Row(&vd.SendToNTSA, &vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
+	rs.Tx().NewQuery(query).Row(&vd.SendToNTSA, &vd.DeviceID, &vd.DeviceSIMNo, &vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
 
 	return vd
 }
@@ -530,6 +530,7 @@ func (dao *VehicleDAO) XMLListAllViolations(rs app.RequestScope, offset, limit i
 		dData.VehicleRegistration = vd.Name
 		dData.VehicleOwner = vd.VehicleOwner
 		dData.OwnerTel = vd.OwnerTel
+		dData.DeviceSIMNO = vd.DeviceSIMNo
 
 		if item.Data.Failsafe {
 			dData.ViolationType = "Signal Disconnect"
