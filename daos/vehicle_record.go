@@ -172,9 +172,9 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 	}
 
 	// update configuration details
-	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID + "', certificate_no = '" + v.Certificate + "', serial_no = '" + v.LimiterSerial
+	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID + "', certificate_no = '" + v.Certificate + "', sim_no = '" + v.SIMNo + "', serial_no = '" + v.LimiterSerial
 	query += "', data = JSON_SET(DATA, '$.device_detail.registration_no', '" + v.VehicleRegNo + "', '$.device_detail.chasis_no', '" + v.ChassisNo
-	query += "', '$.device_detail.make_type', '" + v.MakeType + "', '$.device_detail.serial_no', '" + v.LimiterSerial
+	query += "', '$.device_detail.make_type', '" + v.MakeType + "', '$.device_detail.serial_no', '" + v.LimiterSerial + "', '$.sim_no', '" + v.SIMNo
 	query += "', '$.device_detail.certificate', '" + v.Certificate + "')"
 	query += " WHERE vehicle_id = " + strconv.Itoa(int(v.VehicleID))
 	if _, err := rs.Tx().NewQuery(query).Execute(); err != nil {
