@@ -116,6 +116,10 @@ func (u *UserService) Login(rs app.RequestScope, c *models.Credential) (*models.
 		return nil, err
 	}
 
+	log.Println(res)
+	log.Println("Password : ", res.Password)
+	log.Println(c.Password)
+
 	if &res == nil {
 		return nil, errors.New("no user found")
 	}

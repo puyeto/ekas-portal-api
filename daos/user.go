@@ -124,7 +124,7 @@ func (dao *UserDAO) IfCompanyUserExists(rs app.RequestScope, companyid int32, us
 // GetUserByEmail reads the user with the specified email from the database.
 func (dao *UserDAO) GetUserByEmail(rs app.RequestScope, email string) (*models.AdminUserDetails, error) {
 	usr := &models.AdminUserDetails{}
-	err := rs.Tx().Select("first_name", "last_name", "aud.user_id", "mobile_number", "email", "password", "username", "is_verified", "salt", "aur.role_id", "role_name").
+	err := rs.Tx().Select("first_name", "last_name", "aud.user_id", "mobile_number", "email", "password AS auth_user_password", "username", "is_verified", "salt AS auth_user_salt", "aur.role_id", "role_name").
 		From("admin_user_details AS aud").
 		LeftJoin("admin_user_roles AS aur", dbx.NewExp("aur.user_id = aud.user_id")).
 		LeftJoin("roles", dbx.NewExp("roles.role_id = aur.role_id")).
