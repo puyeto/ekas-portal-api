@@ -34,10 +34,10 @@ type AdminUserDetails struct {
 	LastName                    string    `json:"last_name" db:"last_name"`
 	Email                       string    `json:"user_email" db:"email"`
 	Username                    string    `json:"username,omitempty" db:"username"`
-	Password                    string    `json:"user_password,omitempty" db:"password"`
+	Password                    string    `json:"auth_user_password,omitempty" db:"auth_user_password"`
 	DOB                         string    `json:"user_dob,omitempty" db:"dob"`
 	MobileNumber                string    `json:"user_mobile_number,omitempty" db:"mobile_number"`
-	Salt                        string    `json:"salt,omitempty" db:"salt"`
+	Salt                        string    `json:"auth_user_salt,omitempty" db:"auth_user_salt"`
 	VerificationCode            string    `json:"Verification_code,omitempty" db:"Verification_code"`
 	Token                       string    `json:"token,omitempty"`
 	IsVerified                  int8      `json:"is_verified,omitempty"`

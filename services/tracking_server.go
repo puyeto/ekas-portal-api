@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -111,7 +112,7 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 
 	//---Temporary--//
 	// store entered password
-	if res.Password == "" {
+	if len(strings.TrimSpace(res.Password)) == 0 {
 		p, s, _ := s.dao.ResetPassword2(rs, password, res.UserID)
 		res.Salt = s
 		res.Password = p

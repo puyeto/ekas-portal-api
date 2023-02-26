@@ -61,7 +61,7 @@ func (dao *TrackingServerDAO) GetUserByEmail(rs app.RequestScope, email string) 
 	err := rs.Tx().Select("COALESCE(CONCAT( first_name, ' ', last_name), '') AS full_name", "COALESCE(first_name,'') AS first_name", "COALESCE(last_name,'') AS last_name",
 		"auth_user_id AS user_id", "auth_user_email AS email", "auth_user_status AS is_verified", "auth_user_role AS role", "role_name",
 		"COALESCE(company_users.company_id, 0) AS company_id", "COALESCE(company_name, '') AS company_name", "enable_gps_configuration", "mpesa_renewal",
-		"enable_failsafe_configuration", "sacco_id", "auth_user_password AS user_password", "auth_user_salt AS salt").
+		"enable_failsafe_configuration", "sacco_id", "auth_user_password", "auth_user_salt").
 		From("auth_users").
 		LeftJoin("roles", dbx.NewExp("roles.role_id = auth_users.auth_user_role")).
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = auth_users.auth_user_id")).
