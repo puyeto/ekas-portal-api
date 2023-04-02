@@ -547,11 +547,7 @@ func (dao *VehicleDAO) XMLListAllViolations(rs app.RequestScope, offset, limit i
 		}
 	}
 
-	if err := cur.Err(); err != nil {
-		return vdetails, err
-	}
-
-	return vdetails, err
+	return vdetails, cur.Err()
 }
 
 // CreateDevice saves a new device record in the database.

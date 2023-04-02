@@ -309,10 +309,11 @@ func (r Reminders) ValidateReminders() error {
 
 // FilterVehicles ...
 type FilterVehicles struct {
-	MinTimeStamp string `json:"min"`
-	MaxTimeStamp string `json:"max"`
-	FilterStatus int8   `json:"status"`
-	FilterNTSA   int8   `json:"ntsa"`
+	MinTimeStamp    string `json:"min"`
+	MaxTimeStamp    string `json:"max"`
+	FilterStatus    int8   `json:"status"`
+	FilterNTSA      int8   `json:"ntsa"`
+	FilterCondition string `json:"condition"`
 }
 
 // XMLResults ...

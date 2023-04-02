@@ -116,6 +116,8 @@ func (dao *VehicleRecordDAO) QueryFilter(rs app.RequestScope, offset, limit int,
 		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}))
 	} else if model.FilterStatus != 2 {
 		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"vehicle_status": model.FilterStatus}))
+	} else if len(strings.TrimSpace(model.FilterCondition)) > 0 {
+		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"device_status": model.FilterCondition}))
 	}
 
 	err := q.OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
@@ -140,6 +142,8 @@ func (dao *VehicleRecordDAO) CountFilter(rs app.RequestScope, model *models.Filt
 		q.Where(dbx.HashExp{"send_to_ntsa": model.FilterNTSA})
 	} else if model.FilterStatus != 2 {
 		q.Where(dbx.HashExp{"vehicle_status": model.FilterStatus})
+	} else if len(strings.TrimSpace(model.FilterCondition)) > 0 {
+		q.Where(dbx.HashExp{"device_status": model.FilterCondition})
 	}
 
 	err := q.Row(&count)
