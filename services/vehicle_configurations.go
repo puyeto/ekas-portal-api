@@ -282,9 +282,9 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	}
 
 	// check if deviceID exists
-	if err := s.dao.CheckIfDeviceIDExists(rs, model); err != nil {
-		return 0, err
-	}
+	// if err := s.dao.CheckIfDeviceIDExists(rs, model); err != nil {
+	// 	return 0, err
+	// }
 
 	if model.FitterID == 0 {
 		// get fitterid by agent id Number
