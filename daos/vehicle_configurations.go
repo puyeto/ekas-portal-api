@@ -108,7 +108,7 @@ func (dao *VehicleDAO) GetOverspeedByDeviceID(rs app.RequestScope, deviceid stri
 
 // DeleteOverspeedsByDeviceID deletes an Record with the specified ID from the database (mongodb).
 func (dao *VehicleDAO) DeleteOverspeedsByDeviceID(rs app.RequestScope, id uint64) (int, error) {
-	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 84}}}}
+	filter := bson.D{{Key: "groundspeed", Value: bson.D{{Key: "$gt", Value: 81}}}}
 
 	// Get collection
 	collection := app.MongoDB.Collection("data_" + strconv.FormatInt(int64(id), 10))
@@ -298,9 +298,9 @@ func (dao *VehicleDAO) CreateConfiguration(rs app.RequestScope, cd *models.Vehic
 		"vehicle_id":        vehicleid,
 		"created_on":        time.Now()}).Execute()
 
-	rs.Tx().Update("vehicle_details", dbx.Params{
-		"send_to_ntsa": 0},
-		dbx.HashExp{"vehicle_id": vehicleid}).Execute()
+	// rs.Tx().Update("vehicle_details", dbx.Params{
+	// 	"send_to_ntsa": 0},
+	// 	dbx.HashExp{"vehicle_id": vehicleid}).Execute()
 
 	a, _ := json.Marshal(cd)
 	_, err = rs.Tx().Insert("vehicle_configuration", dbx.Params{
