@@ -42,7 +42,6 @@ COPY --from=build-env /go/src/github.com/ekas-portal-api/config/app.yaml /go/con
 COPY --from=build-env /go/src/github.com/ekas-portal-api/config/errors.yaml /go/config/errors.yaml
 COPY --from=build-env /go/src/github.com/ekas-portal-api/cert.pem /go/cert.pem
 COPY --from=build-env /go/src/github.com/ekas-portal-api/key.pem /go/key.pem
-COPY --from=build-env /go/src/github.com/ekas-portal-api/my-rds-cert.pem /go/my-rds-cert.pem
 RUN mkdir p logs  
 
 # Use an unprivileged user.
