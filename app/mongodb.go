@@ -2,7 +2,10 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"strconv"
 	"time"
@@ -21,19 +24,35 @@ import (
 var MongoDB *mongo.Database
 
 // InitializeMongoDB Initialize MongoDB Connection
-func InitializeMongoDB(dbURL, dbName string, logger *logrus.Logger) *mongo.Database {
-	client, err := mongo.NewClient(options.Client().ApplyURI(dbURL))
-	if err != nil {
-		log.Fatal(err)
+func InitializeMongoDB(dbURL, dbName string, logger *logrus.Logger, caFile string) *mongo.Database {
+	// caFile := "my-rds-cert.pem"
+	// uri := "mongodb://localhost:27017/?ssl=true&ssl_ca_certs=my-rds-cert.pem&retryWrites=false"
+	var clientOptions *options.ClientOptions = options.Client().ApplyURI(dbURL)
+	tlsConfig := new(tls.Config)
+	certs, err := ioutil.ReadFile(caFile)
+	tlsConfig.RootCAs = x509.NewCertPool()
+	ok := tlsConfig.RootCAs.AppendCertsFromPEM(certs)
+	if !ok {
+		log.Fatalf("failed parsing pem file: %v", err)
 	}
+	if err != nil {
+		log.Fatalf("failed getting tls configuration: %v", err)
+	}
+
+	clientOptions.SetTLSConfig(tlsConfig)
+
+	client, err := mongo.NewClient(clientOptions)
+	if err != nil {
+		log.Fatalf("failed to create client: %v", err)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to connect to cluster: %v", err)
 	}
-	// defer client.Disconnect(ctx)
 
 	logger.Infof("Mongo DB initialized: %v", dbName)
 	return client.Database(dbName)
