@@ -424,6 +424,7 @@ func (dao *VehicleDAO) GetTripDataByDeviceID(deviceid string, offset, limit int,
 		// Sort by `price` field descending
 		findOptions.SetSort(map[string]int{"datetimestamp": -1})
 	}
+
 	findOptions.SetSkip(int64(offset))
 	findOptions.SetLimit(int64(limit))
 	filter := bson.D{}

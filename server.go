@@ -50,7 +50,8 @@ func main() {
 	db.LogFunc = logger.Infof
 
 	// Connect to mongodb
-	app.MongoDB = app.InitializeMongoDB(app.Config.MongoDBDNS, app.Config.MongoDBName, logger)
+	caFile := "my-rds-cert.pem"
+	app.MongoDB = app.InitializeMongoDB(app.Config.MongoDBDNS+"&ssl=true&ssl_ca_certs=my-rds-cert.pem&retryWrites=false", app.Config.MongoDBName, logger, caFile)
 
 	err := app.InitializeRedis()
 	if err != nil {
