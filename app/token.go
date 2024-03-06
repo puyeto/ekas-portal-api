@@ -4,10 +4,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/ekas-portal-api/models"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/go-ozzo/ozzo-routing/v2/auth"
+	"github.com/golang-jwt/jwt"
 )
 
 // JWTHandler ...
