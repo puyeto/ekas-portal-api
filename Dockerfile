@@ -1,5 +1,5 @@
 # FROM golang:latest
-FROM golang:alpine AS build-env
+FROM golang:latest AS build-env
 
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
@@ -32,7 +32,7 @@ RUN go build
 # Run the ekas-portal-api command by default when the container starts.
 # ENTRYPOINT /go/bin/ekas-portal-api
 
-FROM alpine:latest
+FROM golang:latest
 WORKDIR /go/
 
 COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
