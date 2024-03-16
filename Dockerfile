@@ -6,7 +6,7 @@ LABEL vendor="Ekas Technologies"
 
 # RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
 # Create appuser
-RUN adduser -D -g '' appuser
+# RUN adduser -D -g '' appuser
 
 WORKDIR /go/ekas-portal-api
 
