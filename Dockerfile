@@ -4,7 +4,7 @@ FROM golang:latest AS build-env
 LABEL maintainer "ericotieno99@gmail.com"
 LABEL vendor="Ekas Technologies"
 
-RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
+# RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
 # Create appuser
 RUN adduser -D -g '' appuser
 
