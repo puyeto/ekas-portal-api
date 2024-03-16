@@ -1,5 +1,6 @@
 INTERNAL_SERVER_ERROR:
-  message: "We have encountered an internal server error."
+  # message: "We have encountered an internal server error."
+  message: "{error}"
   developer_message: "Internal server error: {error}"
 
 NOT_FOUND:

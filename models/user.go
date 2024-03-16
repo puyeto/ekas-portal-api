@@ -26,7 +26,7 @@ type Credential struct {
 	Password string `json:"password" db:"password"`
 }
 
-//AdminUserDetails user structure
+// AdminUserDetails user structure
 type AdminUserDetails struct {
 	UserID                      int32     `json:"user_id" db:"pk,user_id"`
 	FullName                    string    `json:"full_name" db:"full_name"`
@@ -34,10 +34,10 @@ type AdminUserDetails struct {
 	LastName                    string    `json:"last_name" db:"last_name"`
 	Email                       string    `json:"user_email" db:"email"`
 	Username                    string    `json:"username,omitempty" db:"username"`
-	Password                    string    `json:"user_password,omitempty" db:"password"`
+	Password                    string    `json:"auth_user_password,omitempty" db:"auth_user_password"`
 	DOB                         string    `json:"user_dob,omitempty" db:"dob"`
 	MobileNumber                string    `json:"user_mobile_number,omitempty" db:"mobile_number"`
-	Salt                        string    `json:"salt,omitempty" db:"salt"`
+	Salt                        string    `json:"auth_user_salt,omitempty" db:"auth_user_salt"`
 	VerificationCode            string    `json:"Verification_code,omitempty" db:"Verification_code"`
 	Token                       string    `json:"token,omitempty"`
 	IsVerified                  int8      `json:"is_verified,omitempty"`
@@ -51,6 +51,8 @@ type AdminUserDetails struct {
 	CompanyDetails              Companies `json:"company_details" db:"_"`
 	EnableGPSConfiguration      int8      `json:"enable_gps_configuration" db:"enable_gps_configuration"`
 	EnableFailsafeConfiguration int8      `json:"enable_failsafe_configuration" db:"enable_failsafe_configuration"`
+	OTPEnabled                  int8      `json:"otp_enabled" db:"otp_enabled"`
+	OTPNumber                   string    `json:"otp_number,omitempty" db:"otp_number"`
 }
 
 // AuthUsers ...
@@ -200,27 +202,27 @@ func CreateMail(from string, to string, subject string, body string) *MailDetail
 	}
 }
 
-//GetSender - Get sender email address
+// GetSender - Get sender email address
 func (m *MailDetails) GetSender() string {
 	return m.From
 }
 
-//GetRecipient - Get recipient email address
+// GetRecipient - Get recipient email address
 func (m *MailDetails) GetRecipient() string {
 	return m.To
 }
 
-//GetSubject - Get the email's subject
+// GetSubject - Get the email's subject
 func (m *MailDetails) GetSubject() string {
 	return m.Subject
 }
 
-//GetBody - Get the email's body
+// GetBody - Get the email's body
 func (m *MailDetails) GetBody() string {
 	return m.Body
 }
 
-//Send - sends out the mail
+// Send - sends out the mail
 func (m *MailDetails) Send() {
 	s := gomail.NewMessage()
 	s.SetHeader("From", m.GetSender())
@@ -232,7 +234,7 @@ func (m *MailDetails) Send() {
 
 }
 
-//MailChannel - variable
+// MailChannel - variable
 var MailChannel chan *gomail.Message
 
 // MailDaemon mail daemon listening for mails to send

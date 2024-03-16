@@ -54,7 +54,7 @@ func getAllDeviceIDs() ([]devices, error) {
 	// check vehicles without data status (send_to_ntsa)
 	deviceids := []devices{}
 	err := app.DBCon.Select("vehicle_details.vehicle_id", "device_id").From("vehicle_details").
-		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id")).
+		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id")).
 		Where(dbx.HashExp{"send_to_ntsa": 0, "vehicle_status": 1, "speed_source": 1}).Limit(30).OrderBy("RAND()").All(&deviceids)
 	return deviceids, err
 }

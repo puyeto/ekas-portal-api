@@ -1,23 +1,25 @@
-version: "3"
+version: "3.7"
 services:
   api:
     image: omollo/ekas-portal-api-prod
+    restart: always
     deploy:
-      replicas: 5
-      restart_policy:
-        max_attempts: 3
-        condition: on-failure       
-      update_config:
-        parallelism: 3
-        delay: 10s
+      replicas: 3
+      # restart_policy:
+      #   max_attempts: 3
+      #   condition: on-failure       
+      # update_config:
+      #   parallelism: 3
+      #   delay: 10s
     ports:
-      - "8082:8082"
+      - "8084:8084"
       - "8081:8081"
     networks:
       - host
     volumes:
       - logs:/go/logs
-      
+
+  
 volumes:
   logs:
 networks:

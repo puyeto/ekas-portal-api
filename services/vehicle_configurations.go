@@ -282,9 +282,9 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 	}
 
 	// check if deviceID exists
-	if err := s.dao.CheckIfDeviceIDExists(rs, model); err != nil {
-		return 0, err
-	}
+	// if err := s.dao.CheckIfDeviceIDExists(rs, model); err != nil {
+	// 	return 0, err
+	// }
 
 	if model.FitterID == 0 {
 		// get fitterid by agent id Number
@@ -323,16 +323,12 @@ func (s *VehicleService) Create(rs app.RequestScope, model *models.Vehicle) (int
 		return 0, err
 	}
 
-	if err = s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, model.VehicleID); err != nil {
-		return 0, err
-	}
-
 	// Add vehicle to tracking server
-	tsv := NewTrackingServerVehicle(model)
-	_, err = AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
-	if err != nil {
-		return 0, err
-	}
+	// tsv := NewTrackingServerVehicle(model)
+	// _, err = AddDevicesTrackingServer(rs, tsv, "en", model.UserHash)
+	// if err != nil {
+	// 	return 0, err
+	// }
 
-	return 0, nil
+	return 0, s.dao.CreateConfiguration(rs, model, ownerid, model.FitterID, model.VehicleID)
 }

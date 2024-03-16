@@ -105,7 +105,7 @@ func (u *UserService) GetUserByEmail(rs app.RequestScope, email string) (*models
 	return u.dao.GetUserByEmail(rs, email)
 }
 
-//Login a user
+// Login a user
 func (u *UserService) Login(rs app.RequestScope, c *models.Credential) (*models.AdminUserDetails, error) {
 	if err := c.ValidateCredential(); err != nil {
 		return nil, err
@@ -115,6 +115,10 @@ func (u *UserService) Login(rs app.RequestScope, c *models.Credential) (*models.
 	if err != nil {
 		return nil, err
 	}
+
+	// log.Println(res)
+	// log.Println("Password : ", res.Password)
+	// log.Println(c.Password)
 
 	if &res == nil {
 		return nil, errors.New("no user found")

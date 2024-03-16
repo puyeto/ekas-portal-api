@@ -127,7 +127,7 @@ func getVehicleDetails(deviceid int) models.VDetails {
 	var vd models.VDetails
 	query := "SELECT vehicle_details.vehicle_id, send_to_ntsa, vehicle_reg_no, json_value(data, '$.device_detail.owner_name'), json_value(data, '$.device_detail.owner_phone_number') "
 	query += " FROM vehicle_configuration "
-	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_string_id = vehicle_configuration.vehicle_string_id) "
+	query += " LEFT JOIN vehicle_details AS vd ON (vd.vehicle_id = vehicle_configuration.vehicle_id) "
 	query += " WHERE device_id='" + strconv.Itoa(deviceid) + "' LIMIT 1"
 	app.DBCon.NewQuery(query).Row(&vd.VehicleID, &vd.SendToNTSA, &vd.Name, &vd.VehicleOwner, &vd.OwnerTel)
 

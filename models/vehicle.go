@@ -136,6 +136,7 @@ type VehicleDetails struct {
 	DefaultTripType        int       `json:"default_trip_type,omitempty" db:"default_trip_type"`
 
 	Certificate       string    `json:"certificate"`
+	SIMNo             string    `json:"sim_no,omitempty" db:"sim_no"`
 	LimiterType       string    `json:"limiter_type,omitempty" db:"limiter_type"`
 	LimiterSerial     string    `json:"limiter_serial,omitempty" db:"limiter_serial"`
 	VehicleOwner      string    `json:"vehicle_owner,omitempty" db:"vehicle_owner"`
@@ -153,6 +154,8 @@ type VDetails struct {
 	VehicleOwner string
 	OwnerTel     string
 	SendToNTSA   int8
+	DeviceID     int32
+	DeviceSIMNo  string `json:"sim_no,omitempty"`
 }
 
 // ValidateVehicleDetails validates fields.
@@ -270,6 +273,7 @@ type VehicleRenewals struct {
 	DeviceSerialNo  string    `json:"device_serial_no,omitempty" db:"device_serial_no"`
 	Status          int8      `json:"status" db:"status"`
 	AddedBy         string    `json:"added_by" db:"added_by"`
+	RenewalType     string    `json:"renewal_type" db:"renewal_type"`
 	RenewalDate     time.Time `json:"renewal_date" db:"renewal_date"`
 	ExpiryDate      time.Time `json:"expiry_date" db:"expiry_date"`
 	RenewalCode     int       `json:"renewal_code" db:"renewal_code"`
@@ -283,6 +287,7 @@ func (v VehicleRenewals) Validate() error {
 		validation.Field(&v.VehicleID, validation.Required),
 		validation.Field(&v.VehicleStringID, validation.Required),
 		validation.Field(&v.AddedBy, validation.Required),
+		validation.Field(&v.RenewalType, validation.Required),
 		validation.Field(&v.RenewalDate, validation.Required),
 		validation.Field(&v.CertificateNo, validation.Required),
 	)
@@ -304,10 +309,11 @@ func (r Reminders) ValidateReminders() error {
 
 // FilterVehicles ...
 type FilterVehicles struct {
-	MinTimeStamp string `json:"min"`
-	MaxTimeStamp string `json:"max"`
-	FilterStatus int8   `json:"status"`
-	FilterNTSA   int8   `json:"ntsa"`
+	MinTimeStamp    string `json:"min"`
+	MaxTimeStamp    string `json:"max"`
+	FilterStatus    int8   `json:"status"`
+	FilterNTSA      int8   `json:"ntsa"`
+	FilterCondition string `json:"condition"`
 }
 
 // XMLResults ...
@@ -319,4 +325,28 @@ type XMLResults struct {
 	ViolationType       string
 	DateOfViolation     string
 	ActionTaken         string
+	DeviceSIMNO         string
+}
+
+// TransInvoices ...
+type TransInvoices struct {
+	ID                int     `json:"id" db:"id"`
+	TransID           string  `json:"trans_id" db:"trans_id"`
+	VehicleID         uint32  `json:"vehicle_id"`
+	AddedBy           int     `json:"added_by" db:"added_by"`
+	PaymentOption     string  `json:"payment_option" db:"payment_option"`
+	PhoneNumber       string  `json:"phone_number" db:"phone_number"`
+	Amount            float64 `json:"amount" db:"amount"`
+	TransDescription  string  `json:"trans_description" db:"trans_description"`
+	RequestCheckOutID string  `json:"request_checkout_id" db:"third_party_trans_id"`
+}
+
+// NewTransInvoices ...
+func NewTransInvoices(id int, vehicleid uint32, addedby int, amount float64, transid, paymentoption, phone, transdescription, checkoutid string) TransInvoices {
+	return TransInvoices{id, transid, vehicleid, addedby, paymentoption, phone, amount, transdescription, checkoutid}
+}
+
+// ProcessTransJobs ...
+type ProcessTransJobs struct {
+	ProcessJobs TransInvoices
 }

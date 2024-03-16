@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/ekas-portal-api/app"
 	"github.com/ekas-portal-api/models"
@@ -23,6 +24,8 @@ type trackingServerDAO interface {
 	QueryVehicelsFromPortal(rs app.RequestScope, offset, limit int, uid int) ([]models.VehicleDetails, error)
 	GetUserByUserHash(rs app.RequestScope, userhash string) (models.AdminUserDetails, error)
 	GetSaccoName(rs app.RequestScope, id int) (string, error)
+	ResetPassword(rs app.RequestScope, password string, userid int32) error
+	ResetPassword2(rs app.RequestScope, password string, userid int32) (hashpassword, salt string, err error)
 }
 
 // TrackingServerService ---
@@ -43,8 +46,15 @@ type loginData struct {
 	UserRole    int    `json:"user_role"`
 }
 
-// TrackingServerLogin login to the tracking server
 func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *models.TrackingServerAuth) (m models.AdminUserDetails, err error) {
+	if err := model.Validate(); err != nil {
+		return m, err
+	}
+	return s.Login(rs, model.Email, model.Password)
+}
+
+// TrackingServerLogin login to the tracking server
+func (s *TrackingServerService) TrackingServerLogin2(rs app.RequestScope, model *models.TrackingServerAuth) (m models.AdminUserDetails, err error) {
 	if err := model.Validate(); err != nil {
 		return m, err
 	}
@@ -92,66 +102,25 @@ func (s *TrackingServerService) TrackingServerLogin(rs app.RequestScope, model *
 	return s.Login(rs, model.Email, model.Password)
 }
 
-// TrackingServerLogin2 login to the tracking server
-// func (s *TrackingServerService) TrackingServerLogin2(rs app.RequestScope, model *models.TrackingServerAuth) (models.AdminUserDetails, error) {
-// 	// if err := model.ValidateTrackingServerLogin(); err != nil {
-// 	// 	return nil, err
-// 	// }
-// 	URL := app.Config.TrackingServerURL + "login/?email=" + model.Email + "&password=" + model.Password
-// 	res, err := http.Get(URL)
-// 	if err != nil {
-// 		// return nil, err
-// 		return s.Login(rs, model.Email, model.Password)
-// 	}
-
-// 	body, err := ioutil.ReadAll(res.Body)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var data map[string]interface{}
-// 	err = json.Unmarshal(body, &data)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var id = app.GenerateNewID()
-// 	var hash = data["user_api_hash"].(string)
-// 	var status = int8(data["status"].(float64))
-// 	data["user_email"] = model.Email
-// 	data["user_id"] = id
-// 	data["user_role"] = 10005
-
-// 	exists, err := s.dao.TrackingServerUserEmailExists(rs, model.Email)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if exists == 1 {
-// 		uid, role, cid, err := s.dao.GetTrackingServerUserLoginIDByEmail(rs, model.Email)
-// 		data["user_id"] = uid
-// 		data["user_role"] = role
-// 		data["company_id"] = cid
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	} else {
-// 		// Save Results to db
-// 		err = s.dao.SaveTrackingServerLoginDetails(rs, id, model.Email, hash, status, data)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
-
-// 	return data, nil
-// }
-
 // Login a user  from portal
 func (s *TrackingServerService) Login(rs app.RequestScope, email, password string) (models.AdminUserDetails, error) {
 
 	res, err := s.dao.GetUserByEmail(rs, email)
 	if err != nil {
 		return res, err
+	}
+
+	//---Temporary--//
+	// store entered password
+	if len(strings.TrimSpace(res.Password)) == 0 {
+		p, s, _ := s.dao.ResetPassword2(rs, password, res.UserID)
+		res.Salt = s
+		res.Password = p
+	}
+	//--Tempoarry End--//
+
+	if res.Password != app.CalculatePassHash(password, res.Salt) {
+		return res, errors.New("invalid credential")
 	}
 
 	// get company details
@@ -164,6 +133,7 @@ func (s *TrackingServerService) Login(rs app.RequestScope, email, password strin
 	res.Token, _ = app.CreateToken(&res)
 
 	s.storeLoginSession(rs, &res)
+	reset(&res)
 
 	return res, nil
 }

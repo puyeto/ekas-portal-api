@@ -1,7 +1,9 @@
 package daos
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -65,11 +67,11 @@ func (dao *VehicleRecordDAO) Count(rs app.RequestScope, uid int, typ string, use
 func (dao *VehicleRecordDAO) Query(rs app.RequestScope, offset, limit int, uid int, typ string, userdetails models.AuthUsers) ([]models.VehicleDetails, error) {
 	vehicleRecords := []models.VehicleDetails{}
 	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id", "COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "sacco_id",
-		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model",
-		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "json_value(data, '$.device_detail.certificate') AS certificate", "serial_no AS limiter_serial").
+		"vehicle_reg_no", "chassis_no", "make_type", "notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "COALESCE(manufacturer, make_type) AS manufacturer", "COALESCE(model, make_type) AS model", "COALESCE(sim_no, '') AS sim_no",
+		"model_year", "vehicle_details.created_on", "last_seen", "COALESCE(renewal_date, vehicle_details.created_on) AS renewal_date", "renew", "COALESCE(certificate_no, '') AS certificate", "serial_no AS limiter_serial").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id"))
+		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"))
 	var err error
 	if uid > 0 {
 		if userdetails.SaccoID > 0 {
@@ -94,11 +96,11 @@ func (dao *VehicleRecordDAO) QueryFilter(rs app.RequestScope, offset, limit int,
 	vehicleRecords := []models.VehicleDetails{}
 	q := rs.Tx().Select("vehicle_details.vehicle_id", "vehicle_configuration.device_id", "vehicle_details.user_id",
 		"COALESCE(company_name, '') AS company_name", "vehicle_details.vehicle_string_id", "vehicle_reg_no", "chassis_no", "make_type", "JSON_VALUE(data, '$.device_detail.owner_name') AS vehicle_owner",
-		"notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "JSON_VALUE(data, '$.device_detail.serial_no') AS limiter_serial", "JSON_VALUE(data, '$.device_detail.certificate') AS certificate",
+		"notification_email", "notification_no", "vehicle_status", "send_to_ntsa", "serial_no AS limiter_serial", "certificate_no AS certificate", "sim_no",
 		"COALESCE(model, make_type) AS model", "limiter_type", "JSON_VALUE(data, '$.device_detail.owner_phone_number') AS vehicle_owner_tel", "JSON_VALUE(data, '$.device_detail.agent_location') AS fitting_location", "vehicle_details.created_on", "last_seen").
 		LeftJoin("company_users", dbx.NewExp("company_users.user_id = vehicle_details.user_id")).
 		LeftJoin("companies", dbx.NewExp("companies.company_id = company_users.company_id")).
-		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_string_id = vehicle_details.vehicle_string_id"))
+		LeftJoin("vehicle_configuration", dbx.NewExp("vehicle_configuration.vehicle_id = vehicle_details.vehicle_id"))
 
 	if model.MinTimeStamp != "" && model.MaxTimeStamp != "" && model.FilterNTSA != 2 && model.FilterStatus != 2 {
 		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.Between("vehicle_details.created_on", model.MinTimeStamp, model.MaxTimeStamp), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}, dbx.HashExp{"vehicle_status": model.FilterStatus}))
@@ -114,6 +116,8 @@ func (dao *VehicleRecordDAO) QueryFilter(rs app.RequestScope, offset, limit int,
 		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"send_to_ntsa": model.FilterNTSA}))
 	} else if model.FilterStatus != 2 {
 		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"vehicle_status": model.FilterStatus}))
+	} else if len(strings.TrimSpace(model.FilterCondition)) > 0 {
+		q.Where(dbx.And(dbx.NewExp("vehicle_configuration.device_id>0"), dbx.HashExp{"device_status": model.FilterCondition}))
 	}
 
 	err := q.OrderBy("vehicle_details.created_on desc").Offset(int64(offset)).Limit(int64(limit)).All(&vehicleRecords)
@@ -138,6 +142,8 @@ func (dao *VehicleRecordDAO) CountFilter(rs app.RequestScope, model *models.Filt
 		q.Where(dbx.HashExp{"send_to_ntsa": model.FilterNTSA})
 	} else if model.FilterStatus != 2 {
 		q.Where(dbx.HashExp{"vehicle_status": model.FilterStatus})
+	} else if len(strings.TrimSpace(model.FilterCondition)) > 0 {
+		q.Where(dbx.HashExp{"device_status": model.FilterCondition})
 	}
 
 	err := q.Row(&count)
@@ -170,9 +176,9 @@ func (dao *VehicleRecordDAO) UpdateVehicle(rs app.RequestScope, v *models.Vehicl
 	}
 
 	// update configuration details
-	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID + "', serial_no = '" + v.LimiterSerial
+	query := "UPDATE vehicle_configuration SET vehicle_string_id = '" + v.VehicleStringID + "', certificate_no = '" + v.Certificate + "', sim_no = '" + v.SIMNo + "', serial_no = '" + v.LimiterSerial
 	query += "', data = JSON_SET(DATA, '$.device_detail.registration_no', '" + v.VehicleRegNo + "', '$.device_detail.chasis_no', '" + v.ChassisNo
-	query += "', '$.device_detail.make_type', '" + v.MakeType + "', '$.device_detail.serial_no', '" + v.LimiterSerial
+	query += "', '$.device_detail.make_type', '" + v.MakeType + "', '$.device_detail.serial_no', '" + v.LimiterSerial + "', '$.sim_no', '" + v.SIMNo
 	query += "', '$.device_detail.certificate', '" + v.Certificate + "')"
 	query += " WHERE vehicle_id = " + strconv.Itoa(int(v.VehicleID))
 	if _, err := rs.Tx().NewQuery(query).Execute(); err != nil {
@@ -190,27 +196,41 @@ func (dao *VehicleRecordDAO) VehicleExists(rs app.RequestScope, id uint32) (int,
 	return exists, err
 }
 
+func (dao *VehicleRecordDAO) IsCertificateExist(rs app.RequestScope, certno, vehiclestringid string) int {
+	// check if cert has been renewed
+	var exists int
+	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + certno + "' AND vehicle_string_id != '" + vehiclestringid + "' LIMIT 1) AS exist")
+	q.Row(&exists)
+
+	return exists
+}
+
+// SaveRenewalInvoice
+func (dao *VehicleRecordDAO) SaveRenewalInvoice(rs app.RequestScope, m models.TransInvoices) error {
+	_, err := app.DBCon.Insert("invoices", dbx.Params{
+		"trans_id":          m.TransID,
+		"vehicle_id":        m.VehicleID,
+		"added_by":          m.AddedBy,
+		"amount":            m.Amount,
+		"payment_option":    m.PaymentOption,
+		"phone_number":      m.PhoneNumber,
+		"trans_description": m.TransDescription,
+	}).Execute()
+
+	return err
+
+}
+
 // RenewVehicle ...
-func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) (uint32, error) {
+func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.VehicleRenewals) error {
 	m.Status = 1
 	m.CreatedOn = time.Now()
 	// m.RenewalDate = m.RenewalDate.AddDate(1, 0, 0)
 	m.ExpiryDate = m.RenewalDate.AddDate(1, 0, -1)
 
-	// check if cert has been renewed
-	var exists int
-	q := rs.Tx().NewQuery("SELECT EXISTS(SELECT 1 FROM vehicle_renewals WHERE certificate_no='" + m.CertificateNo + "' AND vehicle_string_id != '" + m.VehicleStringID + "' LIMIT 1) AS exist")
-	if err := q.Row(&exists); err != nil {
-		return m.ID, err
-	}
-
-	if exists == 1 {
-		return m.ID, errors.New("Certificate has been renewed")
-	}
-
 	// Save renewal details
 	if err := rs.Tx().Model(m).Exclude("VehicleRegNo", "DeviceSerialNo").Insert(); err != nil {
-		return m.ID, err
+		return err
 	}
 
 	// update vehicle details
@@ -219,15 +239,144 @@ func (dao *VehicleRecordDAO) RenewVehicle(rs app.RequestScope, m *models.Vehicle
 		"renewal_date": m.RenewalDate},
 		dbx.HashExp{"vehicle_id": m.VehicleID}).Execute(); err != nil {
 		rs.Rollback()
-		return m.ID, err
+		return err
 	}
 
 	// update certificate details
-	query := "UPDATE vehicle_configuration SET data = JSON_SET(DATA, '$.device_detail.certificate', '" + m.CertificateNo + "')"
+	query := "UPDATE vehicle_configuration SET certificate_no = '" + m.CertificateNo + "', data = JSON_SET(DATA, '$.device_detail.certificate', '" + m.CertificateNo + "')"
 	query += " WHERE vehicle_id = " + strconv.Itoa(int(m.VehicleID))
 	rs.Tx().NewQuery(query).Execute()
 
-	return m.ID, nil
+	return nil
+}
+
+// MpesaSTKCheckout Mpesa STKPush checkout
+func (dao *VehicleRecordDAO) MpesaSTKCheckout(rs app.RequestScope, model models.TransInvoices, c chan models.ProcessTransJobs) error {
+	dt := time.Now()
+	svc, err := app.New(app.APPKEY, app.APPSECRET, app.PRODUCTION)
+	if err != nil {
+		return err
+	}
+
+	amount := "1"
+
+	if svc.Env == app.PRODUCTION {
+		amount = fmt.Sprintf("%.0f", model.Amount)
+	}
+
+	fmt.Println(amount)
+
+	res, err := svc.Simulation(models.Express{
+		BusinessShortCode: app.SHORTCODE,
+		Password:          app.PASSWORD,
+		Timestamp:         app.TIMESTAMP,
+		TransactionType:   "CustomerPayBillOnline",
+		Amount:            amount,
+		PartyA:            model.PhoneNumber,
+		PartyB:            app.SHORTCODE,
+		PhoneNumber:       model.PhoneNumber,
+		CallBackURL:       app.CALLBACKURL,
+		AccountReference:  model.TransID,
+		TransactionDesc:   "Renewal Payment",
+	})
+
+	if err != nil {
+		return err
+	}
+
+	in := []byte(res)
+	var response map[string]string
+	json.Unmarshal(in, &response)
+
+	if response["ResponseCode"] != "0" {
+		if response["errorMessage"] != "" {
+			return errors.New(response["errorMessage"])
+		}
+		return errors.New("An error has occured")
+	}
+
+	model.RequestCheckOutID = response["CheckoutRequestID"]
+	_, err = app.DBCon.Insert("payments", dbx.Params{
+		"transaction_type":     model.PaymentOption,
+		"trans_id":             model.TransID,
+		"trans_time":           dt.Format("01-02-2006 15:04:05"),
+		"trans_amount":         model.Amount,
+		"business_short_code":  app.SHORTCODE,
+		"bill_ref_number":      model.VehicleID,
+		"invoice_number":       model.TransID,
+		"org_account_bance":    0,
+		"third_party_trans_id": model.RequestCheckOutID,
+		"msisdn":               model.PhoneNumber,
+		"first_name":           model.PhoneNumber,
+		"middle_name":          model.PhoneNumber,
+		"last_name":            model.PhoneNumber,
+		"vehicle_id":           model.VehicleID,
+		"status":               "Pending",
+		"result_code":          response["ResponseCode"],
+		"result_desc":          "Incomplete Payment",
+		"added_by":             model.AddedBy,
+	}).Execute()
+
+	if model.RequestCheckOutID != "" {
+		transinvoice := models.NewTransInvoices(model.ID, model.VehicleID, model.AddedBy, model.Amount, model.TransID, model.PaymentOption, model.PhoneNumber, "Renewal Payment", model.RequestCheckOutID)
+		fmt.Println(transinvoice)
+		c <- models.ProcessTransJobs{
+			ProcessJobs: transinvoice,
+		}
+	}
+
+	return err
+
+}
+
+// MpesaCheckoutConfirmation ...
+func (dao *VehicleRecordDAO) MpesaCheckoutConfirmation(rs app.RequestScope, checkout chan models.ProcessTransJobs, finished chan map[string]interface{}) error {
+	clientJob := <-checkout
+	<-time.After(30 * time.Second)
+
+	svc, err := app.New(app.APPKEY, app.APPSECRET, app.PRODUCTION)
+	if err != nil {
+		return err
+	}
+
+	res, err := svc.TransactionStatus(models.Status{
+		BusinessShortCode: app.SHORTCODE,
+		Password:          app.PASSWORD,
+		Timestamp:         app.TIMESTAMP,
+		CheckoutRequestID: clientJob.ProcessJobs.RequestCheckOutID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	in := []byte(res)
+	var response map[string]interface{}
+	json.Unmarshal(in, &response)
+
+	// update transaction after mpesa feedback
+	// err = dao.updateMpesaMerchantDetails(rs, clientJob.ProcessJobs, response)
+
+	finished <- response
+	return err
+}
+
+// UpdateMpesaMerchantDetails update transaction after mpesa feedback
+func (dao *VehicleRecordDAO) UpdateMpesaMerchantDetails(rs app.RequestScope, details map[string]interface{}) error {
+
+	status := "Cancelled"
+	if details["ResultCode"] == "0" {
+		status = "Paid"
+	}
+
+	_, err := app.DBCon.Update("payments", dbx.Params{
+		"status":              status,
+		"merchant_request_id": details["MerchantRequestID"],
+		"result_code":         details["ResultCode"],
+		"result_desc":         details["ResultDesc"],
+	}, dbx.HashExp{"third_party_trans_id": details["CheckoutRequestID"]}).Execute()
+
+	return err
 }
 
 // CreateReminder saves a new reminder record in the database.
@@ -240,10 +389,11 @@ func (dao *VehicleRecordDAO) CreateReminder(rs app.RequestScope, v *models.Remin
 // ListVehicleRenewals retrieves the renewal records with the specified offset and limit from the database.
 func (dao *VehicleRecordDAO) ListVehicleRenewals(rs app.RequestScope, offset, limit int) ([]models.VehicleRenewals, error) {
 	r := []models.VehicleRenewals{}
-	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "certificate_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
+	err := rs.Tx().Select("id", "serial_no AS device_serial_no", "vr.certificate_no", "vehicle_reg_no", "vr.vehicle_id", "vr.vehicle_string_id", "vr.status", "added_by", "vr.renewal_date", "vr.expiry_date", "vr.renewal_code", "vr.created_on").
 		From("vehicle_renewals AS vr").Where(dbx.HashExp{"vr.status": 1}).
 		LeftJoin("vehicle_details", dbx.NewExp("vehicle_details.vehicle_id = vr.vehicle_id")).
 		LeftJoin("vehicle_configuration AS vc", dbx.NewExp("vc.vehicle_id = vr.vehicle_id")).
+		Where(dbx.NewExp("id>5000")).
 		OrderBy("id DESC").Offset(int64(offset)).Limit(int64(limit)).All(&r)
 	return r, err
 }

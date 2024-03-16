@@ -26,27 +26,51 @@ func (c Status) Run() {
 
 func populatedata() {
 	// Select data between dates
-	data, _ := getTripDataByDeviceIDBtwDates("1529203311", 1610261047, 1610485668, 3020, 5000)
-	var previous time.Time
-	for i := 0; i < len(data); i++ {
-		if previous != data[i].DateTime {
-			data[i].DeviceID = 2023202064
-			data[i].GroundSpeed = 0.00
-			// if data[i].Latitude < -5000000 {
-			// 	data[i].Latitude = data[i].Latitude + 4000000
-			// } else if data[i].Latitude > -4000000 {
-			// 	data[i].Latitude = data[i].Latitude + 2000000
-			// }
-			fmt.Println(i, len(data), data[i].DateTime, data[i].Latitude, data[i].Longitude, data[i].GroundSpeed)
-			LogToRedis(data[i])
-			app.LogToMongoDB(data[i])
-			app.LoglastSeenMongoDB(data[i])
-			previous = data[i].DateTime
+	data, _ := getTripDataByDeviceIDBtwDates("1625221536", 1673334020, 1673357420, 0, 300)
+	// var previous time.Time
+	fmt.Println(len(data))
+	for i := len(data) - 1; i >= 0; i-- {
+		// if previous != data[i].DateTime {
+		data[i].DeviceID = 1212224244
+		// data[i].GroundSpeed = 0.00
+		// if data[i].Latitude < -5000000 {
+		// 	data[i].Latitude = data[i].Latitude + 4000000
+		// } else if data[i].Latitude > -4000000 {
+		// 	data[i].Latitude = data[i].Latitude + 2000000
+		// }
+
+		// data[i].UTCTimeDay = data[i].UTCTimeDay - 2
+		// data[i].UTCTimeHours = data[i].UTCTimeHours - 1
+
+		// dt := data[i].DateTime
+
+		// data[i].DateTime = dt.AddDate(0, 0, -2)
+		// data[i].DeviceTime = dt.AddDate(0, 0, -2)
+
+		// data[i].DateTime = data[i].DateTime.Add(-time.Hour * 1)
+		// data[i].DeviceTime = data[i].DeviceTime.Add(-time.Hour * 1)
+
+		// if data[i].UTCTimeMinutes > 30 {
+		// 	data[i].UTCTimeMinutes = data[i].UTCTimeMinutes - 30
+		// 	data[i].DateTime = data[i].DateTime.Add(-time.Minute * 30)
+		// 	data[i].DeviceTime = data[i].DeviceTime.Add(-time.Minute * 30)
+		// }
+		// data[i].DateTimeStamp = data[i].DateTime.Unix()
+
+		fmt.Println(data[i].DateTime, data[i].DateTimeStamp, data[i].UTCTimeHours, data[i].UTCTimeMinutes)
+		LogToRedis(data[i])
+		app.LogToMongoDB(data[i])
+		app.LoglastSeenMongoDB(data[i])
+		// previous = data[i].DateTime
+		// }
+		if i == 0 {
+			fmt.Println("Finished")
 		}
 	}
 }
 
 func getTripDataByDeviceIDBtwDates(deviceid string, from, to int64, offset, limit int) ([]models.DeviceData, error) {
+	fmt.Println("Job Started")
 	findOptions := options.Find()
 	// Sort by `price` field descending
 	findOptions.SetSort(map[string]int{"datetimestamp": 1})
